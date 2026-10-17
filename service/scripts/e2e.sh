@@ -12,4 +12,5 @@ for a in "$@"; do
   if [ "$a" = "--no-docker" ]; then export E2E_SKIP_DOCKER=1; else ARGS+=("$a"); fi
 done
 "$PY" -m pip install -q -r requirements-dev.txt
-exec "$PY" -m pytest "${ARGS[@]}"
+# "${ARGS[@]+...}" — пустой массив при set -u в bash 3.2 (macOS) иначе даёт «unbound variable»
+exec "$PY" -m pytest ${ARGS[@]+"${ARGS[@]}"}

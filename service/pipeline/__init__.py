@@ -8,21 +8,23 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 from typing import Callable, Optional
 
 from .context import Event, VideoContext
 from .detectors import DETECTORS
-from .draw import caption
+from .draw import box, caption
 from .rules import RULES, api_rule
 from .video import brightness_series, encode_jpeg_base64, read_frame_at
 
-PIPELINE_VERSION = "0.1.0-skeleton"
+PIPELINE_VERSION = "0.2.0"
 MIN_CONFIDENCE = 0.5          # политика вердикта (ПЛАН 5.4): событие учитывается при уверенности ≥ порога
 MAX_EVIDENCE_FRAMES = 3       # ТЗ: 1–3 кадра
 # Контекстные события: описывают условия сцены, но САМИ ПО СЕБЕ не являются нарушением и не дают вердикт.
 # T9 (свет выключен) встречается и в чистом Х-12, и в Х-11; нарушение в Х-11 — то, что кассир уходит в темноте,
-# оставив экран активным/сейф открытым (T2/T3). Контекст используется правилами T1–T3 как усиливающий фактор.
+# оставив экран активным (T3; реализовано) / сейф открытым (T2). Контекстные правила запускаются первой фазой,
+# их события лежат в ctx.context_events до запуска остальных правил и попадают в meta.context_events ответа.
 CONTEXT_ONLY_TYPES = {"T9"}
 
 log = logging.getLogger("pipeline")
@@ -41,16 +43,40 @@ def _noop(stage: str, percent: Optional[int] = None) -> None:
     return None
 
 
+def detector_code(det: Callable) -> str:
+    """detect_t9_lights_off -> 'T9' (по имени функции; порядок/коды проверяет tests/test_rules.py)."""
+    m = re.search(r"_t(\d{1,2})_", det.__name__)
+    return f"T{m.group(1)}" if m else ""
+
+
+def _run_detectors(ctx: VideoContext, dets: list[Callable]) -> list[Event]:
+    events: list[Event] = []
+    for det in dets:
+        try:
+            found = det(ctx)
+        except Exception as exc:  # noqa: BLE001 — одно сломанное правило не должно валить весь анализ
+            log.exception("detector %s failed: %s", det.__name__, exc)
+            continue
+        events.extend(found)
+    events = [e for e in events if e.confidence >= MIN_CONFIDENCE]
+    events.sort(key=lambda e: (e.timecode_sec, e.type_code))
+    return events
+
+
 def build_evidence(ctx: VideoContext, ev: Event) -> list[dict]:
     times = ev.evidence_times[:MAX_EVIDENCE_FRAMES] or [ev.timecode_sec]
     caps = list(ev.evidence_captions) + [""] * len(times)
     rule = RULES[ev.type_code]
     frames: list[dict] = []
-    for ts, cap_text in zip(times, caps):
+    # рамки вокруг объекта/зоны: ev.extras["evidence_boxes"] — список (x1, y1, x2, y2) или None на каждый кадр
+    boxes = list(ev.extras.get("evidence_boxes") or []) + [None] * len(times)
+    for ts, cap_text, xyxy in zip(times, caps, boxes):
         ts = max(0.0, min(float(ts), max(ctx.info.duration_sec - 0.05, 0.0)))
         frame = read_frame_at(ctx.path, ts, ctx.info)
         if frame is None:
             continue
+        if xyxy is not None:
+            frame = box(frame, xyxy)
         lines = [f"{ev.type_code} · {rule['name']}", f"t = {ts:.1f} с" + (f" · {cap_text}" if cap_text else "")]
         frame = caption(frame, lines)
         frames.append({"timestamp_sec": round(ts, 2), "image_base64": encode_jpeg_base64(frame)})
@@ -93,19 +119,15 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     # progress("detection", 30); ctx.detections = ...; ctx.tracks = ...; ctx.states = ...
 
     progress("rules", 60)
-    events: list[Event] = []
-    for det in DETECTORS:
-        try:
-            found = det(ctx)
-        except Exception as exc:  # noqa: BLE001 — одно сломанное правило не должно валить весь анализ
-            log.exception("detector %s failed: %s", det.__name__, exc)
-            continue
-        events.extend(found)
-    events = [e for e in events if e.confidence >= MIN_CONFIDENCE]
-    events.sort(key=lambda e: (e.timecode_sec, e.type_code))
-    context_events = [e for e in events if e.type_code in CONTEXT_ONLY_TYPES]
-    events = [e for e in events if e.type_code not in CONTEXT_ONLY_TYPES]
+    # Фаза 1 — контекстные правила (T9): результат кладём в ctx.context_events ДО запуска остальных правил,
+    # чтобы T1–T3 могли читать контекст (уход в темноте). Фаза 2 — правила-нарушения.
+    context_dets = [d for d in DETECTORS if detector_code(d) in CONTEXT_ONLY_TYPES]
+    violation_dets = [d for d in DETECTORS if detector_code(d) not in CONTEXT_ONLY_TYPES]
+    context_events = _run_detectors(ctx, context_dets)
     ctx.context_events = context_events
+    events = _run_detectors(ctx, violation_dets)
+    # страховка: контекстные типы не становятся нарушениями, даже если их вернуло другое правило
+    events = [e for e in events if e.type_code not in CONTEXT_ONLY_TYPES]
 
     progress("evidence", 80)
     violations = [event_to_violation(ctx, ev) for ev in events]

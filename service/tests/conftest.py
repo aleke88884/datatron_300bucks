@@ -21,7 +21,7 @@ LABELS_XLSX = ROOT_DIR / "open" / "open_labels.xlsx"
 FAKE_PIPELINE_DIR = SERVICE_DIR / "tests" / "fixtures" / "fake_pipeline"
 TEST_API_KEY = "e2e-test-key-0123456789abcdef"
 
-POSITIVE_VIDEO = "Х-11.mov"   # нарушение T9 (освещение выключено), разметка 18 с
+POSITIVE_VIDEO = "Х-11.mov"   # нарушение T3 (экран АРМ активен после выключения света; контекст T9), разметка 18 с
 NEGATIVE_VIDEO = "Х-3.mov"    # без нарушения
 LONGEST_VIDEO = "Х-14.mov"    # 143 с — самое длинное видео датасета
 

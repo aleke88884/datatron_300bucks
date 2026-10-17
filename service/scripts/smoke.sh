@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke-тест: поднимает сервер, отправляет Х-11.mov (ожидаем контекст T9 в meta, без вердикта «нарушение», пока T2/T3 не реализованы) и Х-3.mov (ожидаем no_violation),
+# Smoke-тест: поднимает сервер, отправляет Х-11.mov (ожидаем violation с T3 — экран АРМ активен после выключения света — и контекст T9 в meta) и Х-3.mov (ожидаем no_violation),
 # печатает JSON (base64 кадров сокращён), проверяет 401 без ключа и схему ответа.
 # Использование: scripts/smoke.sh [порт]   (из папки service/ или из корня проекта)
 set -euo pipefail
@@ -59,7 +59,7 @@ wait_job() {  # $1 = job_id → печатает финальный JSON
   echo "$body"; return 1
 }
 
-echo "→ отправляем $(basename "$V_POS") (ожидаем контекст T9 в meta.context_events)"
+echo "→ отправляем $(basename "$V_POS") (ожидаем violation: T3 + контекст T9 в meta.context_events)"
 JOB1=$(submit "$V_POS"); echo "   job_id=$JOB1"
 echo "→ отправляем $(basename "$V_NEG") (ожидаем no_violation)"
 JOB2=$(submit "$V_NEG"); echo "   job_id=$JOB2"
@@ -109,7 +109,8 @@ validate_schema(neg, "Х-3")
 ctxev = (pos.get("meta") or {}).get("context_events") or []
 check(any(e.get("type_code") == "T9" for e in ctxev), "Х-11: в meta.context_events есть T9 (свет выключен)")
 check(all(v.get("type_code") != "T9" for v in pos["violations"]), "Х-11: T9 не выдаётся как нарушение (контекст)")
-# Пока правила T2/T3 не реализованы, Х-11 даёт no_violation; после их реализации ожидаем violation с T2/T3.
+check(pos["verdict"] == "violation" and any(v.get("type_code") == "T3" for v in pos["violations"]), "Х-11 → violation с T3 (экран АРМ активен после выключения света)")
+check(all(1 <= len(v["evidence_frames"]) <= 3 for v in pos["violations"]), "Х-11: у каждого нарушения 1–3 кадра-доказательства")
 check(neg["verdict"] == "no_violation" and neg["violations"] == [], "Х-3 → no_violation, violations == []")
 sys.exit(0 if ok else 1)
 PYEOF

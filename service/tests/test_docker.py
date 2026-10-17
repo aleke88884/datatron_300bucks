@@ -92,6 +92,7 @@ def test_container_api_lifecycle(container):
     pos, neg = analyze(POSITIVE_VIDEO), analyze(NEGATIVE_VIDEO)
     assert_done_result(pos)
     assert_done_result(neg)
+    assert pos["verdict"] == "violation" and [v["type_code"] for v in pos["violations"]] == ["T3"], pos["violations"]
     assert any(e["type_code"] == "T9" for e in pos["meta"]["context_events"]), pos["meta"]
     assert neg["verdict"] == "no_violation" and not neg["meta"]["context_events"]
 
@@ -118,6 +119,7 @@ def test_offline_container(image):
                 break
             time.sleep(1)
         assert_done_result(body)
+        assert body["verdict"] == "violation" and [v["type_code"] for v in body["violations"]] == ["T3"], body["violations"]
         assert any(e["type_code"] == "T9" for e in body["meta"]["context_events"]), body["meta"]
     finally:
         print(c.logs()[-2000:])

@@ -134,25 +134,35 @@ def _t9_context(res: dict) -> dict:
     return t9[0]
 
 
-def test_lifecycle_x11_gives_t9_context_event(server, positive_video):
-    """Х-11: свет гаснет на 16.1 с (разметка — 18 с). T9 — контекстное событие (CONTEXT_ONLY_TYPES):
-    попадает в meta.context_events и не выдаётся как нарушение, пока не реализованы T2/T3."""
+def test_lifecycle_x11_t3_violation_with_t9_context(server, positive_video):
+    """Х-11: свет гаснет на 16.1 с (разметка — 18 с), экран ноутбука остаётся активным в темноте → нарушение T3.
+    T9 — контекстное событие (CONTEXT_ONLY_TYPES): попадает в meta.context_events и не выдаётся как нарушение."""
     job_id = server.submit(positive_video)
     res = server.wait_job(job_id)
     assert_done_result(res)
     assert res["job_id"] == job_id
-    assert all(v["type_code"] != "T9" for v in res["violations"]), "T9 не должен выдаваться как нарушение"
+    assert res["verdict"] == "violation"
+    assert [v["type_code"] for v in res["violations"]] == ["T3"], "ровно одно нарушение — T3; T9 остаётся контекстом"
+    t3 = res["violations"][0]
+    assert 14.0 <= t3["timecode_sec"] <= 20.0, "разметка: 18-я секунда; свет гаснет на 16.1 с"
+    assert t3["end_sec"] == pytest.approx(res["meta"]["duration_sec"], abs=0.2), "экран активен до конца ролика"
+    assert t3["confidence"] >= 0.7
+    assert "экран" in t3["description"] and "освещение" in t3["description"]
+    assert "АРМ" in t3["type"]
+    assert t3["rule"]["clause"] == "п. 14" and "V1900019680" in t3["rule"]["url"] and t3["rule"].get("note")
+    assert len(t3["evidence_frames"]) == 3
     t9 = _t9_context(res)
-    assert 14.0 <= t9["timecode_sec"] <= 20.0, "разметка: 18-я секунда; свет гаснет на 16.1 с"
+    assert 14.0 <= t9["timecode_sec"] <= 20.0
     assert t9["end_sec"] == pytest.approx(res["meta"]["duration_sec"], abs=0.2), "свет не включается до конца ролика"
     assert "яркость" in t9["description"] and "освещение" in t9["name"].lower()
     assert abs(res["meta"]["duration_sec"] - 25.6) < 0.5
 
 
-@pytest.mark.xfail(reason="по разметке Х-11 — нарушение; вердикт появится с правилами T2/T3 (уход в темноте)", strict=True)
 def test_x11_verdict_matches_label(server, positive_video):
+    """По разметке Х-11 — нарушение (18 с): вердикт violation за счёт T3 (уход в темноте с активным экраном)."""
     res = server.wait_job(server.submit(positive_video))
     assert res["verdict"] == "violation"
+    assert any(v["type_code"] == "T3" for v in res["violations"])
 
 
 def test_lifecycle_clean_video(server, negative_video):
@@ -181,9 +191,10 @@ def test_concurrent_uploads_all_complete(server):
     results = [server.wait_job(j) for j in job_ids]
     for r in results:
         assert_done_result(r)
-    assert all(r["verdict"] == "no_violation" for r in results), "пока реализован только контекстный T9"
+    assert [r["verdict"] for r in results] == ["violation", "no_violation", "no_violation", "violation", "no_violation"]
+    has_t3 = [any(v["type_code"] == "T3" for v in r["violations"]) for r in results]
     has_t9 = [any(e["type_code"] == "T9" for e in r["meta"].get("context_events") or []) for r in results]
-    assert has_t9 == [True, False, False, True, False]
+    assert has_t3 == has_t9 == [True, False, False, True, False]
 
 
 def test_uploads_are_deleted_after_processing(server, negative_video):
@@ -220,4 +231,5 @@ def test_curl_example_from_tz(server, positive_video):
     assert json.loads(out)["status"] in ("processing", "done")
     res = server.wait_job(job_id)
     assert_done_result(res)
+    assert res["verdict"] == "violation" and res["violations"][0]["type_code"] == "T3"
     _t9_context(res)

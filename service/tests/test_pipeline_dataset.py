@@ -1,13 +1,15 @@
 """Пайплайн напрямую на всех видео датасета против разметки open_labels.xlsx.
-Проверяет схему результата для каждого видео, время обработки, контекст T9 на Х-11/Х-12, отсутствие ложных
-срабатываний на чистых видео и генерацию кадров-доказательств. Полнота (recall) по 25 нарушениям — xfail,
-пока правила T1–T8, T10–T13 — заглушки, а T9 переведён в контекстный режим."""
+Проверяет схему результата для каждого видео, время обработки, контекст T9 на Х-11/Х-12, нарушение T3 (экран АРМ
+активен после выключения света) ровно на Х-11, отсутствие ложных срабатываний на чистых видео и генерацию
+кадров-доказательств (T9 — подпись, T3 — рамка вокруг экрана). Полнота (recall) по 22 нарушениям — xfail,
+пока правила T1, T2, T4–T8, T10–T13 — заглушки, а T9 — контекст."""
 from __future__ import annotations
 
 import re
 import sys
 import time
 
+import cv2
 import numpy as np
 import pytest
 
@@ -19,7 +21,8 @@ pytestmark = pytest.mark.dataset
 if str(SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICE_DIR))
 
-LIGHTS_OFF_VIDEOS = {"Х-11", "Х-12"}   # в обоих кассир выключает свет; нарушение только в Х-11 (экран активен, сейф открыт)
+LIGHTS_OFF_VIDEOS = {"Х-11", "Х-12"}   # в обоих кассир выключает свет; нарушение только в Х-11 (экран ноутбука активен — T3)
+SCREEN_ON_VIDEOS = {"Х-11"}            # где T3 должен сработать; в Х-12 крышка ноутбука закрыта — экрана нет
 LABEL_TOLERANCE_SEC = 3.0
 
 
@@ -118,6 +121,34 @@ def test_t9_context_fires_only_where_lights_go_off(results):
     assert fired == LIGHTS_OFF_VIDEOS, fired
 
 
+def _t3(res: dict) -> list[dict]:
+    return [v for v in res["violations"] if v["type_code"] == "T3"]
+
+
+def test_t3_violation_on_x11_near_label(results, labels):
+    """Х-11 по разметке — нарушение на 18 с: вердикт violation, ровно одно событие T3 с таймкодом в пределах
+    3 с от разметки, экран активен до конца ролика, 3 кадра-доказательства, ссылка на п. 14 Правил № 231."""
+    res = results["Х-11"]
+    assert res["verdict"] == "violation"
+    assert [v["type_code"] for v in res["violations"]] == ["T3"]
+    t3 = _t3(res)[0]
+    assert abs(t3["timecode_sec"] - labels["Х-11"]["timecode"]) <= LABEL_TOLERANCE_SEC
+    assert t3["timecode_sec"] == pytest.approx(_t9_context(res)[0]["timecode_sec"], abs=0.01), "таймкод = момент выключения света"
+    assert t3["end_sec"] == pytest.approx(res["meta"]["duration_sec"], abs=0.2)
+    assert t3["confidence"] >= 0.7
+    assert t3["rule"]["clause"] == "п. 14" and t3["rule"]["url"].endswith("V1900019680") and t3["rule"].get("note")
+    assert "экран" in t3["description"] and "освещение" in t3["description"]
+    assert not any(w in t3["description"].lower() for w in ("похит", "украл", "кража")), "только наблюдаемое"
+    ts = [f["timestamp_sec"] for f in t3["evidence_frames"]]
+    assert len(ts) == 3 and ts == sorted(ts) and ts[0] < t3["timecode_sec"] <= ts[1] < ts[2]
+
+
+def test_t3_fires_only_on_x11(results):
+    fired = {n for n, r in results.items() if _t3(r)}
+    assert fired == SCREEN_ON_VIDEOS, fired
+    assert results["Х-12"]["verdict"] == "no_violation", "в Х-12 свет тоже гаснет, но экрана нет — нарушения нет"
+
+
 def test_no_false_positives_on_clean_videos(results, labels):
     fps = sorted(n for n, r in results.items() if r["verdict"] == "violation" and not labels[n]["violation"])
     assert fps == [], f"ложные срабатывания на чистых видео: {fps}"
@@ -158,8 +189,81 @@ def test_t9_event_to_violation_produces_real_evidence():
     assert top_diff > 15 and bottom_diff < 4, (top_diff, bottom_diff)
 
 
+def test_t3_evidence_frames_have_box_around_screen():
+    """T3 на Х-11 напрямую: контекст T9 → событие T3 с областью экрана; кадр «свет выключен» тёмный, вокруг экрана
+    нарисована красная рамка (draw.box), сверху подпись. На Х-12 (свет гаснет, ноутбук закрыт) — событий нет."""
+    from pipeline import event_to_violation
+    from pipeline.context import VideoContext
+    from pipeline.detectors import T3_MIN_CONTRAST, detect_t3_workstation_unlocked, detect_t9_lights_off
+    from pipeline.video import brightness_series, read_frame_at
+
+    def run(name):
+        path = VIDEOS_DIR / f"{name}.mov"
+        if not path.exists():
+            pytest.skip(f"нет {path.name}")
+        bt, bv, info = brightness_series(str(path))
+        ctx = VideoContext(path=str(path), info=info, bright_t=bt, bright_v=bv)
+        assert detect_t3_workstation_unlocked(ctx) == [], "без контекста T9 правило молчит"
+        ctx.context_events = detect_t9_lights_off(ctx)
+        assert len(ctx.context_events) == 1
+        return ctx, detect_t3_workstation_unlocked(ctx)
+
+    _ctx12, events12 = run("Х-12")
+    assert events12 == []
+
+    ctx, events = run("Х-11")
+    assert len(events) == 1 and events[0].type_code == "T3"
+    ev = events[0]
+    assert ev.timecode_sec == pytest.approx(ctx.context_events[0].timecode_sec, abs=0.01)
+    reg = ev.extras["region"]
+    x1, y1, x2, y2 = reg["xyxy"]
+    assert 240 <= x1 < x2 <= 300 and 340 <= y1 < y2 <= 415, "экран ноутбука — справа на столе"
+    assert reg["contrast"] >= T3_MIN_CONTRAST and reg["mean"] >= 170 and reg["stability"] >= 0.8
+    assert ev.extras["evidence_boxes"] == [reg["xyxy"]] * 3
+
+    v = event_to_violation(ctx, ev)
+    assert_violation(v)
+    assert v["type_code"] == "T3" and v["rule"]["clause"] == "п. 14"
+    ts = [f["timestamp_sec"] for f in v["evidence_frames"]]
+    assert len(ts) == 3
+    dark = assert_jpeg_base64(v["evidence_frames"][1]["image_base64"])
+    raw = read_frame_at(str(ctx.path), ts[1], ctx.info)
+    assert dark.shape == raw.shape == (848, 464, 3)
+    assert raw.mean() < 40, "кадр события — тёмный (свет выключен)"
+    box_gray = cv2.cvtColor(raw[y1:y2, x1:x2], cv2.COLOR_BGR2GRAY)
+    assert (box_gray > 150).mean() >= 0.3, "а экран внутри рамки светится (экран занимает ~половину bbox, остальное — рамка ноутбука)"
+    # рамка: пиксели по контуру bbox красные (BGR ≈ 60,60,230), внутри экрана кадр не изменён (с точностью до JPEG)
+    border = np.concatenate([dark[y1, x1:x2], dark[y2, x1:x2], dark[y1:y2, x1], dark[y1:y2, x2]]).astype(int)
+    assert border[:, 2].mean() > 150 and border[:, 0].mean() < 130, border.mean(axis=0)
+    inner = slice(y1 + 4, y2 - 4), slice(x1 + 4, x2 - 4)
+    assert np.abs(dark[inner].astype(int) - raw[inner].astype(int)).mean() < 8
+    # нижняя часть кадра (без подписи и рамки) совпадает с исходником
+    assert np.abs(dark[500:].astype(int) - raw[500:].astype(int)).mean() < 4
+
+
+def test_context_phase_runs_before_violation_rules(monkeypatch):
+    """Контекстные правила (T9) выполняются первой фазой: правило-нарушение видит ctx.context_events."""
+    import pipeline
+    from pipeline.detectors import detect_t9_lights_off
+
+    path = VIDEOS_DIR / "Х-12.mov"
+    if not path.exists():
+        pytest.skip("нет Х-12.mov")
+    seen: list = []
+
+    def detect_t1_valuables_unattended(ctx):  # имя как у настоящего правила: код берётся из имени
+        seen.append([e.type_code for e in ctx.context_events])
+        return []
+
+    monkeypatch.setattr(pipeline, "DETECTORS", [detect_t1_valuables_unattended, detect_t9_lights_off])
+    res = pipeline.analyze_video(str(path))
+    assert seen == [["T9"]], seen
+    assert res["verdict"] == "no_violation" and [e["type_code"] for e in res["meta"]["context_events"]] == ["T9"]
+    assert res["meta"]["rules_checked"] == ["detect_t1_valuables_unattended", "detect_t9_lights_off"]
+
+
 def test_metrics_report(results, labels):
-    """Таблица метрик (ПЛАН 8.2). Информативна; пороги мягкие, пока правила — заглушки (см. xfail ниже)."""
+    """Таблица метрик (ПЛАН 8.2). Информативна; пороги мягкие, пока большинство правил — заглушки (см. xfail ниже)."""
     tp = [n for n in results if results[n]["verdict"] == "violation" and labels[n]["violation"]]
     fn = [n for n in results if results[n]["verdict"] == "no_violation" and labels[n]["violation"]]
     fp = [n for n in results if results[n]["verdict"] == "violation" and not labels[n]["violation"]]
@@ -180,7 +284,7 @@ def test_metrics_report(results, labels):
     assert len(tn) == len(clean)
 
 
-@pytest.mark.xfail(reason="реализован только контекстный T9; правила T1–T8, T10–T13 — заглушки", strict=True)
+@pytest.mark.xfail(reason="реализованы T9 (контекст) и T3 (экран активен в темноте); правила T1, T2, T4–T8, T10–T13 — заглушки", strict=True)
 def test_full_recall(results, labels):
     missed = [n for n in results if labels[n]["violation"] and results[n]["verdict"] != "violation"]
     assert missed == []
