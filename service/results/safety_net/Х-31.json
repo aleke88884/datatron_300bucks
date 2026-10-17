@@ -1,0 +1,11 @@
+{
+"model": "Qwen/Qwen3-VL-2B-Instruct-GGUF",
+"answers": {
+"15.06|45,389,123,445|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"16.73|45,389,123,445|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"17.73|25,320,322,518,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"19.23|25,320,322,518,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"20.73|25,320,322,518,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"22.23|25,320,322,518,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false
+}
+}

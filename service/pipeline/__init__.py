@@ -244,6 +244,8 @@ def event_to_violation(ctx: VideoContext, ev: Event) -> dict:
     }
     if ev.end_sec is not None:
         out["end_sec"] = round(float(ev.end_sec), 2)
+    if ev.extras.get("source"):
+        out["source"] = ev.extras["source"]   # «safety_net» — событие добавлено страховочной сеткой (FAQ 9)
     return out
 
 
@@ -278,6 +280,7 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
 
     # --- слой восприятия и состояний сцены (детекции людей/объектов, якоря, роли, зоны)
     perception_ok = False
+    perc = None
     try:
         if light:
             raise RuntimeError("light mode: perception skipped")
@@ -333,6 +336,19 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
     # страховка: контекстные типы не становятся нарушениями, даже если их вернуло другое правило
     events = [e for e in events if e.type_code not in CONTEXT_ONLY_TYPES]
 
+    # Страховочная сетка (FAQ 9, pipeline/safety_net.py): структурный признак S1 + проверка предметов локальной
+    # VLM с контролем. Добавляет события только с подтверждением детектором и моделью; без модели — только S1.
+    try:
+        from .safety_net import run_safety_net
+
+        net_events, net_report = run_safety_net(ctx, events, perc if perception_ok else None)
+        ctx.cache["safety_net"] = net_report
+        if net_events:
+            events = sorted(events + [e for e in net_events if e.confidence >= MIN_CONFIDENCE],
+                            key=lambda e: (e.timecode_sec, e.type_code))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("safety net skipped: %s", exc)
+
     progress("evidence", 80)
     prefetch_evidence_frames(ctx, events)
     violations = [event_to_violation(ctx, ev) for ev in events]
@@ -383,6 +399,8 @@ def _pack_result(info, violations: list, ctx: VideoContext, context_events: list
             "degrade_reasons": (list(bud.reasons) if bud is not None else []) + (["light mode: только правила по яркости"] if light else []),
             # интервалы состояний сцены (кассир, посетители, сейф, стол, экран, свет) — для шкалы времени в UI
             "timeline": ctx.cache.get("timeline"),
+            # страховочная сетка (pipeline/safety_net.py): что проверено и чем подтверждено
+            "safety_net": ctx.cache["safety_net"].as_dict() if ctx.cache.get("safety_net") is not None else None,
             # контекст сцены (не нарушения): например, T9 — освещение выключено с t по end
             "context_events": [
                 {

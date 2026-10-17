@@ -351,6 +351,35 @@ RTX 3090/4090 (bf16) — 2–4 с, первая загрузка модели �
 Qwen2.5-VL-**3B** не используем: у него Qwen Research License (только некоммерческое использование);
 `get_vlm.py` откажется его качать без явного флага.
 
+### Страховочная сетка (FAQ 9) на CPU / Apple Silicon — llama.cpp + Qwen3-VL-2B
+
+`pipeline/safety_net.py` добавляет событие, только если правила ничего не нашли. Нужны три подтверждения: детектор
+видел предмет ≥ 3 раз, VLM ответила «да» на ≥ 2 кадрах и «нет» на опровержениях и в контрольный момент. Подробности —
+в `docs/ARCHITECTURE.md`, слой 4 (б). Без модели работает только структурный признак S1 (посетитель остался в кассе
+один). Модели torch не нужен.
+
+```bash
+brew install llama.cpp                  # Windows/Linux: llama-server из релиза ggml-org/llama.cpp → models/vlm_gguf/bin/
+python scripts/get_vlm.py --gguf        # Qwen3-VL-2B-Instruct GGUF (Apache-2.0), ~1.5 ГБ в models/vlm_gguf/
+# в .env:
+VLM_ENABLED=1
+VLM_BACKEND=llamacpp                    # воркер сам запустит llama-server на 127.0.0.1:8977 (или VLM_SERVER_URL)
+# проверка ворот на этой машине (FP на чистых = 0, время ≤ бюджета):
+VLM_ENABLED=1 VLM_BACKEND=llamacpp python scripts/eval_safetynet.py
+```
+
+| Переменная | По умолчанию | Что делает |
+|---|---|---|
+| `SAFETY_NET` | auto | `auto` — предметный слой включается, если VLM доступна и успевает; `1` — плюс ответы из кеша `results/safety_net/` при `FEATURES_CACHE`; `0` — сетка выключена |
+| `SAFETY_NET_STRUCTURAL` | 1 | структурный признак S1 |
+| `SAFETY_NET_ALWAYS` | 0 | `1` — запускать предметный слой, даже если правила уже нашли нарушение |
+| `SAFETY_NET_BUDGET_SEC` | 45 | бюджет времени предметного слоя на видео |
+| `VLM_PROBE_MAX_SEC` | 8 | если замер скорости показал больше этого, модель для сетки не используется |
+| `VLM_SERVER_URL` / `VLM_GGUF_DIR` / `VLM_LLAMA_BIN` | 127.0.0.1:8977 / models/vlm_gguf / PATH | где сервер, веса и бинарник |
+
+Офлайн-оценка без модели: `SAFETY_NET=1 python scripts/eval_rules.py --no-frames` берёт закешированные ответы
+модели (только true/false по ключу вопроса, без кадров).
+
 ## Пайплайн и как добавлять правила
 
 `pipeline/analyze_video(path, progress) -> {"verdict", "violations", "meta"}` — единственная точка входа для воркера.

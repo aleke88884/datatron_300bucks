@@ -1,0 +1,8 @@
+{
+"model": "Qwen/Qwen3-VL-2B-Instruct-GGUF",
+"answers": {
+"12.05|183,427,209,450|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": true,
+"12.05|183,427,209,450|Is the person in the middle of the picture holding banknotes or paper money?": true,
+"13.05|177,430,202,453|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false
+}
+}

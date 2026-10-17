@@ -2,9 +2,10 @@
 
 Зачем. Правила T1–T13 дают точный таймкод и шаблонное описание («кассир вне зоны стола, на столе деньги»).
 Модель по 1–3 кадрам события переписывает шаблон в 2–3 предложения «что видно на кадрах» — человеческое
-объяснение для жюри и проверяющего. Второй метод, `checklist`, задаёт по кадрам вопросы «да/нет» — страховка
-от неизвестных типов нарушений (ПЛАН 5.4: ответ модели сам по себе событие НЕ добавляет, нужно подтверждение
-детекторами; пока нигде не вызывается).
+объяснение для жюри и проверяющего. Метод `ask_yes_no` отвечает «да/нет» по фрагменту кадра — его использует
+страховочная сетка от неизвестных типов нарушений (pipeline/safety_net.py; ПЛАН 5.4: ответ модели сам по себе
+событие НЕ добавляет — нужны детектор, повтор на нескольких кадрах и отрицательный контроль). `checklist` —
+прежний пакетный вариант вопросов по кадрам.
 
 Модель. Qwen/Qwen2.5-VL-7B-Instruct, лицензия Apache-2.0 (коммерческое использование разрешено). Работает
 полностью локально через transformers; облачные API не используются (условие кейса). Qwen2.5-VL-3B НЕ
@@ -24,6 +25,24 @@
     VLM_MAX_EVENTS    не более N событий на видео (по умолчанию 5)
     VLM_BUDGET_SEC    суммарный бюджет времени VLM на видео, с (по умолчанию 60)
     VLM_MAX_SIDE      кадр уменьшается до этой длинной стороны, px (по умолчанию 768)
+
+Бэкенд llama.cpp (VLM_BACKEND=llamacpp) — для CPU/Apple Silicon без torch. Локальный `llama-server`
+(llama.cpp, MIT) с GGUF-весами Qwen3-VL-2B-Instruct (Apache-2.0, ~1.5 ГБ: Q4_K_M + mmproj Q8_0); общение по
+HTTP на 127.0.0.1, наружу ничего не уходит. Сервер либо уже запущен (VLM_SERVER_URL), либо модуль сам запускает
+его из VLM_LLAMA_BIN (по умолчанию `llama-server` из PATH) с весами из VLM_GGUF_DIR (service/models/vlm_gguf).
+Скачать веса: python scripts/get_vlm.py --gguf. Замерено на MacBook Air M3 8 ГБ (Metal): ~1.3 с на новый кадр
+448 px, ~0.3 с на следующий вопрос по тому же кадру.
+
+    VLM_BACKEND       transformers (по умолчанию) | llamacpp
+    VLM_SERVER_URL    адрес llama-server (по умолчанию http://127.0.0.1:8977)
+    VLM_GGUF_DIR      папка с *.gguf и mmproj-*.gguf (по умолчанию service/models/vlm_gguf)
+    VLM_LLAMA_BIN     путь к llama-server (по умолчанию из PATH)
+    VLM_DESCRIBE      1 — с бэкендом llama.cpp также переписывать описания событий (по умолчанию нет: 2B-модель
+                      используется только для «да/нет» страховочной сетки)
+    VLM_PROBE_MAX_SEC замер скорости при первом использовании: если один ответ «да/нет» по кадру дольше этого
+                      (по умолчанию 8 с), страховочная сетка (pipeline/safety_net.py) модель не использует
+    VLM_MIN_RAM_GB    transformers без CUDA: минимальный объём ОЗУ (по умолчанию 32 ГБ — 7B в float32 ≈ 30 ГБ);
+                      меньше — загрузка не начинается (иначе своп и срыв лимита 5 минут)
 
 Без модели. Если слой выключен, весов нет или torch/transformers не установлены, модуль всё равно импортируется,
 `Describer.available()` возвращает False, `describe_violations` ничего не меняет — остаются шаблонные описания
@@ -111,6 +130,92 @@ def weights_present(path: Optional[Path] = None) -> bool:
     if not d.is_dir() or not (d / "config.json").is_file():
         return False
     return any(d.glob("*.safetensors")) or any(d.glob("*.bin"))
+
+
+# ----------------------------------------------------------------------------- бэкенд llama.cpp
+
+DEFAULT_GGUF_DIR = SERVICE_DIR / "models" / "vlm_gguf"
+DEFAULT_SERVER_URL = "http://127.0.0.1:8977"
+GGUF_REPO = "Qwen/Qwen3-VL-2B-Instruct-GGUF"   # Apache-2.0
+GGUF_FILES = ("Qwen3VL-2B-Instruct-Q4_K_M.gguf", "mmproj-Qwen3VL-2B-Instruct-Q8_0.gguf")
+
+
+def backend() -> str:
+    b = (os.environ.get("VLM_BACKEND") or "transformers").strip().lower()
+    return "llamacpp" if b in {"llamacpp", "llama.cpp", "llama", "gguf"} else "transformers"
+
+
+def gguf_dir() -> Path:
+    p = os.environ.get("VLM_GGUF_DIR", "").strip()
+    return Path(p).expanduser() if p else DEFAULT_GGUF_DIR
+
+
+def gguf_files(d: Optional[Path] = None) -> Optional[tuple[Path, Path]]:
+    """(модель, mmproj) в папке GGUF или None."""
+    d = d or gguf_dir()
+    if not d.is_dir():
+        return None
+    mm = sorted(p for p in d.glob("*.gguf") if p.name.lower().startswith("mmproj"))
+    lm = sorted(p for p in d.glob("*.gguf") if not p.name.lower().startswith("mmproj"))
+    return (lm[0], mm[0]) if lm and mm else None
+
+
+def llama_bin() -> Optional[str]:
+    import shutil
+
+    p = os.environ.get("VLM_LLAMA_BIN", "").strip()
+    if p:
+        return p if Path(p).expanduser().is_file() else None
+    for cand in (gguf_dir() / "bin" / "llama-server", gguf_dir() / "bin" / "llama-server.exe"):
+        if cand.is_file():
+            return str(cand)
+    return shutil.which("llama-server")
+
+
+def server_url() -> str:
+    return (os.environ.get("VLM_SERVER_URL") or DEFAULT_SERVER_URL).rstrip("/")
+
+
+def _http_json(url: str, body: Optional[dict] = None, timeout: float = 5.0) -> Any:
+    import json
+    import urllib.request
+
+    data = None if body is None else json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310 — только локальный адрес сервера
+        return json.loads(r.read().decode("utf-8") or "null")
+
+
+def server_healthy(url: Optional[str] = None, timeout: float = 1.5) -> bool:
+    try:
+        d = _http_json(f"{url or server_url()}/health", timeout=timeout)
+        return isinstance(d, dict) and d.get("status") == "ok"
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def total_ram_gb() -> Optional[float]:
+    try:
+        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 1e9
+    except (ValueError, OSError, AttributeError):
+        return None
+
+
+def _image_to_data_url(img: Any) -> str:
+    """PIL.Image или BGR np.ndarray → data:image/jpeg;base64."""
+    import base64
+    import io
+
+    if isinstance(img, np.ndarray):
+        import cv2
+
+        ok, buf = cv2.imencode(".jpg", img, [int(cv2.IMWRITE_JPEG_QUALITY), 88])
+        raw = buf.tobytes() if ok else b""
+    else:
+        bio = io.BytesIO()
+        img.convert("RGB").save(bio, format="JPEG", quality=88)
+        raw = bio.getvalue()
+    return "data:image/jpeg;base64," + base64.b64encode(raw).decode("ascii")
 
 
 # ----------------------------------------------------------------------------- постобработка ответа
@@ -204,6 +309,11 @@ class Describer:
         self.device = "cpu"
         self._lock = threading.Lock()
         self._load_error: Optional[str] = None
+        self.backend = backend()
+        self._server: Optional[str] = None      # llama.cpp: адрес готового сервера
+        self._proc = None                       # llama.cpp: процесс, запущенный нами
+        self.latency_sec: Optional[float] = None
+        self.model_name = DEFAULT_REPO if self.backend == "transformers" else GGUF_REPO
 
     # --- доступность
 
@@ -212,15 +322,37 @@ class Describer:
         return self.path or model_dir()
 
     def available(self) -> bool:
-        """Слой включён (VLM_ENABLED=1) и веса на месте; ошибка предыдущей загрузки → False (не пробуем снова)."""
+        """Слой включён (VLM_ENABLED=1) и веса на месте; ошибка предыдущей загрузки → False (не пробуем снова).
+        llama.cpp: сервер уже отвечает по VLM_SERVER_URL или есть GGUF-веса и бинарник llama-server."""
         if not _env_flag("VLM_ENABLED", False):
             return False
         if self._load_error:
             return False
+        if self.backend == "llamacpp":
+            if self._server or server_healthy():
+                return True
+            return gguf_files() is not None and llama_bin() is not None
         return weights_present(self.model_path)
+
+    def unavailable_reason(self) -> str:
+        if not _env_flag("VLM_ENABLED", False):
+            return "VLM_ENABLED is off"
+        if self._load_error:
+            return f"load error: {self._load_error}"
+        if self.backend == "llamacpp":
+            if gguf_files() is None:
+                return f"no GGUF weights in {gguf_dir()} (python scripts/get_vlm.py --gguf)"
+            if llama_bin() is None:
+                return "llama-server binary not found (VLM_LLAMA_BIN)"
+            return ""
+        if not weights_present(self.model_path):
+            return f"no weights in {self.model_path}"
+        return ""
 
     @property
     def loaded(self) -> bool:
+        if self.backend == "llamacpp":
+            return self._server is not None
         return self.model is not None and self.processor is not None
 
     # --- загрузка
@@ -242,7 +374,10 @@ class Describer:
                 return False
             t0 = time.time()
             try:
-                self._load_unlocked()
+                if self.backend == "llamacpp":
+                    self._load_llamacpp()
+                else:
+                    self._load_unlocked()
             except Exception as exc:  # noqa: BLE001 — слой необязательный, пайплайн не должен падать
                 self._load_error = f"{type(exc).__name__}: {exc}"
                 self.model = self.processor = None
@@ -259,6 +394,14 @@ class Describer:
         if not weights_present(self.model_path):
             raise FileNotFoundError(f"веса VLM не найдены в {path} (python scripts/get_vlm.py)")
         cuda = torch.cuda.is_available()
+        if not cuda:
+            # 7B в float32 на CPU ≈ 30 ГБ ОЗУ: на обычном ноутбуке это своп и срыв лимита 5 минут — не начинаем.
+            # Для CPU/Apple Silicon есть бэкенд llama.cpp (VLM_BACKEND=llamacpp, 2B GGUF ≈ 1.5 ГБ).
+            ram = total_ram_gb()
+            need = _env_float("VLM_MIN_RAM_GB", 32.0)
+            if ram is not None and ram < need:
+                raise MemoryError(f"CPU-загрузка {DEFAULT_REPO} требует ≥ {need:.0f} ГБ ОЗУ, есть {ram:.1f} ГБ; "
+                                  f"используйте VLM_BACKEND=llamacpp")
         dtype = torch.bfloat16 if cuda else torch.float32
         kwargs: dict[str, Any] = {"device_map": "auto" if cuda else "cpu"}
         if cuda and _env_flag("VLM_4BIT", False):
@@ -280,9 +423,118 @@ class Describer:
         self.model, self.processor = model, processor
         self.device = "cuda" if cuda else "cpu"
 
+    def _load_llamacpp(self) -> None:
+        """Подключение к llama-server: уже запущенный по VLM_SERVER_URL или запуск своего процесса."""
+        url = server_url()
+        if server_healthy(url):
+            self._server = url
+            return
+        files = gguf_files()
+        binary = llama_bin()
+        if files is None or binary is None:
+            raise FileNotFoundError(self.unavailable_reason() or "llama.cpp backend is not configured")
+        import subprocess
+        from urllib.parse import urlparse
+
+        u = urlparse(url)
+        host, port = u.hostname or "127.0.0.1", u.port or 8977
+        if host not in {"127.0.0.1", "localhost"}:
+            raise RuntimeError(f"сервер {url} не отвечает, а запускать свой можно только на localhost")
+        cmd = [binary, "-m", str(files[0]), "--mmproj", str(files[1]), "--host", host, "--port", str(port),
+               "-c", str(_env_int("VLM_CTX", 4096)), "--no-warmup"]
+        log.info("vlm: запуск %s", " ".join(cmd))
+        self._proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # noqa: S603
+        import atexit
+
+        atexit.register(self.close)   # сервер, запущенный воркером, останавливается вместе с ним
+        deadline = time.time() + _env_float("VLM_SERVER_START_SEC", 90.0)
+        while time.time() < deadline:
+            if self._proc.poll() is not None:
+                raise RuntimeError(f"llama-server завершился с кодом {self._proc.returncode}")
+            if server_healthy(url):
+                self._server = url
+                return
+            time.sleep(0.5)
+        self.close()
+        raise TimeoutError("llama-server не поднялся за отведённое время")
+
+    def close(self) -> None:
+        """Останавливает llama-server, если его запустили мы."""
+        if self._proc is not None:
+            try:
+                self._proc.terminate()
+                self._proc.wait(timeout=5)
+            except Exception:  # noqa: BLE001
+                pass
+            self._proc = None
+            self._server = None
+
     # --- генерация
 
+    def _generate_llamacpp(self, images: list[Any], user_text: str, max_new_tokens: int, timeout_sec: float,
+                           system: Optional[str] = SYSTEM_PROMPT) -> Optional[str]:
+        """Запрос к llama-server (OpenAI-совместимый /v1/chat/completions). None — таймаут или ошибка."""
+        content: list[dict[str, Any]] = [{"type": "image_url", "image_url": {"url": _image_to_data_url(im)}} for im in images]
+        content.append({"type": "text", "text": user_text})
+        messages: list[dict[str, Any]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": content})
+        body = {"messages": messages, "max_tokens": int(max_new_tokens), "temperature": 0, "seed": 0}
+        t0 = time.time()
+        try:
+            d = _http_json(f"{self._server}/v1/chat/completions", body, timeout=timeout_sec)
+            text = d["choices"][0]["message"]["content"]
+        except Exception as exc:  # noqa: BLE001
+            log.warning("vlm: llama.cpp запрос не удался (%.1f с): %s", time.time() - t0, exc)
+            return None
+        log.debug("vlm: llama.cpp %.1f с: %r", time.time() - t0, (text or "")[:160])
+        return text
+
     def _generate(self, images: list[Any], user_text: str, max_new_tokens: int, timeout_sec: float) -> Optional[str]:
+        if self.backend == "llamacpp":
+            if not self.loaded:
+                return None
+            return self._generate_llamacpp(images, user_text, max_new_tokens, timeout_sec)
+        return self._generate_transformers(images, user_text, max_new_tokens, timeout_sec)
+
+    def ask_yes_no(self, image: np.ndarray, question: str) -> Optional[bool]:
+        """Один вопрос «да/нет» по одному изображению (BGR). None — нет ответа или ответ не распознан.
+        Используется страховочной сеткой (pipeline/safety_net.py); вопрос — на английском (так надёжнее у малых
+        моделей), ответ модели наружу не попадает — только True/False/None."""
+        if not self.available() or not self.load():
+            return None
+        try:
+            images = _prepare_images([image], max_side=_env_int("VLM_CHECK_SIDE", 448))
+            if not images:
+                return None
+            timeout = _env_float("VLM_TIMEOUT_SEC", 20.0)
+            if self.backend == "llamacpp":
+                raw = self._generate_llamacpp(images, question, 4, timeout, system=None)
+            else:
+                raw = self._generate(images, question, 4, timeout)
+            return parse_yes_no(raw)
+        except Exception as exc:  # noqa: BLE001
+            log.exception("vlm: ask_yes_no failed: %s", exc)
+            return None
+
+    def fast_enough(self) -> bool:
+        """Замер скорости на этой машине (один раз): ответ «да/нет» по синтетическому кадру 448 px.
+        Дольше VLM_PROBE_MAX_SEC (8 с) — модель для страховочной сетки не используется (лимит 5 минут на видео)."""
+        if not self.loaded:
+            return False
+        if self.latency_sec is None:
+            img = np.full((448, 448, 3), 200, np.uint8)
+            img[150:300, 150:300] = (40, 90, 160)
+            t0 = time.time()
+            ans = self.ask_yes_no(img, "Is there a square in this picture? Answer yes or no.")
+            self.latency_sec = round(time.time() - t0, 2)
+            log.info("vlm: замер скорости %.2f с (ответ %s)", self.latency_sec, ans)
+            if ans is None:
+                self.latency_sec = float("inf")
+        return self.latency_sec <= _env_float("VLM_PROBE_MAX_SEC", 8.0)
+
+    def _generate_transformers(self, images: list[Any], user_text: str, max_new_tokens: int, timeout_sec: float) -> Optional[str]:
         """Один запрос к модели с таймаутом. None — таймаут или ошибка.
 
         Генерация идёт в отдельном потоке; основной поток ждёт не дольше timeout_sec. Дополнительно в generate
@@ -429,6 +681,10 @@ def describe_violations(video_path: str, violations: list[dict], info: Any = Non
         if not violations:
             return
         d = get_describer()
+        if d.backend == "llamacpp" and not _env_flag("VLM_DESCRIBE", False):
+            # малая модель (2B) нужна страховочной сетке для «да/нет»; свободный русский текст от неё — только по
+            # явному VLM_DESCRIBE=1 (риск неточных описаний выше, чем у 7B)
+            return
         if not d.available():
             log.debug("vlm: слой выключен или нет весов (%s) — описания шаблонные", d.model_path)
             return
@@ -445,6 +701,8 @@ def describe_violations(video_path: str, violations: list[dict], info: Any = Non
             if time.time() - t0 > budget:
                 log.warning("vlm: исчерпан бюджет %.0f с, описано %d из %d событий", budget, done, len(violations))
                 break
+            if v.get("source") == "safety_net":
+                continue   # описание страховочной сетки — фиксированный шаблон с фактами проверки, не переписываем
             try:
                 rule = RULES.get(v.get("type_code", ""), {})
                 times = [f.get("timestamp_sec") for f in (v.get("evidence_frames") or [])]
@@ -466,4 +724,5 @@ def describe_violations(video_path: str, violations: list[dict], info: Any = Non
         log.exception("vlm: describe_violations failed: %s", exc)
 
 
-__all__ = ["Describer", "describe_violations", "get_describer", "sanitize_description", "parse_yes_no", "weights_present"]
+__all__ = ["Describer", "describe_violations", "get_describer", "sanitize_description", "parse_yes_no", "weights_present",
+           "backend", "gguf_files", "llama_bin", "server_healthy"]
