@@ -98,6 +98,18 @@ def _perceive(path: str, info, progress):
     return perc, states
 
 
+def _cash_features(path: str, info, perc, progress) -> Optional[dict]:
+    """Наличные, сливающиеся с цветом стола (pipeline/cashdetect.py). Ошибка не валит анализ — признак просто пуст."""
+    try:
+        from .cashdetect import load_or_compute
+
+        progress("cash", 55)
+        return load_or_compute(path, info, perc)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("cash features failed: %s", exc)
+        return None
+
+
 def detector_code(det: Callable) -> str:
     """detect_t9_lights_off -> 'T9' (по имени функции; порядок/коды проверяет tests/test_rules.py)."""
     m = re.search(r"_t(\d{1,2})_", det.__name__)
@@ -181,7 +193,8 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         perc, states = _perceive(path, info, progress)
         from .scene import build_scene, scene_summary
 
-        scene = build_scene(perc, states, info)
+        cash = _cash_features(path, info, perc, progress)
+        scene = build_scene(perc, states, info, cash=cash)
         ctx.scene = scene
         ctx.tracks = perc.tracks
         ctx.states = states

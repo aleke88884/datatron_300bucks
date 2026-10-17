@@ -67,6 +67,10 @@ class Scene:
     visitor_track_ids: list[int] = field(default_factory=list)
     items: list[list[dict]] = field(default_factory=list)    # полнокадровые детекции предметов (handbag, cup, ...)
     notes: list[str] = field(default_factory=list)
+    # наличные, сливающиеся с деревом (pipeline/cashdetect.py): пачка бежевых купюр лежит на столе
+    cash_present: np.ndarray = field(default_factory=lambda: np.zeros(0, bool))
+    cash_boxes: list = field(default_factory=list)
+    cash_area: np.ndarray = field(default_factory=lambda: np.zeros(0, float))
 
     # --- удобные запросы -------------------------------------------------
     def idx(self, t: float) -> int:
@@ -146,7 +150,7 @@ def _strong(o: PersonObs, info: VideoInfo) -> bool:
 # построение сцены
 # ---------------------------------------------------------------------------
 
-def build_scene(perc: Perception, states: dict, info: VideoInfo) -> Scene:
+def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[dict] = None) -> Scene:
     sc = states.get("scene", {})
     desk = sc.get("desk")
     safe = sc.get("safe")
@@ -327,6 +331,9 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo) -> Scene:
                 continue
             safe_scores[i] = float(np.clip((v - base) / SAFE_OPEN_DELTA, 0.0, 1.5))
     bag_on_desk = bag_area >= BAG_AREA_MIN
+    from .cashdetect import cash_on_grid
+
+    cash_present, cash_boxes, cash_area = cash_on_grid(cash, t)
 
     return Scene(
         info=info, t=t, cashier_inside=cashier_inside, cashier_at_desk=cashier_at_desk, cashier_h=cashier_h,
@@ -336,6 +343,7 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo) -> Scene:
         safe_open_score=safe_scores, roles=roles, anchors={"desk": desk, "safe": safe, "laptop": laptop},
         cashier_near_safe=cashier_near_safe, desk_obj_area_any=desk_obj_area_any,
         work_side=work_side, cashier_track_ids=cashier_ids, visitor_track_ids=visitor_ids_all, items=items, notes=notes,
+        cash_present=cash_present, cash_boxes=cash_boxes, cash_area=cash_area,
     )
 
 
@@ -354,5 +362,6 @@ def scene_summary(scene: Scene) -> dict:
         "desk_obj_frames": int((scene.desk_obj_area >= DESK_OBJ_MIN).sum()),
         "safe_open_frames": int(sum(1 for v in scene.safe_open_score if v is not None and v >= 1.0)),
         "lights_off_frames": int(scene.lights_off.sum()),
+        "cash_frames": int(scene.cash_present.sum()) if len(scene.cash_present) else 0,
         "notes": scene.notes,
     }
