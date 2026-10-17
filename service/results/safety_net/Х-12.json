@@ -1,0 +1,19 @@
+{
+"model": "Qwen/Qwen3-VL-2B-Instruct-GGUF",
+"answers": {
+"36.06|45,377,115,457|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"38.06|45,302,117,458|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"40.40|46,302,116,458|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"19.03|46,377,114,455|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"20.03|46,377,115,454|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"22.03|47,378,117,455|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"24.03|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"25.53|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"27.03|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"28.53|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"30.03|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"31.53|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"33.03|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"34.53|33,360,309,509,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false
+}
+}

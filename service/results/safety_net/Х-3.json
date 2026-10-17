@@ -1,0 +1,8 @@
+{
+"model": "Qwen/Qwen3-VL-2B-Instruct-GGUF",
+"answers": {
+"11.04|192,416,212,434|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false,
+"13.38|178,409,200,433|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false,
+"14.38|182,425,206,453|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false
+}
+}

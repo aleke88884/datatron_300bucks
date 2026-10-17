@@ -1,0 +1,17 @@
+{
+"model": "Qwen/Qwen3-VL-2B-Instruct-GGUF",
+"answers": {
+"66.71|165,429,183,445|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false,
+"67.71|165,428,183,445|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false,
+"69.05|165,428,183,445|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false,
+"82.39|165,430,184,445|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false,
+"83.39|165,430,184,444|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false,
+"85.06|164,430,184,445|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false,
+"117.42|193,381,214,395|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": true,
+"117.42|193,381,214,395|Is the person in the middle of the picture holding banknotes or paper money?": false,
+"118.75|186,364,205,382|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": true,
+"118.75|186,364,205,382|Is the person in the middle of the picture holding banknotes or paper money?": true,
+"77.72|164,429,183,445|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false,
+"79.72|164,429,183,445|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false
+}
+}

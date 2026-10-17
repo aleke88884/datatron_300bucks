@@ -163,6 +163,8 @@ def event_to_violation(ctx: VideoContext, ev: Event) -> dict:
     }
     if ev.end_sec is not None:
         out["end_sec"] = round(float(ev.end_sec), 2)
+    if ev.extras.get("source"):
+        out["source"] = ev.extras["source"]   # «safety_net» — событие добавлено страховочной сеткой (FAQ 9)
     return out
 
 
@@ -177,6 +179,7 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
 
     # --- слой восприятия и состояний сцены (детекции людей/объектов, якоря, роли, зоны)
     perception_ok = False
+    perc = None
     try:
         perc, states = _perceive(path, info, progress)
         from .scene import build_scene, scene_summary
@@ -202,6 +205,19 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     events = _run_detectors(ctx, violation_dets)
     # страховка: контекстные типы не становятся нарушениями, даже если их вернуло другое правило
     events = [e for e in events if e.type_code not in CONTEXT_ONLY_TYPES]
+
+    # Страховочная сетка (FAQ 9, pipeline/safety_net.py): структурный признак S1 + проверка предметов локальной
+    # VLM с контролем. Добавляет события только с подтверждением детектором и моделью; без модели — только S1.
+    net_report = None
+    try:
+        from .safety_net import run_safety_net
+
+        net_events, net_report = run_safety_net(ctx, events, perc if perception_ok else None)
+        if net_events:
+            events = sorted(events + [e for e in net_events if e.confidence >= MIN_CONFIDENCE],
+                            key=lambda e: (e.timecode_sec, e.type_code))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("safety net skipped: %s", exc)
 
     progress("evidence", 80)
     violations = [event_to_violation(ctx, ev) for ev in events]
@@ -230,6 +246,7 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
             "perception": perception_ok,
             "scene": ctx.cache.get("scene_summary"),
             "perception_error": ctx.cache.get("perception_error"),
+            "safety_net": net_report.as_dict() if net_report is not None else None,
             # контекст сцены (не нарушения): например, T9 — освещение выключено с t по end
             "context_events": [
                 {

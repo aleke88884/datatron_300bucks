@@ -1,0 +1,21 @@
+{
+"model": "Qwen/Qwen3-VL-2B-Instruct-GGUF",
+"answers": {
+"16.71|75,337,151,427|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"17.71|75,337,151,427|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"20.05|75,339,149,426|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"22.72|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"24.22|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"25.72|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"5.01|75,351,144,427|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"6.02|75,351,143,427|Look at the middle of the picture. Is there a personal handbag, purse or backpack lying on the desk there?": false,
+"8.35|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"9.85|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"11.35|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"12.85|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"14.35|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"15.85|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"17.35|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false,
+"18.85|71,334,369,493,area|Is there a personal handbag, purse or backpack lying on top of the desk in this picture?": false
+}
+}

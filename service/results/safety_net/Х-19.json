@@ -1,0 +1,11 @@
+{
+"model": "Qwen/Qwen3-VL-2B-Instruct-GGUF",
+"answers": {
+"25.04|188,396,202,413|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false,
+"26.71|189,396,204,415|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false,
+"28.05|189,395,204,414|Look at the middle of the picture. Is there a cup, mug, glass, can, bottle or food there?": false,
+"56.10|173,405,191,419|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": false,
+"57.10|173,401,189,416|Look at the middle of the picture. Is a person holding or using a mobile phone (smartphone) there?": true,
+"57.10|173,401,189,416|Is the person in the middle of the picture holding banknotes or paper money?": false
+}
+}
