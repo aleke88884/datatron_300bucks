@@ -212,7 +212,7 @@ def test_health_reports_jobs(server):
 
 def test_rules_endpoint(server):
     body = server.get("/api/v1/rules").json()
-    assert set(body["documents"]) == {"R231", "R14"}
+    assert set(body["documents"]) == {"R231", "R14", "R53", "R48"}
     assert set(body["rules"]) == {f"T{i}" for i in range(1, 14)}
 
 
