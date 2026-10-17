@@ -16,3 +16,4 @@ __pycache__/
 # Временные файлы Word
 ~$*
 .pytest_cache/
+open.zip

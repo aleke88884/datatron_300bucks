@@ -94,6 +94,9 @@ def start_server(tmp_dir: Path, env_overrides: Optional[dict] = None, fake_pipel
     data_dir = tmp_dir / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
+    # Сервер e2e работает как в проде — без кеша признаков: загрузки называются по job_id, кеш для них
+    # всё равно не находится, а запись results/<feature>/<job_id>.json засоряла бы рабочее дерево.
+    env.pop("FEATURES_CACHE", None)
     env.update(
         {
             "API_KEY": TEST_API_KEY,
