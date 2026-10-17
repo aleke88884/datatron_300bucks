@@ -149,7 +149,7 @@ def test_lifecycle_x11_t3_violation_with_t9_context(server, positive_video):
     assert t3["confidence"] >= 0.7
     assert "экран" in t3["description"] and "освещение" in t3["description"]
     assert "АРМ" in t3["type"]
-    assert t3["rule"]["clause"] == "п. 14" and "V1900019680" in t3["rule"]["url"] and t3["rule"].get("note")
+    assert t3["rule"]["clause"] == "п. 71 пп. 9)" and "V2600038336" in t3["rule"]["url"] and t3["rule"].get("note")
     assert len(t3["evidence_frames"]) == 3
     t9 = _t9_context(res)
     assert 14.0 <= t9["timecode_sec"] <= 20.0

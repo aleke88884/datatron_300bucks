@@ -139,7 +139,8 @@ def test_t3_violation_on_x11_near_label(results, labels):
     assert t3["timecode_sec"] == pytest.approx(_t9_context(res)[0]["timecode_sec"], abs=0.01), "таймкод = момент выключения света"
     assert t3["end_sec"] == pytest.approx(res["meta"]["duration_sec"], abs=0.2)
     assert t3["confidence"] >= 0.7
-    assert t3["rule"]["clause"] == "п. 14" and t3["rule"]["url"].endswith("V1900019680") and t3["rule"].get("note")
+    assert t3["rule"]["clause"] == "п. 71 пп. 9)" and t3["rule"]["url"].endswith("V2600038336") and t3["rule"].get("note")
+    assert t3["rule"]["quote"].startswith("при неактивности пользователя более 30")
     assert "экран" in t3["description"] and "освещение" in t3["description"]
     assert not any(w in t3["description"].lower() for w in ("похит", "украл", "кража")), "только наблюдаемое"
     ts = [f["timestamp_sec"] for f in t3["evidence_frames"]]
@@ -251,7 +252,7 @@ def test_t3_evidence_frames_have_box_around_screen():
 
     v = event_to_violation(ctx, ev)
     assert_violation(v)
-    assert v["type_code"] == "T3" and v["rule"]["clause"] == "п. 14"
+    assert v["type_code"] == "T3" and v["rule"]["clause"] == "п. 71 пп. 9)"
     ts = [f["timestamp_sec"] for f in v["evidence_frames"]]
     assert len(ts) == 3
     dark = assert_jpeg_base64(v["evidence_frames"][1]["image_base64"])
