@@ -34,6 +34,7 @@ T7_BEFORE_SEC = 3.0          # наличные лежали открыто не
 T7_MIN_SAT = 70              # купюры — насыщенный цвет (синие/зелёные/фиолетовые), документы и тени — нет
 T7_MIN_AREA = 200
 T7_MIN_VAL = 100             # купюры светлые; тёмные предметы (кабель, тень ноутбука) — нет
+T7_CASH_GAP_SEC = 2.5        # пачку купюр переложили / на мгновение закрыли рукой — она всё ещё на столе
 T8_DRINK_MIN_DET = 3
 T8_DRINK_MIN_SCORE = 0.5
 T8_BAG_MIN_DET = 4
@@ -52,6 +53,30 @@ def _scene(ctx: VideoContext) -> Optional[Scene]:
 
 def _obj_present(sc: Scene) -> np.ndarray:
     return (sc.desk_obj_area >= DESK_OBJ_MIN) | sc.bag_on_desk
+
+
+def _cash(sc: Scene, fill_gap_sec: float = 0.0) -> np.ndarray:
+    """Пачка купюр, сливающаяся с деревом, лежит на столе (pipeline/cashdetect.py); разрывы ≤ fill_gap_sec
+    (кассир переложил пачку, рука на мгновение закрыла её) заполняются."""
+    m = sc.cash_present if len(sc.cash_present) == len(sc.t) else np.zeros(len(sc.t), bool)
+    if fill_gap_sec > 0 and m.any():
+        out = np.zeros(len(sc.t), bool)
+        for a, b in sc.runs(m, 0.0, fill_gap_sec=fill_gap_sec):
+            out[a:b + 1] = True
+        m = out
+    return m
+
+
+def _cash_box(sc: Scene, i: int) -> Optional[tuple[int, int, int, int]]:
+    """Рамка пачки купюр около индекса i — с полями, чтобы маленький предмет был заметен на кадре-доказательстве."""
+    if len(sc.cash_boxes) == len(sc.t):
+        for k in (i, i - 1, i + 1, i - 2, i + 2):
+            if 0 <= k < len(sc.t) and sc.cash_boxes[k]:
+                x1, y1, x2, y2 = sc.cash_boxes[k]
+                p = max(6.0 * sc.info.height / 848.0, 0.4 * max(x2 - x1, y2 - y1))
+                return (int(max(0, x1 - p)), int(max(0, y1 - p)),
+                        int(min(sc.info.width - 1, x2 + p)), int(min(sc.info.height - 1, y2 + p)))
+    return None
 
 
 def _obj_box(sc: Scene, i: int) -> Optional[tuple[int, int, int, int]]:
@@ -127,9 +152,10 @@ def rule_t1(ctx: VideoContext) -> list[Event]:
     sc = _scene(ctx)
     if sc is None or len(sc.t) == 0:
         return []
-    present = _obj_present(sc)
+    cash = _cash(sc)
+    present = _obj_present(sc) | cash
     any_obj = sc.desk_obj_area_any if len(sc.desk_obj_area_any) == len(sc.t) else sc.desk_obj_area
-    present_any = (any_obj >= DESK_OBJ_MIN) | sc.bag_on_desk
+    present_any = (any_obj >= DESK_OBJ_MIN) | sc.bag_on_desk | cash
     lit = ~sc.lights_off
     events: list[Event] = []
     for i_leave, a, b in _leave_runs(sc):
@@ -149,7 +175,13 @@ def rule_t1(ctx: VideoContext) -> list[Event]:
         if t_walk is not None:
             t0 = t_walk
         dur = (b - a + 1) * DT
-        what = "остаётся зелёный предмет, по виду инкассаторская сумка/ценности" if sc.bag_on_desk[lo:i_leave + 1].any() else "остаются наличные/ценности (предмет, положенный на столешницу)"
+        cash_seen = bool(cash[lo:b + 1].any())
+        if sc.bag_on_desk[lo:i_leave + 1].any():
+            what = "остаётся зелёный предмет, по виду инкассаторская сумка/ценности"
+        elif cash_seen:
+            what = "остаётся пачка купюр (светлый прямоугольный предмет на столешнице)"
+        else:
+            what = "остаются наличные/ценности (предмет, положенный на столешницу)"
         gone = not sc.cashier_inside[a:b + 1].any()
         where = "вышел из помещения" if gone else "отошёл от стола"
         conf = min(0.95, 0.7 + 0.05 * min(dur, 4.0) + (0.05 if gone else 0.0))
@@ -162,7 +194,8 @@ def rule_t1(ctx: VideoContext) -> list[Event]:
             f"не менее {dur:.1f} с), при этом на столешнице без присмотра {what}. "
             f"Признак для проверки человеком (где хранятся наличные при уходе кассира)."
         )
-        box = _obj_box(sc, i_leave)
+        box = (_cash_box(sc, i_leave) or _cash_box(sc, a)) if cash_seen and not sc.bag_on_desk[lo:i_leave + 1].any() else None
+        box = box or _obj_box(sc, i_leave)
         cbox = _timing.cashier_box_at(sc, getattr(ctx, "tracks", None), t0)
         ev_t = [_clip(sc, t0), _clip(sc, max(t0 + 1.0, t_leave)), _clip(sc, t_leave + 1.5)]
         events.append(Event(
@@ -388,7 +421,9 @@ def rule_t7(ctx: VideoContext) -> list[Event]:
         if o["area"] < T7_MIN_AREA or v < T7_MIN_VAL:
             return False
         return sat >= T7_MIN_SAT or (35 <= h <= 140 and sat >= 15)
-    objs = np.asarray([any(cashlike(o) for o in objs_i) for objs_i in sc.desk_objs])
+    objs = np.asarray([any(cashlike(o) for o in objs_i) for objs_i in sc.desk_objs], dtype=bool)
+    cash = _cash(sc, fill_gap_sec=T7_CASH_GAP_SEC)
+    objs = objs | cash
     k = int(T7_BEFORE_SEC * GRID_FPS)
     events: list[Event] = []
     for tid, i_in, i_out in _visitor_visits(sc):
@@ -399,11 +434,15 @@ def rule_t7(ctx: VideoContext) -> list[Event]:
         if not sc.cashier_at_desk[i_in - k:i_in].any():
             continue
         t0 = float(sc.t[i_in])
+        by_cash = bool(cash[i_in - k:i_in].all())
+        what = (f"лежит пачка купюр (светлый прямоугольный предмет, виден не менее {T7_BEFORE_SEC:.1f} с до входа)" if by_cash
+                else f"лежат наличные/ценности (видны не менее {T7_BEFORE_SEC:.1f} с до входа)")
         desc = (
-            f"В {t0:.1f} с в кассу входит посетитель, при этом на столешнице кассира открыто лежат наличные/ценности "
-            f"(видны не менее {T7_BEFORE_SEC:.1f} с до входа). Признак для проверки человеком."
+            f"В {t0:.1f} с в кассу входит посетитель, при этом на столешнице кассира открыто {what}. "
+            f"Признак для проверки человеком."
         )
-        box = _obj_box(sc, i_in - 1)
+        box = _cash_box(sc, i_in - 1) if by_cash else None
+        box = box or _obj_box(sc, i_in - 1)
         events.append(Event(
             type_code="T7", timecode_sec=round(t0, 2), confidence=0.74, description=desc,
             evidence_times=_ev_times(sc, t0, (-1.0, 0.0, 1.5)),
