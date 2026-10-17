@@ -3,7 +3,10 @@ services:
     build: .
     image: fortebank-cashdesk:cpu
     container_name: fortebank-cashdesk
-    env_file: .env
+    init: true            # PID 1 подбирает зомби-процессы убитых воркеров
+    env_file:
+      - path: .env
+        required: false   # без .env сервис не стартует с понятной ошибкой «API_KEY не задан», а не падением compose
     environment:
       DATA_DIR: /app/data
     ports:

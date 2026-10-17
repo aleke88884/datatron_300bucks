@@ -90,6 +90,7 @@ class Perception:
     objects: list[list[Detection]]          # по кадрам: статические + предметы
     tracks: list[Track]
     sample_fps: float = SAMPLE_FPS
+    degrade: dict = field(default_factory=dict)   # {"stride": k, "stopped": bool, ...} — если сработал бюджет времени
 
     def frame_index(self, t: float) -> int:
         return int(np.argmin(np.abs(np.asarray(self.times) - t))) if self.times else 0
@@ -192,8 +193,11 @@ def _match_tracks(active: list[Track], dets: list[PersonObs], t: float) -> None:
 
 
 def run_perception(path: str, info: VideoInfo, scene: Optional[SceneGeometry] = None, progress=None) -> Perception:
+    from . import budget as _budget
+
     scene = scene or SceneGeometry.load()
     det = get_detector()
+    bud = _budget.current()
     step = max(1, int(round(info.fps / SAMPLE_FPS)))
     times: list[float] = []
     persons: list[list[PersonObs]] = []
@@ -201,7 +205,11 @@ def run_perception(path: str, info: VideoInfo, scene: Optional[SceneGeometry] = 
     tracks: list[Track] = []
     next_id = 1
     total = max(1, info.frame_count)
-    for idx, t, frame in iter_frames(path, every_n=step):
+    gov = _budget.StrideGovernor(
+        "восприятие", bud.perception_deadline() if bud else None, bud.perception_truncate_ts() if bud else None, budget=bud,
+    )
+    grid_total = max(1, total // step)
+    for idx, t, frame in iter_frames(path, every_n=step, take=gov.take):
         dets = det(frame, conf=min(PERSON_CONF, OBJECT_CONF))
         ps: list[PersonObs] = []
         objs: list[Detection] = []
@@ -230,7 +238,14 @@ def run_perception(path: str, info: VideoInfo, scene: Optional[SceneGeometry] = 
         objects.append(objs)
         if progress and idx % (step * 15) == 0:
             progress("detection", int(100 * idx / total))
-    return Perception(info=info, times=times, persons=persons, objects=objects, tracks=tracks)
+        if not gov.update(idx // step, grid_total):
+            break
+    perc = Perception(info=info, times=times, persons=persons, objects=objects, tracks=tracks)
+    if gov.k > 1 or gov.stopped:
+        perc.degrade = gov.summary()
+        if bud is not None:
+            bud.stats["perception"] = perc.degrade
+    return perc
 
 
 # ---------------------------------------------------------------- кэш (для отладки и тестов на датасете)
@@ -263,7 +278,7 @@ def cached_perception(path: str, info: VideoInfo, cache_dir: Optional[str] = Non
             except Exception as exc:  # noqa: BLE001
                 log.warning("perception cache %s unreadable: %s", key, exc)
     p = run_perception(path, info, progress=progress)
-    if cache_dir:
+    if cache_dir and not p.degrade:
         Path(cache_dir).mkdir(parents=True, exist_ok=True)
         (Path(cache_dir) / (Path(path).stem + f"_{int(SAMPLE_FPS)}fps.json")).write_text(json.dumps(perception_to_dict(p)), encoding="utf-8")
     return p

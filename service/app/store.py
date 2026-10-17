@@ -50,8 +50,13 @@ class JobStore:
                 if jid not in self._jobs:
                     return jid
 
-    def add(self, job: Job) -> None:
+    def add(self, job: Job, ttl_sec: float = 3600.0) -> None:
+        now = time.time()
         with self._lock:
+            # результаты с base64-кадрами не копим вечно: завершённые задания старше ttl удаляются
+            stale = [k for k, j in self._jobs.items() if j.status != "processing" and j.finished_at and now - j.finished_at > ttl_sec]
+            for k in stale:
+                del self._jobs[k]
             self._jobs[job.job_id] = job
 
     def get(self, job_id: str) -> Optional[Job]:

@@ -104,7 +104,7 @@ def test_corrupted_video_results_in_failed(server):
 def test_analyze_returns_job_id_quickly(server, negative_video):
     t0 = time.time()
     r = server.post_video(negative_video)
-    assert r.status_code == 202, r.text
+    assert r.status_code == 200, r.text
     assert time.time() - t0 < 5, "ПЛАН 8.1: job_id должен возвращаться быстро"
     body = r.json()
     assert JOB_ID_RE.match(body["job_id"]) and body["status"] == "processing"

@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Callable, Optional
 
+from . import budget as _budget
 from .context import Event, VideoContext
 from .detectors import DETECTORS
 from .draw import box as draw_box
@@ -43,7 +44,11 @@ def warmup() -> None:
     try:
         from .detect import get_detector
 
-        get_detector()
+        det = get_detector()
+        # холостой прогон: инициализация потоков/памяти ORT не должна попасть в время первого задания
+        import numpy as np
+
+        det(np.zeros((848, 464, 3), np.uint8))
     except Exception as exc:  # noqa: BLE001
         log.warning("detector not available at warmup: %s", exc)
     try:
@@ -92,7 +97,7 @@ def _perceive(path: str, info, progress):
     if states is None:
         progress("states", 45)
         states = extract_states(path, info, perc, progress=progress)
-        if cache is not None:
+        if cache is not None and not (states.get("scene") or {}).get("degrade"):
             (cache / "states").mkdir(parents=True, exist_ok=True)
             (cache / "states" / f"{stem}.json").write_text(json.dumps(states, ensure_ascii=False), encoding="utf-8")
     return perc, states
@@ -122,6 +127,10 @@ def build_evidence(ctx: VideoContext, ev: Event) -> list[dict]:
     if os.environ.get("EVIDENCE_FRAMES") == "0":
         return [{"timestamp_sec": round(float(ev.timecode_sec), 2), "image_base64": ""}]
     times = ev.evidence_times[:MAX_EVIDENCE_FRAMES] or [ev.timecode_sec]
+    bud = _budget.current()
+    if bud is not None and bud.left_hard() < _budget.MIN_EVIDENCE_LEFT_SEC:
+        bud.note("кадры-доказательства: по одному на нарушение (мало времени)")
+        times = times[:1]
     caps = list(ev.evidence_captions) + [""] * len(times)
     rule = RULES[ev.type_code]
     frames: list[dict] = []
@@ -166,9 +175,29 @@ def event_to_violation(ctx: VideoContext, ev: Event) -> dict:
     return out
 
 
-def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
+def analyze_video(
+    path: str,
+    progress: Optional[ProgressFn] = None,
+    deadline_ts: Optional[float] = None,
+    hard_deadline_ts: Optional[float] = None,
+    partial: Optional[Callable[[dict], None]] = None,
+    light: bool = False,
+) -> dict:
+    """Анализ видео.
+
+    deadline_ts / hard_deadline_ts — абсолютные time.time() мягкого и жёсткого дедлайнов (см. budget.py): без них
+    пайплайн работает как раньше. partial(result) — вызывается, когда готов полноценный результат (правила + кадры),
+    до необязательного VLM: воркер вернёт его, если жёсткий дедлайн наступит раньше. light=True — без слоя
+    восприятия (только правила по яркости): запасной режим после сбоя процесса.
+    """
+    with _budget.scope(_budget.make_budget(deadline_ts, hard_deadline_ts)):
+        return _analyze_video(path, progress, partial, light)
+
+
+def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[Callable[[dict], None]], light: bool) -> dict:
     progress = progress or _noop
     t0 = time.time()
+    bud = _budget.current()
 
     progress("decoding", 5)
     bt, bv, info = brightness_series(path, target_fps=10.0)
@@ -178,6 +207,8 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     # --- слой восприятия и состояний сцены (детекции людей/объектов, якоря, роли, зоны)
     perception_ok = False
     try:
+        if light:
+            raise RuntimeError("light mode: perception skipped")
         perc, states = _perceive(path, info, progress)
         from .scene import build_scene, scene_summary
 
@@ -189,7 +220,10 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         ctx.cache["scene_summary"] = scene_summary(scene)
         perception_ok = True
     except Exception as exc:  # noqa: BLE001 — без восприятия работают только правила по яркости (T9/T3-тёмный)
-        log.exception("perception layer failed, falling back to brightness-only rules: %s", exc)
+        if light:
+            log.info("light mode: brightness-only rules")
+        else:
+            log.exception("perception layer failed, falling back to brightness-only rules: %s", exc)
         ctx.cache["perception_error"] = f"{type(exc).__name__}: {exc}"
 
     progress("rules", 60)
@@ -206,9 +240,20 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     progress("evidence", 80)
     violations = [event_to_violation(ctx, ev) for ev in events]
 
+    def pack() -> dict:
+        return _pack_result(info, violations, ctx, context_events, perception_ok, t0, bud, light)
+
+    if partial is not None:
+        try:
+            partial(pack())
+        except Exception as exc:  # noqa: BLE001
+            log.warning("partial result callback failed: %s", exc)
+
     progress("describing", 95)
     # VLM-слой: уточнение описаний по кадрам события (ПЛАН 5.1, п. 4); без модели остаются шаблоны из правил
-    if violations:
+    if violations and bud is not None and bud.left_hard() < _budget.MIN_VLM_LEFT_SEC:
+        bud.note("VLM-описания пропущены (мало времени)")
+    elif violations:
         try:
             from .vlm import describe_violations
 
@@ -216,6 +261,12 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         except Exception as exc:  # noqa: BLE001
             log.warning("vlm layer skipped: %s", exc)
 
+    result = pack()
+    progress("done", 100)
+    return result
+
+
+def _pack_result(info, violations: list, ctx: VideoContext, context_events: list, perception_ok: bool, t0: float, bud, light: bool) -> dict:
     result = {
         "verdict": "violation" if violations else "no_violation",
         "violations": violations,
@@ -229,7 +280,9 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
             "rules_checked": [d.__name__ for d in DETECTORS],
             "perception": perception_ok,
             "scene": ctx.cache.get("scene_summary"),
-            "perception_error": ctx.cache.get("perception_error"),
+            "perception_error": ctx.cache.get("perception_error") if not light else None,
+            "degraded": bool(bud is not None and bud.degraded) or light,
+            "degrade_reasons": (list(bud.reasons) if bud is not None else []) + (["light mode: только правила по яркости"] if light else []),
             # контекст сцены (не нарушения): например, T9 — освещение выключено с t по end
             "context_events": [
                 {
@@ -243,7 +296,8 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
             ],
         },
     }
-    progress("done", 100)
+    if bud is not None and bud.stats:
+        result["meta"]["degrade_stats"] = bud.stats
     return result
 
 

@@ -24,6 +24,7 @@ services:
       DATA_DIR: /app/data
       MODELS_DIR: /app/models
       ORT_PROVIDERS: CUDAExecutionProvider,CPUExecutionProvider
+      WORKERS: "1"          # одна копия моделей в видеопамяти; параллелизм даёт GPU
     ports:
       - "${PORT:-8000}:8000"
     volumes:

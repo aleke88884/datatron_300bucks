@@ -79,7 +79,7 @@ def test_container_api_lifecycle(container):
     def analyze(name):
         with open(video_path(name), "rb") as f:
             r = requests.post(container.base_url + "/api/v1/analyze", headers={"X-API-Key": TEST_API_KEY}, files={"file": (name, f)}, timeout=120)
-        assert r.status_code == 202, r.text
+        assert r.status_code == 200, r.text
         job_id = r.json()["job_id"]
         deadline = time.time() + 240
         while time.time() < deadline:

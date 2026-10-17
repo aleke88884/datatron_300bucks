@@ -56,6 +56,16 @@ def _ascii_copy(path: str) -> Optional[str]:
     return _ascii_copies[path]
 
 
+def release_temp_copies() -> None:
+    """Удаляет временные ASCII-копии видео (Windows, кириллица в пути): тестовые видео не храним."""
+    for src, dst in list(_ascii_copies.items()):
+        try:
+            os.remove(dst)
+        except OSError:
+            pass
+        _ascii_copies.pop(src, None)
+
+
 def open_capture(path: str) -> cv2.VideoCapture:
     cap = cv2.VideoCapture(path, cv2.CAP_FFMPEG)
     if not cap.isOpened():
@@ -83,8 +93,10 @@ def probe(path: str) -> VideoInfo:
     return VideoInfo(path=path, width=w, height=h, fps=fps, frame_count=n, duration_sec=(n / fps if n else 0.0))
 
 
-def iter_frames(path: str, every_n: int = 1) -> Iterator[tuple[int, float, np.ndarray]]:
-    """Итератор (индекс кадра, время в секундах, кадр BGR). Декодирует все кадры, отдаёт каждый every_n-й."""
+def iter_frames(path: str, every_n: int = 1, take=None) -> Iterator[tuple[int, float, np.ndarray]]:
+    """Итератор (индекс кадра, время в секундах, кадр BGR). Декодирует все кадры, отдаёт каждый every_n-й.
+    take(n) — необязательный фильтр по номеру узла сетки n = idx // every_n (адаптивный шаг, см. budget.py):
+    отброшенные узлы только «пролистываются» (grab без retrieve/конвертации)."""
     cap = open_capture(path)
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     if fps <= 1 or fps > 240:
@@ -94,7 +106,7 @@ def iter_frames(path: str, every_n: int = 1) -> Iterator[tuple[int, float, np.nd
         while True:
             if not cap.grab():
                 break
-            if idx % every_n == 0:
+            if idx % every_n == 0 and (take is None or take(idx // every_n)):
                 ok, frame = cap.retrieve()
                 if ok and frame is not None:
                     yield idx, idx / fps, frame
