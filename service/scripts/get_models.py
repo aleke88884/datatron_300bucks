@@ -31,21 +31,28 @@ def sha256(path: Path) -> str:
 def fetch(name: str) -> None:
     dst = MODELS_DIR / name
     if dst.exists() and sha256(dst) == MODELS[name]:
-        print(f"ok   {name} уже на месте")
+        print(f"ok   {name} уже на месте ({dst.stat().st_size / 1e6:.0f} МБ), sha256 совпал — скачивать не нужно")
         return
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     tmp = dst.with_suffix(".part")
     url = BASE + name
-    print(f"load {url}")
+    print(f"load {name}: скачиваю {url}")
+    import time
+
+    t0 = time.time()
 
     def hook(blocks: int, block_size: int, total: int) -> None:
-        done = blocks * block_size
+        done = min(blocks * block_size, total) if total > 0 else blocks * block_size
+        dt = max(time.time() - t0, 1e-3)
         if total > 0:
-            sys.stdout.write(f"\r     {done / 1e6:6.1f} / {total / 1e6:.1f} МБ")
-            sys.stdout.flush()
+            sys.stdout.write(f"\r     {100 * done / total:5.1f} %  {done / 1e6:6.1f} / {total / 1e6:.1f} МБ  {done / 1e6 / dt:5.1f} МБ/с   ")
+        else:
+            sys.stdout.write(f"\r     {done / 1e6:6.1f} МБ  {done / 1e6 / dt:5.1f} МБ/с   ")
+        sys.stdout.flush()
 
     urllib.request.urlretrieve(url, tmp, hook)
     print()
+    print(f"     скачано за {time.time() - t0:.0f} с, проверяю sha256 ...")
     got = sha256(tmp)
     if got != MODELS[name]:
         tmp.unlink(missing_ok=True)

@@ -115,6 +115,18 @@ def main() -> None:
         log_f.flush()
 
     log(f"=== прогон {time.strftime('%Y-%m-%d %H:%M:%S')} на {platform.node()} ({platform.platform()}), {len(paths)} видео")
+    durations: dict[str, float] = {}
+    for p in paths:
+        try:
+            durations[p.name] = probe(str(p)).duration_sec
+        except Exception as exc:  # noqa: BLE001
+            durations[p.name] = 0.0
+            log(f"   !! {p.name}: не читается ({exc})")
+    total_video = sum(durations.values())
+    log(f"    видео: {len(paths)} файлов, суммарно {total_video / 60:.1f} мин записи; разметка: {len(labels)} строк; "
+        f"детектор: YOLOX-m (ONNX Runtime, CPU), {SAMPLE_FPS:.0f} к/с; состояния: {STATE_FPS:.0f} к/с"
+        + ("" if not args.skip_items else "; детекция предметов на столе выключена"))
+    log(f"    результаты пишутся в {out}")
     verdicts: dict[str, dict] = {}
     vpath = out / "verdicts.json"
     if vpath.exists():
@@ -124,49 +136,84 @@ def main() -> None:
             verdicts = {}
     tmpdir = Path(tempfile.mkdtemp(prefix="cashdesk_"))
     t_all = time.time()
+    done_video = 0.0
+
+    def make_progress(prefix: str):
+        last = {"pct": -100}
+
+        def cb(stage: str, pct: int | None = None) -> None:
+            if pct is not None and pct - last["pct"] >= 25:
+                last["pct"] = pct
+                print(f"      {prefix}: {pct:3d} %", flush=True)
+        return cb
+
     try:
         for i, p in enumerate(paths, 1):
             name = norm_name(p.stem)
             rec: dict = {"file": p.name, "label": labels.get(name)}
             t0 = time.time()
+            lbl = labels.get(name) or {}
+            lbl_s = ("нарушение" + (f" на {lbl['timecode']:.0f} с" if lbl.get("timecode") is not None else "")) if lbl.get("violation") else ("без нарушения" if lbl else "разметки нет")
+            elapsed = time.time() - t_all
+            eta = "" if done_video <= 0 else f", осталось ~{(total_video - done_video) * elapsed / done_video / 60:.0f} мин"
+            log(f"[{i:2d}/{len(paths)}] {name}  ({durations.get(p.name, 0):.0f} с записи; по разметке: {lbl_s}{eta})")
             try:
                 src = ascii_path(p, tmpdir)
+                if src != p:
+                    log(f"      путь с кириллицей скопирован во временный ASCII-файл {src.name}")
                 info = probe(str(src))
                 rec["duration_sec"] = info.duration_sec
+                log(f"      видео: {info.width}x{info.height}, {info.fps:.2f} к/с, {info.frame_count} кадров, {info.duration_sec:.1f} с")
                 # 1) восприятие (люди, объекты, треки)
                 tp = time.time()
-                perc = cached_perception(str(src), info, cache_dir=None)
+                log("      шаг 1/3: детекция людей и объектов (YOLOX-m), треки, признак «внутри кассы» ...")
+                perc = cached_perception(str(src), info, cache_dir=None, progress=make_progress("детекция"))
                 (out / "perception" / f"{name}.json").write_text(json.dumps(perception_to_dict(perc)), encoding="utf-8")
                 rec["perception_sec"] = round(time.time() - tp, 1)
                 rec["tracks"] = len([t for t in perc.tracks if t.t1 - t.t0 >= 0.5])
                 rec["max_inside"] = int(perc.count_inside().max()) if perc.times else 0
+                log(f"      готово за {rec['perception_sec']} с: кадров {len(perc.times)}, треков людей {rec['tracks']}, "
+                    f"максимум людей внутри одновременно {rec['max_inside']}")
                 # 2) состояния сцены
                 ts = time.time()
-                states = extract_states(str(src), info, perc, detect_items=not args.skip_items)
+                log("      шаг 2/3: медианный кадр, якоря сцены (стол, сейф, ноутбук, дверь), состояния на 2 к/с"
+                    + ("" if args.skip_items else ", предметы на столе") + " ...")
+                states = extract_states(str(src), info, perc, progress=make_progress("состояния"), detect_items=not args.skip_items)
                 (out / "states" / f"{name}.json").write_text(json.dumps(states, ensure_ascii=False), encoding="utf-8")
                 rec["states_sec"] = round(time.time() - ts, 1)
+                sc = states["scene"]
+                log(f"      готово за {rec['states_sec']} с: стол {'найден ' + str(sc['desk']['bbox']) if sc['desk'] else 'НЕ найден'}, "
+                    f"сейф {'найден ' + str(sc['safe']['bbox']) if sc['safe'] else 'не найден'}, "
+                    f"ноутбук {'найден' if sc['laptop'] else 'не найден'}, кадров состояний {len(states['frames'])}")
                 rec["scene"] = {k: (v if k in ("door_band", "median_brightness") else (None if v is None else v.get("bbox")))
                                 for k, v in states["scene"].items() if k in ("desk", "safe", "laptop", "door_band", "median_brightness")}
                 # 3) текущий пайплайн
                 if not args.skip_pipeline:
                     ta = time.time()
+                    log("      шаг 3/3: текущий пайплайн analyze_video (правила T9-контекст и T3) ...")
                     res = analyze_video(str(src))
                     rec["verdict"] = res["verdict"]
                     rec["violations"] = [{k: v[k] for k in ("type_code", "timecode_sec", "end_sec", "confidence") if k in v} for v in res["violations"]]
                     rec["context_events"] = [{k: e[k] for k in ("type_code", "timecode_sec", "end_sec")} for e in res["meta"]["context_events"]]
                     rec["pipeline_sec"] = round(time.time() - ta, 1)
+                    ev = ", ".join(f"{v['type_code']} @ {v['timecode_sec']} с" for v in rec["violations"]) or "нет"
+                    cx = ", ".join(f"{e['type_code']} @ {e['timecode_sec']} с" for e in rec["context_events"]) or "нет"
+                    verdict_ru = "НАРУШЕНИЕ" if rec["verdict"] == "violation" else "без нарушения"
+                    match = ""
+                    if lbl:
+                        match = "  → совпало с разметкой" if (rec["verdict"] == "violation") == bool(lbl.get("violation")) else "  → НЕ совпало с разметкой"
+                    log(f"      готово за {rec['pipeline_sec']} с: вердикт {verdict_ru}; события: {ev}; контекст: {cx}{match}")
                 rec["ok"] = True
             except Exception as exc:  # noqa: BLE001
                 rec["ok"] = False
                 rec["error"] = f"{type(exc).__name__}: {exc}"
+                log("      !! ОШИБКА на этом видео, перехожу к следующему:")
                 log(traceback.format_exc())
             rec["total_sec"] = round(time.time() - t0, 1)
+            done_video += durations.get(p.name, 0.0)
             verdicts[name] = rec
             vpath.write_text(json.dumps(verdicts, ensure_ascii=False, indent=1), encoding="utf-8")
-            lbl = rec.get("label") or {}
-            log(f"[{i:2d}/{len(paths)}] {name:6s} {rec['total_sec']:6.1f}s  {'OK ' if rec['ok'] else 'ERR'} "
-                f"verdict={rec.get('verdict', '-'):12s} label={'violation' if lbl.get('violation') else ('clean' if lbl else '?'):9s} "
-                f"tracks={rec.get('tracks', '-')} max_inside={rec.get('max_inside', '-')} {rec.get('error', '')}")
+            log(f"      итого по {name}: {rec['total_sec']} с ({'OK' if rec['ok'] else 'ОШИБКА'}); обработано {done_video / 60:.1f} из {total_video / 60:.1f} мин записи")
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
     total = time.time() - t_all
@@ -198,7 +245,12 @@ def main() -> None:
                      f"{'да' if sc.get('laptop') else 'нет'} | {r.get('total_sec', '')} | {r.get('error', '')} |")
     lines += ["", f"Текущий пайплайн: TP={tp} FN={fn} FP={fp} TN={tn}", ""]
     (out / "summary.md").write_text("\n".join(lines), encoding="utf-8")
-    log(f"=== готово за {total / 60:.1f} мин; TP={tp} FN={fn} FP={fp} TN={tn}; результаты в {out}")
+    errors = [n for n, r in verdicts.items() if not r.get("ok")]
+    log("")
+    log(f"=== ГОТОВО за {total / 60:.1f} мин. Видео обработано: {len(verdicts) - len(errors)}, с ошибками: {len(errors)}"
+        + (f" ({', '.join(errors)})" if errors else ""))
+    log(f"    текущий пайплайн против разметки: верно найдено нарушений {tp}, пропущено {fn}, ложных на чистых {fp}, чистых верно {tn}")
+    log(f"    файлы: {out / 'summary.md'} (сводная таблица), {out / 'verdicts.json'}, {out / 'perception'}, {out / 'states'}, {out / 'run.log'}")
     log_f.close()
 
 

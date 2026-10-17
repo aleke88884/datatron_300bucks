@@ -233,8 +233,8 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
                                   "diff_vs_median": round(static, 1), "person": _box_overlaps((bx1, by1, bx2, by2), persons, 0)})
                 row["items"] = items
         rows.append(row)
-        if progress and idx % (step * 30) == 0:
-            progress("states", 55 + int(25 * idx / total))
+        if progress and idx % (step * 10) == 0:
+            progress("states", int(100 * idx / total))
     scene = {
         "width": W, "height": H, "fps": info.fps, "duration_sec": info.duration_sec,
         "desk": desk, "safe": safe, "laptop": lap, "door_band": list(door),

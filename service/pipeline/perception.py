@@ -228,8 +228,8 @@ def run_perception(path: str, info: VideoInfo, scene: Optional[SceneGeometry] = 
         times.append(t)
         persons.append(ps)
         objects.append(objs)
-        if progress and idx % (step * 30) == 0:
-            progress("detection", 10 + int(45 * idx / total))
+        if progress and idx % (step * 15) == 0:
+            progress("detection", int(100 * idx / total))
     return Perception(info=info, times=times, persons=persons, objects=objects, tracks=tracks)
 
 
