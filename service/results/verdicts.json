@@ -1,0 +1,1851 @@
+{
+ "Х-1": {
+  "file": "X-1.mov",
+  "label": {
+   "violation": true,
+   "timecode": 22.0
+  },
+  "duration_sec": 25.933333333333334,
+  "perception_sec": 12.1,
+  "tracks": 4,
+  "max_inside": 2,
+  "states_sec": 9.7,
+  "scene": {
+   "desk": [
+    68,
+    392,
+    228,
+    531
+   ],
+   "safe": [
+    285,
+    373,
+    451,
+    497
+   ],
+   "laptop": [
+    236.02159118652344,
+    366.4449005126953,
+    296.38319396972656,
+    437.4674072265625
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 140.22733765045544
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.4,
+  "ok": true,
+  "total_sec": 22.2
+ },
+ "Х-2": {
+  "file": "X-2.mov",
+  "label": {
+   "violation": true,
+   "timecode": 10.0
+  },
+  "duration_sec": 17.066666666666666,
+  "perception_sec": 8.0,
+  "tracks": 4,
+  "max_inside": 2,
+  "states_sec": 6.4,
+  "scene": {
+   "desk": [
+    104,
+    390,
+    231,
+    480
+   ],
+   "safe": [
+    299,
+    375,
+    449,
+    525
+   ],
+   "laptop": [
+    237.38937377929688,
+    365.6807861328125,
+    294.97479248046875,
+    438.0830383300781
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 139.55867253578398
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 14.7
+ },
+ "Х-10": {
+  "file": "Х-10.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 15.566666666666666,
+  "perception_sec": 7.2,
+  "tracks": 1,
+  "max_inside": 1,
+  "states_sec": 6.0,
+  "scene": {
+   "desk": [
+    22,
+    301,
+    274,
+    496
+   ],
+   "safe": null,
+   "laptop": null,
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.72112373942747
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 13.5
+ },
+ "Х-11": {
+  "file": "Х-11.mov",
+  "label": {
+   "violation": true,
+   "timecode": 18.0
+  },
+  "duration_sec": 25.6,
+  "perception_sec": 11.6,
+  "tracks": 2,
+  "max_inside": 1,
+  "states_sec": 9.2,
+  "scene": {
+   "desk": [
+    56,
+    396,
+    286,
+    498
+   ],
+   "safe": [
+    420,
+    228,
+    464,
+    316
+   ],
+   "laptop": [
+    226.19900512695312,
+    352.06446838378906,
+    286.4596405029297,
+    418.0462188720703
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.29607189329863
+  },
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T3",
+    "timecode_sec": 16.06,
+    "end_sec": 25.6,
+    "confidence": 0.95
+   }
+  ],
+  "context_events": [
+   {
+    "type_code": "T9",
+    "timecode_sec": 16.06,
+    "end_sec": 25.6
+   }
+  ],
+  "pipeline_sec": 2.2,
+  "ok": true,
+  "total_sec": 23.0
+ },
+ "Х-12": {
+  "file": "Х-12.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 42.300000000000004,
+  "perception_sec": 19.5,
+  "tracks": 3,
+  "max_inside": 1,
+  "states_sec": 15.5,
+  "scene": {
+   "desk": [
+    56,
+    396,
+    286,
+    499
+   ],
+   "safe": null,
+   "laptop": [
+    228.92704010009766,
+    352.20301818847656,
+    285.0063018798828,
+    417.6864471435547
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 138.14190336288223
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [
+   {
+    "type_code": "T9",
+    "timecode_sec": 32.35,
+    "end_sec": 42.3
+   }
+  ],
+  "pipeline_sec": 0.9,
+  "ok": true,
+  "total_sec": 35.9
+ },
+ "Х-13": {
+  "file": "Х-13.mov",
+  "label": {
+   "violation": true,
+   "timecode": 47.0
+  },
+  "duration_sec": 65.3,
+  "perception_sec": 29.8,
+  "tracks": 3,
+  "max_inside": 1,
+  "states_sec": 24.4,
+  "scene": {
+   "desk": [
+    38,
+    225,
+    304,
+    493
+   ],
+   "safe": null,
+   "laptop": [
+    213.6827621459961,
+    313.2848815917969,
+    271.7827911376953,
+    377.9429626464844
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.5583294364021
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 1.0,
+  "ok": true,
+  "total_sec": 55.2
+ },
+ "Х-14": {
+  "file": "Х-14.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 142.53333333333333,
+  "perception_sec": 68.2,
+  "tracks": 4,
+  "max_inside": 1,
+  "states_sec": 54.3,
+  "scene": {
+   "desk": [
+    56,
+    396,
+    316,
+    499
+   ],
+   "safe": [
+    408,
+    228,
+    464,
+    331
+   ],
+   "laptop": [
+    223.86534881591797,
+    351.42320251464844,
+    282.4293212890625,
+    418.2917022705078
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 139.20082496340274
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 1.9,
+  "ok": true,
+  "total_sec": 124.5
+ },
+ "Х-15": {
+  "file": "Х-15.mov",
+  "label": {
+   "violation": true,
+   "timecode": 15.0
+  },
+  "duration_sec": 20.866666666666667,
+  "perception_sec": 9.8,
+  "tracks": 3,
+  "max_inside": 1,
+  "states_sec": 7.9,
+  "scene": {
+   "desk": [
+    38,
+    356,
+    304,
+    491
+   ],
+   "safe": null,
+   "laptop": [
+    213.54180908203125,
+    313.0065612792969,
+    271.8934020996094,
+    377.805908203125
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 136.16927252765126
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 18.0
+ },
+ "Х-16": {
+  "file": "Х-16.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 22.733333333333334,
+  "perception_sec": 10.7,
+  "tracks": 4,
+  "max_inside": 2,
+  "states_sec": 9.1,
+  "scene": {
+   "desk": [
+    78,
+    356,
+    304,
+    447
+   ],
+   "safe": [
+    323,
+    339,
+    438,
+    463
+   ],
+   "laptop": [
+    230.17483520507812,
+    324.6657409667969,
+    300.22129821777344,
+    398.13844299316406
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 139.80573458848406
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 20.2
+ },
+ "Х-17": {
+  "file": "Х-17.mov",
+  "label": {
+   "violation": true,
+   "timecode": 7.0
+  },
+  "duration_sec": 14.733333333333333,
+  "perception_sec": 7.2,
+  "tracks": 5,
+  "max_inside": 2,
+  "states_sec": 6.1,
+  "scene": {
+   "desk": [
+    78,
+    360,
+    304,
+    451
+   ],
+   "safe": [
+    323,
+    339,
+    438,
+    463
+   ],
+   "laptop": [
+    230.85588836669922,
+    324.924072265625,
+    300.1377258300781,
+    397.9911651611328
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 138.9638551154847
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 13.5
+ },
+ "Х-18": {
+  "file": "Х-18.mov",
+  "label": {
+   "violation": true,
+   "timecode": 20.0
+  },
+  "duration_sec": 22.599999999999998,
+  "perception_sec": 11.1,
+  "tracks": 5,
+  "max_inside": 3,
+  "states_sec": 9.3,
+  "scene": {
+   "desk": [
+    78,
+    360,
+    302,
+    447
+   ],
+   "safe": [
+    323,
+    339,
+    438,
+    463
+   ],
+   "laptop": [
+    243.56649017333984,
+    324.5876922607422,
+    300.2582702636719,
+    396.0247039794922
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 139.5365540622967
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 20.6
+ },
+ "Х-19": {
+  "file": "Х-19.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 57.43333333333334,
+  "perception_sec": 26.9,
+  "tracks": 9,
+  "max_inside": 2,
+  "states_sec": 21.4,
+  "scene": {
+   "desk": [
+    64,
+    360,
+    302,
+    493
+   ],
+   "safe": [
+    323,
+    339,
+    438,
+    463
+   ],
+   "laptop": [
+    243.33181762695312,
+    324.59912109375,
+    299.98915100097656,
+    395.2598419189453
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 143.94736855481457
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.8,
+  "ok": true,
+  "total_sec": 49.1
+ },
+ "Х-20": {
+  "file": "Х-20.mov",
+  "label": {
+   "violation": true,
+   "timecode": 5.0
+  },
+  "duration_sec": 11.633333333333333,
+  "perception_sec": 5.4,
+  "tracks": 2,
+  "max_inside": 1,
+  "states_sec": 4.5,
+  "scene": {
+   "desk": [
+    74,
+    352,
+    326,
+    480
+   ],
+   "safe": [
+    218,
+    265,
+    277,
+    349
+   ],
+   "laptop": [
+    224.60455322265625,
+    305.5379333496094,
+    299.3802795410156,
+    370.2809753417969
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.37639272934288
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 10.0
+ },
+ "Х-21": {
+  "file": "Х-21.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 19.6,
+  "perception_sec": 9.1,
+  "tracks": 3,
+  "max_inside": 1,
+  "states_sec": 7.2,
+  "scene": {
+   "desk": [
+    74,
+    352,
+    326,
+    482
+   ],
+   "safe": [
+    185,
+    262,
+    277,
+    350
+   ],
+   "laptop": [
+    224.75619506835938,
+    305.575439453125,
+    299.3152770996094,
+    370.00836181640625
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 138.14359598649966
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 16.6
+ },
+ "Х-22": {
+  "file": "Х-22.mov",
+  "label": {
+   "violation": true,
+   "timecode": 14.0
+  },
+  "duration_sec": 21.03333333333333,
+  "perception_sec": 9.9,
+  "tracks": 2,
+  "max_inside": 1,
+  "states_sec": 7.7,
+  "scene": {
+   "desk": [
+    74,
+    352,
+    324,
+    461
+   ],
+   "safe": [
+    185,
+    262,
+    277,
+    350
+   ],
+   "laptop": [
+    234.10425567626953,
+    305.31117248535156,
+    290.5618133544922,
+    369.7107238769531
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 136.38457882644764
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 17.9
+ },
+ "Х-23": {
+  "file": "Х-23.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 18.266666666666666,
+  "perception_sec": 8.5,
+  "tracks": 2,
+  "max_inside": 1,
+  "states_sec": 6.8,
+  "scene": {
+   "desk": [
+    74,
+    352,
+    326,
+    461
+   ],
+   "safe": [
+    185,
+    262,
+    277,
+    348
+   ],
+   "laptop": [
+    224.8157196044922,
+    305.53948974609375,
+    298.9646301269531,
+    370.2163391113281
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 136.20798684531556
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 15.6
+ },
+ "Х-24": {
+  "file": "Х-24.mov",
+  "label": {
+   "violation": true,
+   "timecode": 8.0
+  },
+  "duration_sec": 14.7,
+  "perception_sec": 7.0,
+  "tracks": 2,
+  "max_inside": 1,
+  "states_sec": 5.5,
+  "scene": {
+   "desk": [
+    96,
+    372,
+    345,
+    482
+   ],
+   "safe": [
+    203,
+    279,
+    286,
+    367
+   ],
+   "laptop": [
+    244.2271499633789,
+    326.48858642578125,
+    317.9432373046875,
+    391.3565979003906
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 141.49445449739753
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 12.7
+ },
+ "Х-25": {
+  "file": "Х-25.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 31.700000000000003,
+  "perception_sec": 14.4,
+  "tracks": 5,
+  "max_inside": 1,
+  "states_sec": 11.8,
+  "scene": {
+   "desk": [
+    96,
+    372,
+    345,
+    482
+   ],
+   "safe": [
+    207,
+    282,
+    286,
+    367
+   ],
+   "laptop": [
+    244.3846664428711,
+    326.5865173339844,
+    318.0900573730469,
+    391.30328369140625
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 140.7551668225439
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.4,
+  "ok": true,
+  "total_sec": 26.7
+ },
+ "Х-26": {
+  "file": "Х-26.mov",
+  "label": {
+   "violation": true,
+   "timecode": 9.0
+  },
+  "duration_sec": 19.8,
+  "perception_sec": 9.1,
+  "tracks": 3,
+  "max_inside": 1,
+  "states_sec": 7.3,
+  "scene": {
+   "desk": [
+    96,
+    372,
+    345,
+    500
+   ],
+   "safe": [
+    188,
+    279,
+    286,
+    367
+   ],
+   "laptop": [
+    243.589599609375,
+    326.46875,
+    317.9852600097656,
+    391.1997833251953
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 140.86826000325308
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 16.7
+ },
+ "Х-27": {
+  "file": "Х-27.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 26.433333333333334,
+  "perception_sec": 12.2,
+  "tracks": 3,
+  "max_inside": 1,
+  "states_sec": 9.5,
+  "scene": {
+   "desk": [
+    96,
+    372,
+    344,
+    482
+   ],
+   "safe": [
+    194,
+    279,
+    286,
+    367
+   ],
+   "laptop": [
+    244.3879165649414,
+    326.5087127685547,
+    318.03282165527344,
+    391.3837585449219
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 140.12450695348082
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.4,
+  "ok": true,
+  "total_sec": 22.1
+ },
+ "Х-28": {
+  "file": "Х-28.mov",
+  "label": {
+   "violation": true,
+   "timecode": 7.0
+  },
+  "duration_sec": 16.533333333333335,
+  "perception_sec": 7.7,
+  "tracks": 2,
+  "max_inside": 1,
+  "states_sec": 6.1,
+  "scene": {
+   "desk": [
+    96,
+    372,
+    345,
+    482
+   ],
+   "safe": [
+    205,
+    279,
+    286,
+    367
+   ],
+   "laptop": [
+    244.4617462158203,
+    326.7850341796875,
+    317.659912109375,
+    390.8428955078125
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 140.7036993737801
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 14.0
+ },
+ "Х-29": {
+  "file": "Х-29.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 17.3,
+  "perception_sec": 8.1,
+  "tracks": 3,
+  "max_inside": 1,
+  "states_sec": 6.4,
+  "scene": {
+   "desk": [
+    96,
+    372,
+    345,
+    482
+   ],
+   "safe": [
+    205,
+    279,
+    286,
+    367
+   ],
+   "laptop": [
+    244.5583953857422,
+    326.42185974121094,
+    317.4732666015625,
+    391.6622619628906
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 139.78413203480807
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 14.7
+ },
+ "Х-3": {
+  "file": "Х-3.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 20.033333333333335,
+  "perception_sec": 9.1,
+  "tracks": 4,
+  "max_inside": 2,
+  "states_sec": 7.5,
+  "scene": {
+   "desk": [
+    50,
+    393,
+    231,
+    534
+   ],
+   "safe": [
+    311,
+    375,
+    444,
+    497
+   ],
+   "laptop": [
+    234.97959899902344,
+    365.0866241455078,
+    295.2336883544922,
+    438.6530303955078
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 142.559091879473
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 16.9
+ },
+ "Х-30": {
+  "file": "Х-30.mov",
+  "label": {
+   "violation": true,
+   "timecode": 13.0
+  },
+  "duration_sec": 18.8,
+  "perception_sec": 9.0,
+  "tracks": 2,
+  "max_inside": 2,
+  "states_sec": 7.0,
+  "scene": {
+   "desk": [
+    48,
+    366,
+    296,
+    503
+   ],
+   "safe": [
+    392,
+    228,
+    464,
+    525
+   ],
+   "laptop": null,
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.51294628334418
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 16.3
+ },
+ "Х-31": {
+  "file": "Х-31.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 23.8,
+  "perception_sec": 11.0,
+  "tracks": 4,
+  "max_inside": 1,
+  "states_sec": 8.7,
+  "scene": {
+   "desk": [
+    50,
+    368,
+    297,
+    504
+   ],
+   "safe": null,
+   "laptop": null,
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.36987638256343
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 20.1
+ },
+ "Х-32": {
+  "file": "Х-32.mov",
+  "label": {
+   "violation": true,
+   "timecode": 5.0
+  },
+  "duration_sec": 21.3,
+  "perception_sec": 9.9,
+  "tracks": 1,
+  "max_inside": 1,
+  "states_sec": 7.7,
+  "scene": {
+   "desk": [
+    50,
+    371,
+    297,
+    504
+   ],
+   "safe": [
+    400,
+    228,
+    464,
+    525
+   ],
+   "laptop": null,
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 136.778078236825
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 17.9
+ },
+ "Х-33": {
+  "file": "Х-33.mov",
+  "label": {
+   "violation": true,
+   "timecode": 6.0
+  },
+  "duration_sec": 14.333333333333334,
+  "perception_sec": 6.5,
+  "tracks": 3,
+  "max_inside": 2,
+  "states_sec": 5.2,
+  "scene": {
+   "desk": [
+    58,
+    366,
+    324,
+    528
+   ],
+   "safe": [
+    221,
+    267,
+    304,
+    347
+   ],
+   "laptop": null,
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 135.85160316363044
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 12.0
+ },
+ "Х-34": {
+  "file": "Х-34.mov",
+  "label": {
+   "violation": true,
+   "timecode": 13.0
+  },
+  "duration_sec": 17.733333333333334,
+  "perception_sec": 8.5,
+  "tracks": 6,
+  "max_inside": 3,
+  "states_sec": 6.7,
+  "scene": {
+   "desk": [
+    76,
+    368,
+    281,
+    479
+   ],
+   "safe": [
+    314,
+    358,
+    464,
+    525
+   ],
+   "laptop": [
+    52.90633964538574,
+    355.5809020996094,
+    134.16615295410156,
+    442.7851257324219
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 133.49645209824334
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 15.4
+ },
+ "Х-35": {
+  "file": "Х-35.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 56.76666666666667,
+  "perception_sec": 25.7,
+  "tracks": 8,
+  "max_inside": 2,
+  "states_sec": 20.5,
+  "scene": {
+   "desk": [
+    76,
+    361,
+    280,
+    481
+   ],
+   "safe": [
+    312,
+    358,
+    464,
+    525
+   ],
+   "laptop": [
+    53.18817710876465,
+    355.62400817871094,
+    134.19740295410156,
+    442.6873016357422
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 135.07387819209498
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.8,
+  "ok": true,
+  "total_sec": 47.0
+ },
+ "Х-37": {
+  "file": "Х-37.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 15.866666666666667,
+  "perception_sec": 7.5,
+  "tracks": 4,
+  "max_inside": 2,
+  "states_sec": 6.0,
+  "scene": {
+   "desk": [
+    76,
+    369,
+    280,
+    479
+   ],
+   "safe": [
+    314,
+    358,
+    464,
+    525
+   ],
+   "laptop": [
+    53.67934036254883,
+    356.10560607910156,
+    133.8175811767578,
+    443.802734375
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 133.60215974707222
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.2,
+  "ok": true,
+  "total_sec": 13.7
+ },
+ "Х-38": {
+  "file": "Х-38.mov",
+  "label": {
+   "violation": true,
+   "timecode": 33.0
+  },
+  "duration_sec": 58.96666666666667,
+  "perception_sec": 26.9,
+  "tracks": 15,
+  "max_inside": 3,
+  "states_sec": 21.4,
+  "scene": {
+   "desk": [
+    76,
+    368,
+    280,
+    478
+   ],
+   "safe": [
+    327,
+    357,
+    464,
+    525
+   ],
+   "laptop": [
+    53.12875747680664,
+    355.80364990234375,
+    134.04638671875,
+    444.1783752441406
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 134.17488665013013
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.8,
+  "ok": true,
+  "total_sec": 49.1
+ },
+ "Х-39": {
+  "file": "Х-39.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 78.73333333333333,
+  "perception_sec": 35.7,
+  "tracks": 13,
+  "max_inside": 3,
+  "states_sec": 28.7,
+  "scene": {
+   "desk": [
+    74,
+    369,
+    280,
+    477
+   ],
+   "safe": [
+    338,
+    358,
+    464,
+    525
+   ],
+   "laptop": [
+    53.57629203796387,
+    356.0004425048828,
+    133.9893035888672,
+    443.8362274169922
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 133.1207658994795
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 1.1,
+  "ok": true,
+  "total_sec": 65.5
+ },
+ "Х-4": {
+  "file": "Х-4.mov",
+  "label": {
+   "violation": true,
+   "timecode": 57.0
+  },
+  "duration_sec": 72.7,
+  "perception_sec": 32.5,
+  "tracks": 9,
+  "max_inside": 2,
+  "states_sec": 26.1,
+  "scene": {
+   "desk": [
+    102,
+    387,
+    229,
+    479
+   ],
+   "safe": [
+    311,
+    376,
+    464,
+    525
+   ],
+   "laptop": [
+    229.54158782958984,
+    365.25738525390625,
+    295.12669372558594,
+    438.63694763183594
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 135.90518766265453
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 1.0,
+  "ok": true,
+  "total_sec": 59.6
+ },
+ "Х-40": {
+  "file": "Х-40.mov",
+  "label": {
+   "violation": true,
+   "timecode": 17.0
+  },
+  "duration_sec": 25.266666666666666,
+  "perception_sec": 11.6,
+  "tracks": 4,
+  "max_inside": 1,
+  "states_sec": 9.2,
+  "scene": {
+   "desk": [
+    58,
+    366,
+    324,
+    512
+   ],
+   "safe": [
+    220,
+    264,
+    304,
+    357
+   ],
+   "laptop": null,
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.41943518217306
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.4,
+  "ok": true,
+  "total_sec": 21.2
+ },
+ "Х-43": {
+  "file": "Х-43.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 23.366666666666667,
+  "perception_sec": 10.6,
+  "tracks": 1,
+  "max_inside": 1,
+  "states_sec": 8.5,
+  "scene": {
+   "desk": [
+    44,
+    344,
+    304,
+    527
+   ],
+   "safe": [
+    343,
+    448,
+    457,
+    525
+   ],
+   "laptop": [
+    31.175861358642578,
+    358.13720703125,
+    86.98600006103516,
+    429.0012512207031
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.86264842225114
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 19.4
+ },
+ "Х-44": {
+  "file": "Х-44.mov",
+  "label": {
+   "violation": true,
+   "timecode": 16.0
+  },
+  "duration_sec": 20.433333333333334,
+  "perception_sec": 9.3,
+  "tracks": 1,
+  "max_inside": 1,
+  "states_sec": 7.4,
+  "scene": {
+   "desk": [
+    46,
+    351,
+    304,
+    522
+   ],
+   "safe": [
+    343,
+    447,
+    462,
+    525
+   ],
+   "laptop": [
+    42.86832809448242,
+    356.2845153808594,
+    90.0040054321289,
+    429.4487609863281
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.72702759027325
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 17.1
+ },
+ "Х-45": {
+  "file": "Х-45.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 33.333333333333336,
+  "perception_sec": 14.9,
+  "tracks": 2,
+  "max_inside": 2,
+  "states_sec": 12.1,
+  "scene": {
+   "desk": [
+    60,
+    344,
+    324,
+    514
+   ],
+   "safe": [
+    365,
+    433,
+    464,
+    525
+   ],
+   "laptop": null,
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.5345742517892
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.5,
+  "ok": true,
+  "total_sec": 27.5
+ },
+ "Х-46": {
+  "file": "Х-46.mov",
+  "label": {
+   "violation": true,
+   "timecode": 11.0
+  },
+  "duration_sec": 19.133333333333333,
+  "perception_sec": 8.9,
+  "tracks": 1,
+  "max_inside": 1,
+  "states_sec": 7.1,
+  "scene": {
+   "desk": [
+    46,
+    360,
+    303,
+    517
+   ],
+   "safe": [
+    343,
+    450,
+    457,
+    525
+   ],
+   "laptop": [
+    30.283710479736328,
+    358.30718994140625,
+    89.73458862304688,
+    429.2485656738281
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 139.4252068762199
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.3,
+  "ok": true,
+  "total_sec": 16.3
+ },
+ "Х-47": {
+  "file": "Х-47.mov",
+  "label": {
+   "violation": true,
+   "timecode": 68.0
+  },
+  "duration_sec": 72.7,
+  "perception_sec": 32.9,
+  "tracks": 9,
+  "max_inside": 2,
+  "states_sec": 26.3,
+  "scene": {
+   "desk": [
+    102,
+    387,
+    229,
+    479
+   ],
+   "safe": [
+    311,
+    376,
+    464,
+    525
+   ],
+   "laptop": [
+    229.54158782958984,
+    365.25738525390625,
+    295.12669372558594,
+    438.63694763183594
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 135.90518766265453
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 1.0,
+  "ok": true,
+  "total_sec": 60.1
+ },
+ "Х-48": {
+  "file": "Х-48.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 71.6,
+  "perception_sec": 32.1,
+  "tracks": 14,
+  "max_inside": 3,
+  "states_sec": 25.8,
+  "scene": {
+   "desk": [
+    102,
+    396,
+    230,
+    479
+   ],
+   "safe": [
+    285,
+    376,
+    464,
+    525
+   ],
+   "laptop": [
+    231.6916046142578,
+    365.8934326171875,
+    295.2633056640625,
+    439.3590393066406
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.13053533669486
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 1.0,
+  "ok": true,
+  "total_sec": 58.8
+ },
+ "Х-5": {
+  "file": "Х-5.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 71.6,
+  "perception_sec": 32.6,
+  "tracks": 14,
+  "max_inside": 3,
+  "states_sec": 25.7,
+  "scene": {
+   "desk": [
+    102,
+    396,
+    230,
+    479
+   ],
+   "safe": [
+    285,
+    376,
+    464,
+    525
+   ],
+   "laptop": [
+    231.6916046142578,
+    365.8934326171875,
+    295.2633056640625,
+    439.3590393066406
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 137.13053533669486
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 1.0,
+  "ok": true,
+  "total_sec": 59.3
+ },
+ "Х-8": {
+  "file": "Х-8.mov",
+  "label": {
+   "violation": false,
+   "timecode": null
+  },
+  "duration_sec": 38.03333333333334,
+  "perception_sec": 17.3,
+  "tracks": 1,
+  "max_inside": 1,
+  "states_sec": 13.7,
+  "scene": {
+   "desk": [
+    56,
+    334,
+    275,
+    492
+   ],
+   "safe": [
+    400,
+    228,
+    464,
+    398
+   ],
+   "laptop": [
+    236.4902114868164,
+    346.3120422363281,
+    290.5704803466797,
+    412.6039733886719
+   ],
+   "door_band": [
+    109,
+    205,
+    199,
+    284
+   ],
+   "median_brightness": 138.8537939167209
+  },
+  "verdict": "no_violation",
+  "violations": [],
+  "context_events": [],
+  "pipeline_sec": 0.5,
+  "ok": true,
+  "total_sec": 31.5
+ }
+}
