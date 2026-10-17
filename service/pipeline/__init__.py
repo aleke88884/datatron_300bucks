@@ -184,6 +184,7 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         scene = build_scene(perc, states, info)
         ctx.scene = scene
         ctx.tracks = perc.tracks
+        ctx.cache["perception"] = perc      # полные детекции 3 к/с (T8: personal_items)
         ctx.states = states
         ctx.zones = scene.anchors
         ctx.cache["scene_summary"] = scene_summary(scene)

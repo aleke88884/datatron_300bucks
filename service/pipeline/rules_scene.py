@@ -381,58 +381,11 @@ def rule_t7(ctx: VideoContext) -> list[Event]:
 # --- T8 -------------------------------------------------------------------
 
 def rule_t8(ctx: VideoContext) -> list[Event]:
-    """Личные вещи, еда, напитки на рабочем месте: стакан/бутылка или сумка/рюкзак в зоне стола."""
-    sc = _scene(ctx)
-    if sc is None or len(sc.t) == 0:
-        return []
-    zone = _desk_zone(sc)
-    if zone is None:
-        return []
-    early = [d for i in range(min(len(sc.t), int(1.0 * GRID_FPS) + 1)) for d in sc.items[i]]
-    drink, bag = [], []
-    for i in range(len(sc.t)):
-        for d in sc.items[i]:
-            if not _overlap(d["xyxy"], zone):
-                continue
-            if d["cls"] in ("cup", "bottle", "wine glass"):
-                drink.append((i, d))
-            elif d["cls"] in ("handbag", "backpack", "suitcase") and sc.t[i] >= 1.0:
-                if any(_iou(d["xyxy"], e["xyxy"]) >= 0.5 for e in early):
-                    continue   # статичный предмет интерьера, который детектор путает с сумкой
-                bag.append((i, d))
-    events: list[Event] = []
-    if len(drink) >= T8_DRINK_MIN_DET and max(d["score"] for _, d in drink) >= T8_DRINK_MIN_SCORE:
-        i0, d0 = drink[0]
-        t0 = float(sc.t[i0])
-        best = max(drink, key=lambda x: x[1]["score"])[1]
-        desc = (
-            f"С {t0:.1f} с на рабочем столе кассира находится стакан/бутылка (напиток), рядом с наличными и "
-            f"оборудованием; кассир пользуется им на рабочем месте. Личные вещи, еда и напитки на кассовом рабочем "
-            f"месте не допускаются."
-        )
-        box = tuple(int(v) for v in best["xyxy"])
-        events.append(Event(
-            type_code="T8", timecode_sec=round(t0, 2), confidence=0.72, description=desc,
-            evidence_times=_ev_times(sc, float(sc.t[max(drink, key=lambda x: x[1]['score'])[0]]), (0.0, 1.0, 2.0)),
-            evidence_captions=["напиток на рабочем столе кассира", "напиток рядом с наличными", "напиток на рабочем месте"],
-            extras={"evidence_boxes": [box] * 3, "kind": "drink", "n_det": len(drink)},
-        ))
-    elif False and len(bag) >= T8_BAG_MIN_DET and max(d["score"] for _, d in bag) >= T8_BAG_MIN_SCORE:   # сумки по YOLO: ложные на интерьере — выключено
-        i0, d0 = bag[0]
-        t0 = float(sc.t[i0])
-        best = max(bag, key=lambda x: x[1]["score"])[1]
-        desc = (
-            f"С {t0:.1f} с кассир приносит в кассу личную сумку и держит её на рабочем столе. Личные вещи работников "
-            f"должны храниться вне кассового узла."
-        )
-        box = tuple(int(v) for v in best["xyxy"])
-        events.append(Event(
-            type_code="T8", timecode_sec=round(t0, 2), confidence=0.66, description=desc,
-            evidence_times=_ev_times(sc, t0, (0.0, 1.5, 3.0)),
-            evidence_captions=["личная сумка в кассе", "личная сумка на рабочем столе", "сумка остаётся на рабочем месте"],
-            extras={"evidence_boxes": [box] * 3, "kind": "bag", "n_det": len(bag)},
-        ))
-    return events
+    """Личные вещи, еда, напитки на рабочем месте — реализация в pipeline/personal_items.py
+    (напиток/еда в зоне стола с уточнением момента появления; личная сумка в руках кассира)."""
+    from .personal_items import rule_t8 as _rule_t8_items
+
+    return _rule_t8_items(ctx)
 
 
 # --- T10 ------------------------------------------------------------------

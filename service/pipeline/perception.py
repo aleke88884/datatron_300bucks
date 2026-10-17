@@ -27,7 +27,8 @@ TRACK_MAX_GAP_SEC = 1.2      # трек живёт без детекции до 
 TRACK_MATCH_IOU = 0.25
 TRACK_MATCH_DIST = 0.6       # или центр ближе 0.6 высоты bbox
 STATIC_CLASSES = {"laptop", "chair", "tv", "dining table", "refrigerator", "microwave", "oven"}
-ITEM_CLASSES = {"handbag", "backpack", "suitcase", "cup", "bottle", "wine glass", "cell phone", "book", "remote", "bowl", "vase"}
+ITEM_CLASSES = {"handbag", "backpack", "suitcase", "cup", "bottle", "wine glass", "cell phone", "book", "remote", "bowl", "vase",
+                "sandwich", "banana", "apple", "orange", "donut", "cake", "pizza", "hot dog"}   # еда — T8 (personal_items)
 
 
 @dataclass
