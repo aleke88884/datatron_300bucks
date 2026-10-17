@@ -16,7 +16,7 @@ COPY pipeline ./pipeline
 COPY static ./static
 COPY scripts/get_models.py ./scripts/get_models.py
 
-# Веса детектора YOLOX-m (Apache-2.0) скачиваются на этапе сборки: контейнер работает без интернета.
+# Веса детектора YOLOX-m и модели позы RTMPose-m (Apache-2.0) скачиваются на этапе сборки: контейнер работает без интернета.
 # Если веса уже лежат в service/models/, они копируются и повторно не скачиваются.
 COPY models* ./models/
 RUN python scripts/get_models.py

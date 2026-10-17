@@ -47,6 +47,14 @@ def warmup() -> None:
     except Exception as exc:  # noqa: BLE001
         log.warning("detector not available at warmup: %s", exc)
     try:
+        from .pose import get_estimator
+
+        est = get_estimator()
+        if est.available():
+            est._session()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("pose model not available at warmup: %s", exc)
+    try:
         from .vlm import get_describer
 
         d = get_describer()
@@ -96,6 +104,19 @@ def _perceive(path: str, info, progress):
             (cache / "states").mkdir(parents=True, exist_ok=True)
             (cache / "states" / f"{stem}.json").write_text(json.dumps(states, ensure_ascii=False), encoding="utf-8")
     return perc, states
+
+
+def _attach_pose(ctx: VideoContext, path: str, info, perc, progress) -> None:
+    """Поза людей (RTMPose) для правил по рукам (pipeline.rules_hands) → ctx.cache["pose"].
+    Кеш results/hands/<видео>.json читается только при FEATURES_CACHE; без модели правила по рукам молчат."""
+    try:
+        from .pose import load_or_compute
+
+        progress("pose", 55)
+        ctx.cache["pose"] = load_or_compute(path, info, perc, _features_cache_dir(), progress=progress)
+    except Exception as exc:  # noqa: BLE001 — поза необязательна: без неё работают остальные правила
+        log.warning("pose layer skipped: %s", exc)
+        ctx.cache["pose"] = None
 
 
 def detector_code(det: Callable) -> str:
@@ -188,6 +209,7 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         ctx.zones = scene.anchors
         ctx.cache["scene_summary"] = scene_summary(scene)
         perception_ok = True
+        _attach_pose(ctx, path, info, perc, progress)
     except Exception as exc:  # noqa: BLE001 — без восприятия работают только правила по яркости (T9/T3-тёмный)
         log.exception("perception layer failed, falling back to brightness-only rules: %s", exc)
         ctx.cache["perception_error"] = f"{type(exc).__name__}: {exc}"

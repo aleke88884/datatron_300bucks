@@ -24,8 +24,9 @@ if str(SERVICE_DIR) not in sys.path:
 LIGHTS_OFF_VIDEOS = {"Х-11", "Х-12"}   # в обоих кассир выключает свет; нарушение только в Х-11 (экран ноутбука активен — T3)
 SCREEN_ON_VIDEOS = {"Х-11", "Х-28"}    # где T3 должен сработать: Х-11 (экран светится в темноте), Х-28 (кассир ушёл, экран активен)
 # Ожидаемые срабатывания правил по датасету (офлайн-оценка scripts/eval_rules.py, 17.10.2026): 11 из 22 нарушений, 0 ложных
-EXPECTED_TP = {"Х-11", "Х-13", "Х-15", "Х-17", "Х-18", "Х-24", "Х-28", "Х-30", "Х-33", "Х-38", "Х-46"}
-EXPECTED_TYPES = {"Х-17": "T10", "Х-18": "T4", "Х-30": "T5", "Х-33": "T5", "Х-38": "T7", "Х-46": "T8", "Х-15": "T1", "Х-24": "T1"}
+EXPECTED_TP = {"Х-11", "Х-13", "Х-15", "Х-17", "Х-18", "Х-24", "Х-28", "Х-30", "Х-33", "Х-34", "Х-38", "Х-46"}
+EXPECTED_TYPES = {"Х-17": "T10", "Х-18": "T4", "Х-30": "T5", "Х-33": "T5", "Х-38": "T7", "Х-46": "T8", "Х-15": "T1", "Х-24": "T1",
+                  "Х-34": "T6"}   # T6 по позе рук (pipeline.rules_hands): клиент встал и уходит, кассир продолжает пересчёт
 LABEL_TOLERANCE_SEC = 3.0
 
 
@@ -312,7 +313,7 @@ def test_metrics_report(results, labels):
     assert len(tn) == len(clean)
 
 
-@pytest.mark.xfail(reason="правила находят 11 из 22 нарушений (см. EXPECTED_TP); T2/T6/T13 выключены, T11/T12 не реализованы", strict=True)
+@pytest.mark.xfail(reason="правила находят 12 из 22 нарушений (см. EXPECTED_TP); T2/T13 выключены, T11/T12 не реализованы", strict=True)
 def test_full_recall(results, labels):
     missed = [n for n in results if labels[n]["violation"] and results[n]["verdict"] != "violation"]
     assert missed == []
