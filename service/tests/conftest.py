@@ -21,6 +21,12 @@ LABELS_XLSX = ROOT_DIR / "open" / "open_labels.xlsx"
 FAKE_PIPELINE_DIR = SERVICE_DIR / "tests" / "fixtures" / "fake_pipeline"
 TEST_API_KEY = "e2e-test-key-0123456789abcdef"
 
+RESULTS_DIR = SERVICE_DIR / "results"
+# Датасет-тесты берут детекции/состояния из results/ (FEATURES_CACHE), если они есть: без детектора прогон 42 видео
+# занимает ~15 с вместо ~5 мин. Живой путь (детектор YOLOX по видео) проверяется отдельным тестом на одном видео.
+if (RESULTS_DIR / "perception").exists() and "FEATURES_CACHE" not in os.environ:
+    os.environ["FEATURES_CACHE"] = str(RESULTS_DIR)
+
 POSITIVE_VIDEO = "Х-11.mov"   # нарушение T3 (экран АРМ активен после выключения света; контекст T9), разметка 18 с
 NEGATIVE_VIDEO = "Х-3.mov"    # без нарушения
 LONGEST_VIDEO = "Х-14.mov"    # 143 с — самое длинное видео датасета

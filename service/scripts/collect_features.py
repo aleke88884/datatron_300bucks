@@ -91,6 +91,8 @@ def main() -> None:
     ap.add_argument("--names", nargs="*", help="обработать только эти видео (без .mov)")
     ap.add_argument("--skip-items", action="store_true", help="не запускать детектор предметов на кропе стола")
     ap.add_argument("--skip-pipeline", action="store_true", help="не запускать analyze_video")
+    ap.add_argument("--reuse-perception", action="store_true",
+                    help="не запускать детектор: взять results/perception/<видео>.json, если есть (быстрый пересчёт состояний без GPU/весов)")
     args = ap.parse_args()
 
     videos_dir = Path(args.videos)
@@ -167,8 +169,14 @@ def main() -> None:
                 # 1) восприятие (люди, объекты, треки)
                 tp = time.time()
                 log("      шаг 1/3: детекция людей и объектов (YOLOX-m), треки, признак «внутри кассы» ...")
-                perc = cached_perception(str(src), info, cache_dir=None, progress=make_progress("детекция"))
-                (out / "perception" / f"{name}.json").write_text(json.dumps(perception_to_dict(perc)), encoding="utf-8")
+                pj = out / "perception" / f"{name}.json"
+                if args.reuse_perception and pj.exists():
+                    from pipeline.perception import perception_from_dict
+                    perc = perception_from_dict(json.loads(pj.read_text(encoding="utf-8")), info)
+                    log("      детекции взяты из results/perception (без запуска детектора)")
+                else:
+                    perc = cached_perception(str(src), info, cache_dir=None, progress=make_progress("детекция"))
+                    pj.write_text(json.dumps(perception_to_dict(perc)), encoding="utf-8")
                 rec["perception_sec"] = round(time.time() - tp, 1)
                 rec["tracks"] = len([t for t in perc.tracks if t.t1 - t.t0 >= 0.5])
                 rec["max_inside"] = int(perc.count_inside().max()) if perc.times else 0

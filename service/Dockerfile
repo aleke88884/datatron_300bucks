@@ -14,6 +14,12 @@ RUN pip install -r requirements.txt
 COPY app ./app
 COPY pipeline ./pipeline
 COPY static ./static
+COPY scripts/get_models.py ./scripts/get_models.py
+
+# Веса детектора YOLOX-m (Apache-2.0) скачиваются на этапе сборки: контейнер работает без интернета.
+# Если веса уже лежат в service/models/, они копируются и повторно не скачиваются.
+COPY models* ./models/
+RUN python scripts/get_models.py
 
 RUN useradd -m -u 10001 svc && mkdir -p /app/data && chown -R svc:svc /app
 USER svc

@@ -7,18 +7,22 @@
 """
 from __future__ import annotations
 
+import json
 import logging
+import os
 import re
 import time
+from pathlib import Path
 from typing import Callable, Optional
 
 from .context import Event, VideoContext
 from .detectors import DETECTORS
-from .draw import box, caption
+from .draw import box as draw_box
+from .draw import caption
 from .rules import RULES, api_rule
 from .video import brightness_series, encode_jpeg_base64, read_frame_at
 
-PIPELINE_VERSION = "0.2.0"
+PIPELINE_VERSION = "0.3.0"
 MIN_CONFIDENCE = 0.5          # политика вердикта (ПЛАН 5.4): событие учитывается при уверенности ≥ порога
 MAX_EVIDENCE_FRAMES = 3       # ТЗ: 1–3 кадра
 # Контекстные события: описывают условия сцены, но САМИ ПО СЕБЕ не являются нарушением и не дают вердикт.
@@ -36,11 +40,62 @@ def warmup() -> None:
     """Загрузка моделей/весов. Вызывается один раз при старте воркер-процесса. Пока моделей нет — только импорт cv2."""
     import cv2  # noqa: F401
 
+    try:
+        from .detect import get_detector
+
+        get_detector()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("detector not available at warmup: %s", exc)
+    try:
+        from .vlm import get_describer
+
+        d = get_describer()
+        if d.available():
+            d.load()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("vlm not available at warmup: %s", exc)
     log.info("pipeline %s warmed up (cv2 %s)", PIPELINE_VERSION, cv2.__version__)
 
 
 def _noop(stage: str, percent: Optional[int] = None) -> None:
     return None
+
+
+def _features_cache_dir() -> Optional[Path]:
+    """Папка с заранее посчитанными признаками (results/): perception/<видео>.json и states/<видео>.json.
+    Используется офлайн-оценкой правил и тестами; в проде не задаётся — всё считается по видео."""
+    p = os.environ.get("FEATURES_CACHE")
+    return Path(p) if p else None
+
+
+def _perceive(path: str, info, progress):
+    """Perception + states: из кеша признаков (если задан FEATURES_CACHE и файлы есть) или по видео."""
+    from .perception import cached_perception, perception_from_dict
+    from .states import extract_states
+
+    stem = Path(path).stem.replace("X", "Х")
+    cache = _features_cache_dir()
+    perc = states = None
+    if cache is not None:
+        pj = cache / "perception" / f"{stem}.json"
+        sj = cache / "states" / f"{stem}.json"
+        if pj.exists():
+            perc = perception_from_dict(json.loads(pj.read_text(encoding="utf-8")), info)
+            log.info("perception from cache %s", pj)
+        if sj.exists() and perc is not None:
+            states = json.loads(sj.read_text(encoding="utf-8"))
+            if (states.get("scene") or {}).get("version") != 2:
+                states = None
+    if perc is None:
+        progress("detection", 20)
+        perc = cached_perception(path, info, progress=progress)
+    if states is None:
+        progress("states", 45)
+        states = extract_states(path, info, perc, progress=progress)
+        if cache is not None:
+            (cache / "states").mkdir(parents=True, exist_ok=True)
+            (cache / "states" / f"{stem}.json").write_text(json.dumps(states, ensure_ascii=False), encoding="utf-8")
+    return perc, states
 
 
 def detector_code(det: Callable) -> str:
@@ -64,6 +119,8 @@ def _run_detectors(ctx: VideoContext, dets: list[Callable]) -> list[Event]:
 
 
 def build_evidence(ctx: VideoContext, ev: Event) -> list[dict]:
+    if os.environ.get("EVIDENCE_FRAMES") == "0":
+        return [{"timestamp_sec": round(float(ev.timecode_sec), 2), "image_base64": ""}]
     times = ev.evidence_times[:MAX_EVIDENCE_FRAMES] or [ev.timecode_sec]
     caps = list(ev.evidence_captions) + [""] * len(times)
     rule = RULES[ev.type_code]
@@ -76,7 +133,10 @@ def build_evidence(ctx: VideoContext, ev: Event) -> list[dict]:
         if frame is None:
             continue
         if xyxy is not None:
-            frame = box(frame, xyxy)
+            try:
+                frame = draw_box(frame, tuple(int(v) for v in xyxy), label=ev.type_code)
+            except Exception:  # noqa: BLE001
+                pass
         lines = [f"{ev.type_code} · {rule['name']}", f"t = {ts:.1f} с" + (f" · {cap_text}" if cap_text else "")]
         frame = caption(frame, lines)
         frames.append({"timestamp_sec": round(ts, 2), "image_base64": encode_jpeg_base64(frame)})
@@ -115,8 +175,22 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     ctx = VideoContext(path=path, info=info, bright_t=bt, bright_v=bv, progress=progress)
     log.info("decoded %s: %.1fs, %.2f fps, %dx%d", path, info.duration_sec, info.fps, info.width, info.height)
 
-    # Слои восприятия/состояний (детекции, треки, зоны, состояния) подключаются здесь:
-    # progress("detection", 30); ctx.detections = ...; ctx.tracks = ...; ctx.states = ...
+    # --- слой восприятия и состояний сцены (детекции людей/объектов, якоря, роли, зоны)
+    perception_ok = False
+    try:
+        perc, states = _perceive(path, info, progress)
+        from .scene import build_scene, scene_summary
+
+        scene = build_scene(perc, states, info)
+        ctx.scene = scene
+        ctx.tracks = perc.tracks
+        ctx.states = states
+        ctx.zones = scene.anchors
+        ctx.cache["scene_summary"] = scene_summary(scene)
+        perception_ok = True
+    except Exception as exc:  # noqa: BLE001 — без восприятия работают только правила по яркости (T9/T3-тёмный)
+        log.exception("perception layer failed, falling back to brightness-only rules: %s", exc)
+        ctx.cache["perception_error"] = f"{type(exc).__name__}: {exc}"
 
     progress("rules", 60)
     # Фаза 1 — контекстные правила (T9): результат кладём в ctx.context_events ДО запуска остальных правил,
@@ -133,7 +207,14 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     violations = [event_to_violation(ctx, ev) for ev in events]
 
     progress("describing", 95)
-    # Здесь — VLM-слой: уточнение описаний по кадрам события (ПЛАН 5.1, п. 4). Пока описания шаблонные.
+    # VLM-слой: уточнение описаний по кадрам события (ПЛАН 5.1, п. 4); без модели остаются шаблоны из правил
+    if violations:
+        try:
+            from .vlm import describe_violations
+
+            describe_violations(path, violations, info)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("vlm layer skipped: %s", exc)
 
     result = {
         "verdict": "violation" if violations else "no_violation",
@@ -146,6 +227,9 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
             "pipeline_version": PIPELINE_VERSION,
             "pipeline_time_sec": round(time.time() - t0, 2),
             "rules_checked": [d.__name__ for d in DETECTORS],
+            "perception": perception_ok,
+            "scene": ctx.cache.get("scene_summary"),
+            "perception_error": ctx.cache.get("perception_error"),
             # контекст сцены (не нарушения): например, T9 — освещение выключено с t по end
             "context_events": [
                 {

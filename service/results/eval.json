@@ -1,0 +1,1759 @@
+{
+ "rows": [
+  {
+   "name": "Х-1",
+   "label": {
+    "violation": true,
+    "timecode": 22.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 52,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-2",
+   "label": {
+    "violation": true,
+    "timecode": 10.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 34,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-3",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 40,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-4",
+   "label": {
+    "violation": true,
+    "timecode": 57.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside",
+     "8": "outside",
+     "9": "outside",
+     "10": "outside",
+     "11": "outside",
+     "12": "visitor",
+     "13": "outside",
+     "14": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3,
+     12
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 146,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 60,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.6
+  },
+  {
+   "name": "Х-5",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "visitor",
+     "2": "cashier",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside",
+     "6": "phantom",
+     "7": "phantom",
+     "8": "phantom",
+     "9": "phantom",
+     "10": "phantom",
+     "11": "outside",
+     "12": "outside",
+     "13": "outside",
+     "14": "outside",
+     "15": "outside",
+     "16": "outside",
+     "17": "phantom",
+     "18": "outside",
+     "19": "phantom",
+     "20": "outside",
+     "21": "visitor",
+     "22": "outside"
+    },
+    "cashier_tracks": [
+     2
+    ],
+    "visitor_tracks": [
+     1,
+     21
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 143,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 88,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.6
+  },
+  {
+   "name": "Х-8",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 76
+    },
+    "bag_frames": 1,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.4
+  },
+  {
+   "name": "Х-10",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 18,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-11",
+   "label": {
+    "violation": true,
+    "timecode": 18.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T3",
+     "timecode_sec": 16.06,
+     "confidence": 0.95,
+     "description": "В 16.1 с освещение в кассе выключено (свет гасят, покидая рабочее место), при этом экран ноутбука (АРМ) остаётся активным: в темноте до конца записи (25.6 с) на месте экрана сохраняется неподвижная светящаяся область 23×48 пикс. (яркость 227 при 51 вокруг, контраст ×4.5). Рабочее место при уходе не заблокировано — экран не погашен."
+    }
+   ],
+   "context": [
+    [
+     "T9",
+     16.06
+    ]
+   ],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.961,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 17,
+     "off": 14
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 26,
+    "safe_open_frames": 1,
+    "lights_off_frames": 19,
+    "notes": []
+   },
+   "elapsed": 1.4
+  },
+  {
+   "name": "Х-12",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [
+    [
+     "T9",
+     32.35
+    ]
+   ],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.976,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 65
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 23,
+    "safe_open_frames": 0,
+    "lights_off_frames": 20,
+    "notes": []
+   },
+   "elapsed": 0.6
+  },
+  {
+   "name": "Х-13",
+   "label": {
+    "violation": true,
+    "timecode": 47.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T1",
+     "timecode_sec": 64.1,
+     "confidence": 0.82,
+     "description": "В 64.1 с кассир вышел из помещения (с 64.1 с вне рабочего места не менее 1.5 с), при этом на столешнице без присмотра остаётся инкассаторская сумка. Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.969,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 117
+    },
+    "bag_frames": 96,
+    "desk_obj_frames": 106,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.7
+  },
+  {
+   "name": "Х-14",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside",
+     "8": "outside",
+     "9": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 209
+    },
+    "bag_frames": 20,
+    "desk_obj_frames": 179,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 1.3
+  },
+  {
+   "name": "Х-15",
+   "label": {
+    "violation": true,
+    "timecode": 15.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T1",
+     "timecode_sec": 20.06,
+     "confidence": 0.8,
+     "description": "В 20.1 с кассир вышел из помещения (с 20.1 с вне рабочего места не менее 1.0 с), при этом на столешнице без присмотра остаётся инкассаторская сумка. Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.929,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 41
+    },
+    "bag_frames": 35,
+    "desk_obj_frames": 33,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.3
+  },
+  {
+   "name": "Х-16",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 0,
+     "locked": 46,
+     "off": 0
+    },
+    "bag_frames": 14,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-17",
+   "label": {
+    "violation": true,
+    "timecode": 7.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T10",
+     "timecode_sec": 7.0,
+     "confidence": 0.72,
+     "description": "В 2.0 с в кассовое помещение входит посетитель (инкассатор) и уже в 7.0 с, через 5.0 с, инкассаторская сумка оказывается на столе кассира: передача ценностей происходит внутри кассы из рук в руки, без предъявления документов и проверки целостности сумки и пломбы, а посторонний находится у рабочего места кассира."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 0,
+     "locked": 30,
+     "off": 0
+    },
+    "bag_frames": 16,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-18",
+   "label": {
+    "violation": true,
+    "timecode": 20.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T4",
+     "timecode_sec": 16.05,
+     "confidence": 0.9,
+     "description": "В 16.1 с в кассовом помещении одновременно находятся 3 человека не менее 7.0 с: помимо кассира и обслуживаемого клиента внутри присутствует ещё одно лицо. Доступ посторонних в кассовый узел должен быть исключён."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "phantom",
+     "6": "visitor"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3,
+     6
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 3,
+    "screen_states": {
+     "active": 0,
+     "locked": 46,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 10,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.3
+  },
+  {
+   "name": "Х-19",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "visitor",
+     "8": "outside",
+     "9": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3,
+     7
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 61,
+     "locked": 54,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 18,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.5
+  },
+  {
+   "name": "Х-20",
+   "label": {
+    "violation": true,
+    "timecode": 5.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 23,
+     "off": 1
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 4,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.1
+  },
+  {
+   "name": "Х-21",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 38,
+     "off": 1
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 20,
+    "safe_open_frames": 1,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-22",
+   "label": {
+    "violation": true,
+    "timecode": 14.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.929,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 9,
+     "locked": 1,
+     "off": 31
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 6,
+    "safe_open_frames": 8,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-23",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.919,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 23,
+     "off": 1
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 7,
+    "safe_open_frames": 3,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-24",
+   "label": {
+    "violation": true,
+    "timecode": 8.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T1",
+     "timecode_sec": 5.5,
+     "confidence": 0.82,
+     "description": "В 5.5 с кассир встал и отошёл от стола (с 12.5 с вне рабочего места не менее 2.5 с), при этом на столешнице без присмотра остаётся инкассаторская сумка. Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.867,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 29,
+     "off": 1
+    },
+    "bag_frames": 30,
+    "desk_obj_frames": 2,
+    "safe_open_frames": 2,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-25",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.938,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 58,
+     "off": 5
+    },
+    "bag_frames": 27,
+    "desk_obj_frames": 16,
+    "safe_open_frames": 6,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.3
+  },
+  {
+   "name": "Х-26",
+   "label": {
+    "violation": true,
+    "timecode": 9.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.875,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 38,
+     "off": 2
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 6,
+    "safe_open_frames": 3,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-27",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.906,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 50,
+     "off": 2
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 11,
+    "safe_open_frames": 12,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-28",
+   "label": {
+    "violation": true,
+    "timecode": 7.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T1",
+     "timecode_sec": 7.06,
+     "confidence": 0.85,
+     "description": "В 7.1 с кассир встал и отошёл от стола (с 13.6 с вне рабочего места не менее 3.0 с), при этом на столешнице без присмотра остаются наличные/ценности (предмет, положенный на столешницу). Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
+    },
+    {
+     "type_code": "T3",
+     "timecode_sec": 7.06,
+     "confidence": 0.82,
+     "description": "В 7.1 с кассир встал и отошёл от рабочего места, экран ноутбука (АРМ) остаётся активным не менее 3.0 с (яркий рабочий экран, не экран блокировки). Рабочее место при уходе не заблокировано."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.879,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 18,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 28,
+    "safe_open_frames": 2,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 1.3
+  },
+  {
+   "name": "Х-29",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.914,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 18,
+     "off": 1
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 12,
+    "safe_open_frames": 6,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-30",
+   "label": {
+    "violation": true,
+    "timecode": 13.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T5",
+     "timecode_sec": 12.54,
+     "confidence": 0.88,
+     "description": "В 12.5 с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и хранилищем) и находится там не менее 6.5 с. Клиент должен оставаться по свою сторону кассы; передача наличных — через передаточное устройство."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "visitor"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     2
+    ],
+    "cashier_inside_frac": 0.947,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-31",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.875,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 2,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-32",
+   "label": {
+    "violation": true,
+    "timecode": 5.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.907,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-33",
+   "label": {
+    "violation": true,
+    "timecode": 6.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T5",
+     "timecode_sec": 11.0,
+     "confidence": 0.86,
+     "description": "В 11.0 с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и хранилищем) и находится там не менее 3.5 с. Клиент должен оставаться по свою сторону кассы; передача наличных — через передаточное устройство."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "visitor",
+     "3": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     2
+    ],
+    "cashier_inside_frac": 0.897,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 6,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-34",
+   "label": {
+    "violation": true,
+    "timecode": 13.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "phantom",
+     "5": "phantom",
+     "6": "outside",
+     "7": "outside",
+     "8": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 3,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 34
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-35",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside",
+     "8": "outside",
+     "9": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 112
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.5
+  },
+  {
+   "name": "Х-37",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 31
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 0,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.1
+  },
+  {
+   "name": "Х-38",
+   "label": {
+    "violation": true,
+    "timecode": 33.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T7",
+     "timecode_sec": 31.04,
+     "confidence": 0.74,
+     "description": "В 31.0 с в кассу входит посетитель, при этом на столешнице кассира открыто лежат наличные/ценности (видны не менее 3.0 с до входа). Ранее принятые деньги должны находиться в запираемых устройствах, а не открыто на столе при приёме следующего клиента."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "visitor",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside",
+     "6": "visitor",
+     "7": "outside",
+     "8": "outside",
+     "9": "outside",
+     "10": "visitor",
+     "11": "phantom",
+     "12": "outside",
+     "13": "outside",
+     "14": "visitor",
+     "15": "outside",
+     "16": "outside",
+     "17": "outside",
+     "18": "outside",
+     "19": "outside",
+     "20": "outside",
+     "21": "visitor"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     2,
+     6,
+     10,
+     14,
+     21
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 3,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 116
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 60,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.6
+  },
+  {
+   "name": "Х-39",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside",
+     "8": "outside",
+     "9": "visitor",
+     "10": "outside",
+     "11": "outside",
+     "12": "outside",
+     "13": "phantom",
+     "14": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3,
+     9
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 158
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 1,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.7
+  },
+  {
+   "name": "Х-40",
+   "label": {
+    "violation": true,
+    "timecode": 17.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 0.961,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 1,
+    "desk_obj_frames": 5,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-43",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 47
+    },
+    "bag_frames": 3,
+    "desk_obj_frames": 20,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-44",
+   "label": {
+    "violation": true,
+    "timecode": 16.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 41
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 17,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-45",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "phantom",
+     "3": "phantom"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 11,
+    "desk_obj_frames": 34,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.3
+  },
+  {
+   "name": "Х-46",
+   "label": {
+    "violation": true,
+    "timecode": 11.0
+   },
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T8",
+     "timecode_sec": 13.05,
+     "confidence": 0.72,
+     "description": "С 13.1 с на рабочем столе кассира находится стакан/бутылка (напиток), рядом с наличными и оборудованием; кассир пользуется им на рабочем месте. Личные вещи, еда и напитки на кассовом рабочем месте не допускаются."
+    }
+   ],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 1,
+    "screen_states": {
+     "active": 0,
+     "locked": 0,
+     "off": 39
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 16,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.2
+  },
+  {
+   "name": "Х-47",
+   "label": {
+    "violation": true,
+    "timecode": 68.0
+   },
+   "verdict": "no_violation",
+   "ok": "FN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "cashier",
+     "2": "outside",
+     "3": "visitor",
+     "4": "outside",
+     "5": "outside",
+     "6": "outside",
+     "7": "outside",
+     "8": "outside",
+     "9": "outside",
+     "10": "outside",
+     "11": "outside",
+     "12": "visitor",
+     "13": "outside",
+     "14": "outside"
+    },
+    "cashier_tracks": [
+     1
+    ],
+    "visitor_tracks": [
+     3,
+     12
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 146,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 60,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.6
+  },
+  {
+   "name": "Х-48",
+   "label": {
+    "violation": false,
+    "timecode": null
+   },
+   "verdict": "no_violation",
+   "ok": "TN",
+   "violations": [],
+   "context": [],
+   "scene": {
+    "roles": {
+     "1": "visitor",
+     "2": "cashier",
+     "3": "outside",
+     "4": "outside",
+     "5": "outside",
+     "6": "phantom",
+     "7": "phantom",
+     "8": "phantom",
+     "9": "phantom",
+     "10": "phantom",
+     "11": "outside",
+     "12": "outside",
+     "13": "outside",
+     "14": "outside",
+     "15": "outside",
+     "16": "outside",
+     "17": "phantom",
+     "18": "outside",
+     "19": "phantom",
+     "20": "outside",
+     "21": "visitor",
+     "22": "outside"
+    },
+    "cashier_tracks": [
+     2
+    ],
+    "visitor_tracks": [
+     1,
+     21
+    ],
+    "cashier_inside_frac": 1.0,
+    "max_strong_inside": 2,
+    "screen_states": {
+     "active": 143,
+     "locked": 0,
+     "off": 0
+    },
+    "bag_frames": 0,
+    "desk_obj_frames": 88,
+    "safe_open_frames": 0,
+    "lights_off_frames": 0,
+    "notes": []
+   },
+   "elapsed": 0.6
+  }
+ ],
+ "tp": 11,
+ "fn": 11,
+ "fp": 0,
+ "tn": 20
+}

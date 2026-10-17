@@ -122,7 +122,7 @@ class YoloxDetector:
         so = ort.SessionOptions()
         if threads:
             so.intra_op_num_threads = threads
-        self.session = ort.InferenceSession(str(self.path), so, providers=["CPUExecutionProvider"])
+        self.session = ort.InferenceSession(str(self.path), so, providers=[p.strip() for p in os.environ.get("ORT_PROVIDERS", "CPUExecutionProvider").split(",") if p.strip()])
         self.input_name = self.session.get_inputs()[0].name
         self.size = input_size
         self._lock = threading.Lock()

@@ -22,7 +22,10 @@ if str(SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICE_DIR))
 
 LIGHTS_OFF_VIDEOS = {"Х-11", "Х-12"}   # в обоих кассир выключает свет; нарушение только в Х-11 (экран ноутбука активен — T3)
-SCREEN_ON_VIDEOS = {"Х-11"}            # где T3 должен сработать; в Х-12 крышка ноутбука закрыта — экрана нет
+SCREEN_ON_VIDEOS = {"Х-11", "Х-28"}    # где T3 должен сработать: Х-11 (экран светится в темноте), Х-28 (кассир ушёл, экран активен)
+# Ожидаемые срабатывания правил по датасету (офлайн-оценка scripts/eval_rules.py, 17.10.2026): 11 из 22 нарушений, 0 ложных
+EXPECTED_TP = {"Х-11", "Х-13", "Х-15", "Х-17", "Х-18", "Х-24", "Х-28", "Х-30", "Х-33", "Х-38", "Х-46"}
+EXPECTED_TYPES = {"Х-17": "T10", "Х-18": "T4", "Х-30": "T5", "Х-33": "T5", "Х-38": "T7", "Х-46": "T8", "Х-15": "T1", "Х-24": "T1"}
 LABEL_TOLERANCE_SEC = 3.0
 
 
@@ -143,10 +146,35 @@ def test_t3_violation_on_x11_near_label(results, labels):
     assert len(ts) == 3 and ts == sorted(ts) and ts[0] < t3["timecode_sec"] <= ts[1] < ts[2]
 
 
-def test_t3_fires_only_on_x11(results):
+def test_t3_fires_only_where_screen_active(results):
     fired = {n for n, r in results.items() if _t3(r)}
     assert fired == SCREEN_ON_VIDEOS, fired
     assert results["Х-12"]["verdict"] == "no_violation", "в Х-12 свет тоже гаснет, но экрана нет — нарушения нет"
+
+
+def test_expected_true_positives(results, labels):
+    """Правила находят зафиксированный набор нарушений (регресс-ориентир офлайн-оценки)."""
+    found = {n for n, r in results.items() if r["verdict"] == "violation" and labels[n]["violation"]}
+    missing = EXPECTED_TP - found
+    assert not missing, f"пропали ожидаемые срабатывания: {sorted(missing)}"
+
+
+def test_expected_types(results):
+    for name, code in EXPECTED_TYPES.items():
+        codes = [v["type_code"] for v in results[name]["violations"]]
+        assert code in codes, f"{name}: ожидали {code}, получили {codes}"
+
+
+def test_timecodes_near_labels(results, labels):
+    """Для найденных нарушений хотя бы одно событие в пределах 3 с от разметки — не менее чем в половине случаев."""
+    ok = tot = 0
+    for n, r in results.items():
+        if r["verdict"] != "violation" or not labels[n]["violation"] or labels[n]["timecode"] is None:
+            continue
+        tot += 1
+        if min(abs(v["timecode_sec"] - labels[n]["timecode"]) for v in r["violations"]) <= LABEL_TOLERANCE_SEC:
+            ok += 1
+    assert tot == 0 or ok / tot >= 0.5, f"в допуске {ok} из {tot}"
 
 
 def test_no_false_positives_on_clean_videos(results, labels):
@@ -284,7 +312,7 @@ def test_metrics_report(results, labels):
     assert len(tn) == len(clean)
 
 
-@pytest.mark.xfail(reason="реализованы T9 (контекст) и T3 (экран активен в темноте); правила T1, T2, T4–T8, T10–T13 — заглушки", strict=True)
+@pytest.mark.xfail(reason="правила находят 11 из 22 нарушений (см. EXPECTED_TP); T2/T6/T13 выключены, T11/T12 не реализованы", strict=True)
 def test_full_recall(results, labels):
     missed = [n for n in results if labels[n]["violation"] and results[n]["verdict"] != "violation"]
     assert missed == []

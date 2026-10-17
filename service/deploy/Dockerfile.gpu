@@ -1,0 +1,70 @@
+# GPU-вариант сервиса (NVIDIA CUDA). Собирать из папки service/:
+#   docker build -f deploy/Dockerfile.gpu -t fortebank-cashdesk:gpu .
+#   docker build -f deploy/Dockerfile.gpu --build-arg WITH_VLM=1 -t fortebank-cashdesk:gpu-vlm .
+# Или через deploy/docker-compose.gpu.yml (контекст сборки — service/).
+#
+# Отличия от service/Dockerfile (CPU):
+#   - база nvidia/cuda runtime (CUDA 12.6 + cuDNN 9) на Ubuntu 24.04 → системный Python 3.12;
+#   - onnxruntime-gpu вместо onnxruntime (те же версии остальных зависимостей из requirements.txt);
+#   - WITH_VLM=1 дополнительно ставит torch (CUDA 12.6) + requirements-vlm.txt (transformers, accelerate,
+#     qwen-vl-utils, bitsandbytes) для локальной VLM Qwen2.5-VL-7B-Instruct (Apache-2.0). Веса VLM (~16 ГБ)
+#     в образ не кладутся: на хосте `python scripts/get_vlm.py` → service/models/vlm, папка монтируется в
+#     /app/models (см. compose); включается VLM_ENABLED=1 (и VLM_4BIT=1 для 8–12 ГБ видеопамяти) в .env;
+#   - DOWNLOAD_MODELS=1 кладёт веса YOLOX в образ на этапе сборки (контейнер работает без интернета);
+#     по умолчанию 0 — веса ожидаются в volume /app/models (service/models на хосте).
+#
+# Детектор (pipeline/detect.py) читает провайдер ONNX Runtime из ORT_PROVIDERS; образ задаёт
+# CUDAExecutionProvider,CPUExecutionProvider — на хосте с NVIDIA Container Toolkit детекции идут на GPU,
+# без GPU ONNX Runtime сам откатывается на CPU.
+
+ARG CUDA_IMAGE=nvidia/cuda:12.6.3-cudnn-runtime-ubuntu24.04
+FROM ${CUDA_IMAGE}
+
+ARG WITH_VLM=0
+ARG DOWNLOAD_MODELS=0
+
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3 python3-venv python3-pip \
+        libglib2.0-0 fonts-dejavu-core curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Отдельный venv, чтобы не трогать системный Python (PEP 668).
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv ${VIRTUAL_ENV}
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
+WORKDIR /app
+COPY requirements.txt requirements-vlm.txt ./
+# Те же зависимости, что на CPU, но onnxruntime → onnxruntime-gpu (CUDA 12.x, cuDNN 9).
+RUN sed -E 's/^onnxruntime(>=|==)/onnxruntime-gpu\1/' requirements.txt > requirements.gpu.txt \
+    && pip install --upgrade pip \
+    && pip install -r requirements.gpu.txt
+
+# Опционально: стек для локальной VLM (Qwen2.5-VL-7B-Instruct, Apache-2.0) — тот же список, что requirements-vlm.txt,
+# torch берётся с CUDA-индексом PyTorch, чтобы не получить CPU-колесо.
+RUN if [ "${WITH_VLM}" = "1" ]; then \
+        pip install --index-url https://download.pytorch.org/whl/cu126 "torch>=2.4" \
+        && pip install -r requirements-vlm.txt ; \
+    fi
+
+COPY app ./app
+COPY pipeline ./pipeline
+COPY static ./static
+COPY scripts/get_models.py ./scripts/get_models.py
+
+# Опционально: веса YOLOX-m (97 МБ, Apache-2.0) внутрь образа — тогда /app/models не нужно монтировать.
+RUN mkdir -p /app/models && if [ "${DOWNLOAD_MODELS}" = "1" ]; then python scripts/get_models.py; fi
+
+RUN useradd -m -u 10001 svc && mkdir -p /app/data && chown -R svc:svc /app
+USER svc
+
+ENV DATA_DIR=/app/data \
+    MODELS_DIR=/app/models \
+    ORT_PROVIDERS=CUDAExecutionProvider,CPUExecutionProvider \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s CMD curl -fsS http://127.0.0.1:8000/health || exit 1
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

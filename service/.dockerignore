@@ -1,5 +1,9 @@
 .venv
 data
+results
+tests
 __pycache__
 *.pyc
 .env
+models/*.part
+models/vlm

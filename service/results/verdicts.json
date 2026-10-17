@@ -6,22 +6,22 @@
    "timecode": 22.0
   },
   "duration_sec": 25.933333333333334,
-  "perception_sec": 12.1,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 2,
-  "states_sec": 9.7,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
-    68,
+    102,
     392,
     228,
-    531
+    479
    ],
    "safe": [
     285,
     373,
-    451,
-    497
+    464,
+    559
    ],
    "laptop": [
     236.02159118652344,
@@ -35,14 +35,14 @@
     199,
     284
    ],
-   "median_brightness": 140.22733765045544
+   "median_brightness": 139.819578013175
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.4,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 22.2
+  "total_sec": 0.9
  },
  "Х-2": {
   "file": "X-2.mov",
@@ -51,10 +51,10 @@
    "timecode": 10.0
   },
   "duration_sec": 17.066666666666666,
-  "perception_sec": 8.0,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 2,
-  "states_sec": 6.4,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     104,
@@ -65,8 +65,8 @@
    "safe": [
     299,
     375,
-    449,
-    525
+    464,
+    559
    ],
    "laptop": [
     237.38937377929688,
@@ -80,14 +80,14 @@
     199,
     284
    ],
-   "median_brightness": 139.55867253578398
+   "median_brightness": 139.418388093689
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
   "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 14.7
+  "total_sec": 0.6
  },
  "Х-10": {
   "file": "Х-10.mov",
@@ -96,18 +96,23 @@
    "timecode": null
   },
   "duration_sec": 15.566666666666666,
-  "perception_sec": 7.2,
+  "perception_sec": 0.0,
   "tracks": 1,
   "max_inside": 1,
-  "states_sec": 6.0,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     22,
-    301,
+    290,
     274,
     496
    ],
-   "safe": null,
+   "safe": [
+    370,
+    212,
+    464,
+    368
+   ],
    "laptop": null,
    "door_band": [
     109,
@@ -115,14 +120,14 @@
     199,
     284
    ],
-   "median_brightness": 137.72112373942747
+   "median_brightness": 137.615693111581
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.2,
+  "pipeline_sec": 0.1,
   "ok": true,
-  "total_sec": 13.5
+  "total_sec": 0.7
  },
  "Х-11": {
   "file": "Х-11.mov",
@@ -131,10 +136,10 @@
    "timecode": 18.0
   },
   "duration_sec": 25.6,
-  "perception_sec": 11.6,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 1,
-  "states_sec": 9.2,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     56,
@@ -143,10 +148,10 @@
     498
    ],
    "safe": [
-    420,
-    228,
-    464,
-    316
+    162,
+    396,
+    241,
+    471
    ],
    "laptop": [
     226.19900512695312,
@@ -160,7 +165,7 @@
     199,
     284
    ],
-   "median_brightness": 137.29607189329863
+   "median_brightness": 137.1563389516916
   },
   "verdict": "violation",
   "violations": [
@@ -178,9 +183,9 @@
     "end_sec": 25.6
    }
   ],
-  "pipeline_sec": 2.2,
+  "pipeline_sec": 1.3,
   "ok": true,
-  "total_sec": 23.0
+  "total_sec": 1.9
  },
  "Х-12": {
   "file": "Х-12.mov",
@@ -189,10 +194,10 @@
    "timecode": null
   },
   "duration_sec": 42.300000000000004,
-  "perception_sec": 19.5,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 1,
-  "states_sec": 15.5,
+  "states_sec": 0.9,
   "scene": {
    "desk": [
     56,
@@ -200,7 +205,12 @@
     286,
     499
    ],
-   "safe": null,
+   "safe": [
+    388,
+    212,
+    464,
+    417
+   ],
    "laptop": [
     228.92704010009766,
     352.20301818847656,
@@ -213,7 +223,7 @@
     199,
     284
    ],
-   "median_brightness": 138.14190336288223
+   "median_brightness": 137.91670309450228
   },
   "verdict": "no_violation",
   "violations": [],
@@ -224,9 +234,9 @@
     "end_sec": 42.3
    }
   ],
-  "pipeline_sec": 0.9,
+  "pipeline_sec": 0.6,
   "ok": true,
-  "total_sec": 35.9
+  "total_sec": 1.5
  },
  "Х-13": {
   "file": "Х-13.mov",
@@ -235,18 +245,23 @@
    "timecode": 47.0
   },
   "duration_sec": 65.3,
-  "perception_sec": 29.8,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 1,
-  "states_sec": 24.4,
+  "states_sec": 1.6,
   "scene": {
    "desk": [
     38,
-    225,
+    227,
     304,
     493
    ],
-   "safe": null,
+   "safe": [
+    292,
+    493,
+    371,
+    557
+   ],
    "laptop": [
     213.6827621459961,
     313.2848815917969,
@@ -259,14 +274,21 @@
     199,
     284
    ],
-   "median_brightness": 137.5583294364021
+   "median_brightness": 137.44932295055304
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T1",
+    "timecode_sec": 64.1,
+    "end_sec": 65.1,
+    "confidence": 0.82
+   }
+  ],
   "context_events": [],
-  "pipeline_sec": 1.0,
+  "pipeline_sec": 0.7,
   "ok": true,
-  "total_sec": 55.2
+  "total_sec": 2.3
  },
  "Х-14": {
   "file": "Х-14.mov",
@@ -275,10 +297,10 @@
    "timecode": null
   },
   "duration_sec": 142.53333333333333,
-  "perception_sec": 68.2,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 1,
-  "states_sec": 54.3,
+  "states_sec": 2.9,
   "scene": {
    "desk": [
     56,
@@ -287,10 +309,10 @@
     499
    ],
    "safe": [
-    408,
-    228,
+    388,
+    212,
     464,
-    331
+    344
    ],
    "laptop": [
     223.86534881591797,
@@ -304,14 +326,14 @@
     199,
     284
    ],
-   "median_brightness": 139.20082496340274
+   "median_brightness": 138.89756577342226
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 1.9,
+  "pipeline_sec": 1.4,
   "ok": true,
-  "total_sec": 124.5
+  "total_sec": 4.3
  },
  "Х-15": {
   "file": "Х-15.mov",
@@ -320,10 +342,10 @@
    "timecode": 15.0
   },
   "duration_sec": 20.866666666666667,
-  "perception_sec": 9.8,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 1,
-  "states_sec": 7.9,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     38,
@@ -331,7 +353,12 @@
     304,
     491
    ],
-   "safe": null,
+   "safe": [
+    262,
+    485,
+    383,
+    559
+   ],
    "laptop": [
     213.54180908203125,
     313.0065612792969,
@@ -344,14 +371,21 @@
     199,
     284
    ],
-   "median_brightness": 136.16927252765126
+   "median_brightness": 136.06794130204943
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T1",
+    "timecode_sec": 20.06,
+    "end_sec": 20.57,
+    "confidence": 0.8
+   }
+  ],
   "context_events": [],
   "pipeline_sec": 0.3,
   "ok": true,
-  "total_sec": 18.0
+  "total_sec": 0.9
  },
  "Х-16": {
   "file": "Х-16.mov",
@@ -360,22 +394,22 @@
    "timecode": null
   },
   "duration_sec": 22.733333333333334,
-  "perception_sec": 10.7,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 2,
-  "states_sec": 9.1,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     78,
-    356,
+    360,
     304,
     447
    ],
    "safe": [
-    323,
+    291,
     339,
-    438,
-    463
+    437,
+    461
    ],
    "laptop": [
     230.17483520507812,
@@ -389,14 +423,14 @@
     199,
     284
    ],
-   "median_brightness": 139.80573458848406
+   "median_brightness": 139.7034604749512
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 20.2
+  "total_sec": 0.8
  },
  "Х-17": {
   "file": "Х-17.mov",
@@ -405,16 +439,16 @@
    "timecode": 7.0
   },
   "duration_sec": 14.733333333333333,
-  "perception_sec": 7.2,
+  "perception_sec": 0.0,
   "tracks": 5,
   "max_inside": 2,
-  "states_sec": 6.1,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     78,
     360,
-    304,
-    451
+    302,
+    450
    ],
    "safe": [
     323,
@@ -434,14 +468,20 @@
     199,
     284
    ],
-   "median_brightness": 138.9638551154847
+   "median_brightness": 138.8730176480156
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T10",
+    "timecode_sec": 7.0,
+    "confidence": 0.72
+   }
+  ],
   "context_events": [],
   "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 13.5
+  "total_sec": 0.7
  },
  "Х-18": {
   "file": "Х-18.mov",
@@ -450,10 +490,10 @@
    "timecode": 20.0
   },
   "duration_sec": 22.599999999999998,
-  "perception_sec": 11.1,
+  "perception_sec": 0.0,
   "tracks": 5,
   "max_inside": 3,
-  "states_sec": 9.3,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     78,
@@ -464,8 +504,8 @@
    "safe": [
     323,
     339,
-    438,
-    463
+    454,
+    464
    ],
    "laptop": [
     243.56649017333984,
@@ -479,14 +519,21 @@
     199,
     284
    ],
-   "median_brightness": 139.5365540622967
+   "median_brightness": 139.15351282937542
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T4",
+    "timecode_sec": 16.05,
+    "end_sec": 22.57,
+    "confidence": 0.9
+   }
+  ],
   "context_events": [],
   "pipeline_sec": 0.3,
   "ok": true,
-  "total_sec": 20.6
+  "total_sec": 0.9
  },
  "Х-19": {
   "file": "Х-19.mov",
@@ -495,10 +542,10 @@
    "timecode": null
   },
   "duration_sec": 57.43333333333334,
-  "perception_sec": 26.9,
+  "perception_sec": 0.0,
   "tracks": 9,
   "max_inside": 2,
-  "states_sec": 21.4,
+  "states_sec": 1.4,
   "scene": {
    "desk": [
     64,
@@ -507,10 +554,10 @@
     493
    ],
    "safe": [
-    323,
+    305,
     339,
-    438,
-    463
+    437,
+    551
    ],
    "laptop": [
     243.33181762695312,
@@ -524,14 +571,14 @@
     199,
     284
    ],
-   "median_brightness": 143.94736855481457
+   "median_brightness": 143.8790765289525
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.8,
+  "pipeline_sec": 0.5,
   "ok": true,
-  "total_sec": 49.1
+  "total_sec": 1.9
  },
  "Х-20": {
   "file": "Х-20.mov",
@@ -540,22 +587,22 @@
    "timecode": 5.0
   },
   "duration_sec": 11.633333333333333,
-  "perception_sec": 5.4,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 1,
-  "states_sec": 4.5,
+  "states_sec": 0.4,
   "scene": {
    "desk": [
     74,
     352,
-    326,
+    325,
     480
    ],
    "safe": [
-    218,
-    265,
-    277,
-    349
+    311,
+    338,
+    368,
+    464
    ],
    "laptop": [
     224.60455322265625,
@@ -569,14 +616,14 @@
     199,
     284
    ],
-   "median_brightness": 137.37639272934288
+   "median_brightness": 137.25956611906312
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.2,
+  "pipeline_sec": 0.1,
   "ok": true,
-  "total_sec": 10.0
+  "total_sec": 0.5
  },
  "Х-21": {
   "file": "Х-21.mov",
@@ -585,22 +632,22 @@
    "timecode": null
   },
   "duration_sec": 19.6,
-  "perception_sec": 9.1,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 1,
-  "states_sec": 7.2,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     74,
     352,
-    326,
+    325,
     482
    ],
    "safe": [
-    185,
-    262,
+    162,
+    263,
     277,
-    350
+    368
    ],
    "laptop": [
     224.75619506835938,
@@ -614,14 +661,14 @@
     199,
     284
    ],
-   "median_brightness": 138.14359598649966
+   "median_brightness": 138.0006836572869
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 16.6
+  "total_sec": 0.8
  },
  "Х-22": {
   "file": "Х-22.mov",
@@ -630,10 +677,10 @@
    "timecode": 14.0
   },
   "duration_sec": 21.03333333333333,
-  "perception_sec": 9.9,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 1,
-  "states_sec": 7.7,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     74,
@@ -642,7 +689,7 @@
     461
    ],
    "safe": [
-    185,
+    184,
     262,
     277,
     350
@@ -659,14 +706,14 @@
     199,
     284
    ],
-   "median_brightness": 136.38457882644764
+   "median_brightness": 136.33604170055304
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 17.9
+  "total_sec": 0.8
  },
  "Х-23": {
   "file": "Х-23.mov",
@@ -675,22 +722,22 @@
    "timecode": null
   },
   "duration_sec": 18.266666666666666,
-  "perception_sec": 8.5,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 1,
-  "states_sec": 6.8,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     74,
     352,
-    326,
+    324,
     461
    ],
    "safe": [
-    185,
+    162,
     262,
-    277,
-    348
+    276,
+    350
    ],
    "laptop": [
     224.8157196044922,
@@ -704,14 +751,14 @@
     199,
     284
    ],
-   "median_brightness": 136.20798684531556
+   "median_brightness": 136.13429672251138
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 15.6
+  "total_sec": 0.7
  },
  "Х-24": {
   "file": "Х-24.mov",
@@ -720,10 +767,10 @@
    "timecode": 8.0
   },
   "duration_sec": 14.7,
-  "perception_sec": 7.0,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 1,
-  "states_sec": 5.5,
+  "states_sec": 0.4,
   "scene": {
    "desk": [
     96,
@@ -732,7 +779,7 @@
     482
    ],
    "safe": [
-    203,
+    186,
     279,
     286,
     367
@@ -749,14 +796,21 @@
     199,
     284
    ],
-   "median_brightness": 141.49445449739753
+   "median_brightness": 141.35658445836043
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T1",
+    "timecode_sec": 5.5,
+    "end_sec": 14.5,
+    "confidence": 0.82
+   }
+  ],
   "context_events": [],
   "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 12.7
+  "total_sec": 0.7
  },
  "Х-25": {
   "file": "Х-25.mov",
@@ -765,19 +819,19 @@
    "timecode": null
   },
   "duration_sec": 31.700000000000003,
-  "perception_sec": 14.4,
+  "perception_sec": 0.0,
   "tracks": 5,
   "max_inside": 1,
-  "states_sec": 11.8,
+  "states_sec": 0.7,
   "scene": {
    "desk": [
     96,
     372,
-    345,
+    344,
     482
    ],
    "safe": [
-    207,
+    182,
     282,
     286,
     367
@@ -794,14 +848,14 @@
     199,
     284
    ],
-   "median_brightness": 140.7551668225439
+   "median_brightness": 140.66192765940144
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.4,
+  "pipeline_sec": 0.3,
   "ok": true,
-  "total_sec": 26.7
+  "total_sec": 1.0
  },
  "Х-26": {
   "file": "Х-26.mov",
@@ -810,19 +864,19 @@
    "timecode": 9.0
   },
   "duration_sec": 19.8,
-  "perception_sec": 9.1,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 1,
-  "states_sec": 7.3,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     96,
     372,
-    345,
-    500
+    344,
+    482
    ],
    "safe": [
-    188,
+    162,
     279,
     286,
     367
@@ -839,14 +893,14 @@
     199,
     284
    ],
-   "median_brightness": 140.86826000325308
+   "median_brightness": 140.7264710068315
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 16.7
+  "total_sec": 0.8
  },
  "Х-27": {
   "file": "Х-27.mov",
@@ -855,10 +909,10 @@
    "timecode": null
   },
   "duration_sec": 26.433333333333334,
-  "perception_sec": 12.2,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 1,
-  "states_sec": 9.5,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     96,
@@ -867,7 +921,7 @@
     482
    ],
    "safe": [
-    194,
+    205,
     279,
     286,
     367
@@ -884,14 +938,14 @@
     199,
     284
    ],
-   "median_brightness": 140.12450695348082
+   "median_brightness": 140.04930973487313
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.4,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 22.1
+  "total_sec": 0.9
  },
  "Х-28": {
   "file": "Х-28.mov",
@@ -900,19 +954,19 @@
    "timecode": 7.0
   },
   "duration_sec": 16.533333333333335,
-  "perception_sec": 7.7,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 1,
-  "states_sec": 6.1,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     96,
     372,
-    345,
+    344,
     482
    ],
    "safe": [
-    205,
+    162,
     279,
     286,
     367
@@ -929,14 +983,27 @@
     199,
     284
    ],
-   "median_brightness": 140.7036993737801
+   "median_brightness": 140.63300565224463
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T1",
+    "timecode_sec": 7.06,
+    "end_sec": 16.13,
+    "confidence": 0.85
+   },
+   {
+    "type_code": "T3",
+    "timecode_sec": 7.06,
+    "end_sec": 16.13,
+    "confidence": 0.82
+   }
+  ],
   "context_events": [],
-  "pipeline_sec": 0.2,
+  "pipeline_sec": 1.3,
   "ok": true,
-  "total_sec": 14.0
+  "total_sec": 1.8
  },
  "Х-29": {
   "file": "Х-29.mov",
@@ -945,15 +1012,15 @@
    "timecode": null
   },
   "duration_sec": 17.3,
-  "perception_sec": 8.1,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 1,
-  "states_sec": 6.4,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     96,
     372,
-    345,
+    344,
     482
    ],
    "safe": [
@@ -974,14 +1041,14 @@
     199,
     284
    ],
-   "median_brightness": 139.78413203480807
+   "median_brightness": 139.7066195307417
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
   "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 14.7
+  "total_sec": 0.7
  },
  "Х-3": {
   "file": "Х-3.mov",
@@ -990,13 +1057,13 @@
    "timecode": null
   },
   "duration_sec": 20.033333333333335,
-  "perception_sec": 9.1,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 2,
-  "states_sec": 7.5,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
-    50,
+    67,
     393,
     231,
     534
@@ -1004,8 +1071,8 @@
    "safe": [
     311,
     375,
-    444,
-    497
+    464,
+    559
    ],
    "laptop": [
     234.97959899902344,
@@ -1019,14 +1086,14 @@
     199,
     284
    ],
-   "median_brightness": 142.559091879473
+   "median_brightness": 142.20150862068965
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 16.9
+  "total_sec": 0.8
  },
  "Х-30": {
   "file": "Х-30.mov",
@@ -1035,10 +1102,10 @@
    "timecode": 13.0
   },
   "duration_sec": 18.8,
-  "perception_sec": 9.0,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 2,
-  "states_sec": 7.0,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     48,
@@ -1047,10 +1114,10 @@
     503
    ],
    "safe": [
-    392,
-    228,
+    384,
+    212,
     464,
-    525
+    548
    ],
    "laptop": null,
    "door_band": [
@@ -1059,14 +1126,21 @@
     199,
     284
    ],
-   "median_brightness": 137.51294628334418
+   "median_brightness": 137.31885623373455
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T5",
+    "timecode_sec": 12.54,
+    "end_sec": 18.57,
+    "confidence": 0.88
+   }
+  ],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 16.3
+  "total_sec": 0.7
  },
  "Х-31": {
   "file": "Х-31.mov",
@@ -1075,10 +1149,10 @@
    "timecode": null
   },
   "duration_sec": 23.8,
-  "perception_sec": 11.0,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 1,
-  "states_sec": 8.7,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     50,
@@ -1086,7 +1160,12 @@
     297,
     504
    ],
-   "safe": null,
+   "safe": [
+    293,
+    212,
+    464,
+    555
+   ],
    "laptop": null,
    "door_band": [
     109,
@@ -1094,14 +1173,14 @@
     199,
     284
    ],
-   "median_brightness": 137.36987638256343
+   "median_brightness": 137.23749847511385
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 20.1
+  "total_sec": 0.8
  },
  "Х-32": {
   "file": "Х-32.mov",
@@ -1110,22 +1189,22 @@
    "timecode": 5.0
   },
   "duration_sec": 21.3,
-  "perception_sec": 9.9,
+  "perception_sec": 0.0,
   "tracks": 1,
   "max_inside": 1,
-  "states_sec": 7.7,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     50,
-    371,
+    370,
     297,
     504
    ],
    "safe": [
-    400,
-    228,
-    464,
-    525
+    292,
+    423,
+    401,
+    502
    ],
    "laptop": null,
    "door_band": [
@@ -1134,14 +1213,14 @@
     199,
     284
    ],
-   "median_brightness": 136.778078236825
+   "median_brightness": 136.59360513581652
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 17.9
+  "total_sec": 0.8
  },
  "Х-33": {
   "file": "Х-33.mov",
@@ -1150,22 +1229,22 @@
    "timecode": 6.0
   },
   "duration_sec": 14.333333333333334,
-  "perception_sec": 6.5,
+  "perception_sec": 0.0,
   "tracks": 3,
   "max_inside": 2,
-  "states_sec": 5.2,
+  "states_sec": 0.4,
   "scene": {
    "desk": [
     58,
     366,
     324,
-    528
+    507
    ],
    "safe": [
-    221,
-    267,
-    304,
-    347
+    308,
+    413,
+    464,
+    545
    ],
    "laptop": null,
    "door_band": [
@@ -1174,14 +1253,21 @@
     199,
     284
    ],
-   "median_brightness": 135.85160316363044
+   "median_brightness": 135.74245689655172
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T5",
+    "timecode_sec": 11.0,
+    "end_sec": 14.0,
+    "confidence": 0.86
+   }
+  ],
   "context_events": [],
   "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 12.0
+  "total_sec": 0.7
  },
  "Х-34": {
   "file": "Х-34.mov",
@@ -1190,22 +1276,22 @@
    "timecode": 13.0
   },
   "duration_sec": 17.733333333333334,
-  "perception_sec": 8.5,
+  "perception_sec": 0.0,
   "tracks": 6,
   "max_inside": 3,
-  "states_sec": 6.7,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     76,
     368,
     281,
-    479
+    471
    ],
    "safe": [
-    314,
+    312,
     358,
     464,
-    525
+    559
    ],
    "laptop": [
     52.90633964538574,
@@ -1219,14 +1305,14 @@
     199,
     284
    ],
-   "median_brightness": 133.49645209824334
+   "median_brightness": 133.3515574170462
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
   "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 15.4
+  "total_sec": 0.7
  },
  "Х-35": {
   "file": "Х-35.mov",
@@ -1235,22 +1321,22 @@
    "timecode": null
   },
   "duration_sec": 56.76666666666667,
-  "perception_sec": 25.7,
+  "perception_sec": 0.0,
   "tracks": 8,
   "max_inside": 2,
-  "states_sec": 20.5,
+  "states_sec": 1.3,
   "scene": {
    "desk": [
     76,
     361,
     280,
-    481
+    480
    ],
    "safe": [
-    312,
+    314,
     358,
     464,
-    525
+    559
    ],
    "laptop": [
     53.18817710876465,
@@ -1264,14 +1350,14 @@
     199,
     284
    ],
-   "median_brightness": 135.07387819209498
+   "median_brightness": 134.92630733571895
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.8,
+  "pipeline_sec": 0.5,
   "ok": true,
-  "total_sec": 47.0
+  "total_sec": 1.9
  },
  "Х-37": {
   "file": "Х-37.mov",
@@ -1280,22 +1366,22 @@
    "timecode": null
   },
   "duration_sec": 15.866666666666667,
-  "perception_sec": 7.5,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 2,
-  "states_sec": 6.0,
+  "states_sec": 0.5,
   "scene": {
    "desk": [
     76,
-    369,
+    370,
     280,
-    479
+    477
    ],
    "safe": [
     314,
     358,
     464,
-    525
+    559
    ],
    "laptop": [
     53.67934036254883,
@@ -1309,14 +1395,14 @@
     199,
     284
    ],
-   "median_brightness": 133.60215974707222
+   "median_brightness": 133.48333807742355
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
   "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 13.7
+  "total_sec": 0.7
  },
  "Х-38": {
   "file": "Х-38.mov",
@@ -1325,22 +1411,22 @@
    "timecode": 33.0
   },
   "duration_sec": 58.96666666666667,
-  "perception_sec": 26.9,
+  "perception_sec": 0.0,
   "tracks": 15,
   "max_inside": 3,
-  "states_sec": 21.4,
+  "states_sec": 1.5,
   "scene": {
    "desk": [
     76,
     368,
-    280,
-    478
+    279,
+    476
    ],
    "safe": [
-    327,
-    357,
+    315,
+    358,
     464,
-    525
+    559
    ],
    "laptop": [
     53.12875747680664,
@@ -1354,14 +1440,20 @@
     199,
     284
    ],
-   "median_brightness": 134.17488665013013
+   "median_brightness": 134.02289362394274
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T7",
+    "timecode_sec": 31.04,
+    "confidence": 0.74
+   }
+  ],
   "context_events": [],
-  "pipeline_sec": 0.8,
+  "pipeline_sec": 0.6,
   "ok": true,
-  "total_sec": 49.1
+  "total_sec": 2.1
  },
  "Х-39": {
   "file": "Х-39.mov",
@@ -1370,10 +1462,10 @@
    "timecode": null
   },
   "duration_sec": 78.73333333333333,
-  "perception_sec": 35.7,
+  "perception_sec": 0.0,
   "tracks": 13,
   "max_inside": 3,
-  "states_sec": 28.7,
+  "states_sec": 1.8,
   "scene": {
    "desk": [
     74,
@@ -1382,10 +1474,10 @@
     477
    ],
    "safe": [
-    338,
+    312,
     358,
     464,
-    525
+    559
    ],
    "laptop": [
     53.57629203796387,
@@ -1399,14 +1491,14 @@
     199,
     284
    ],
-   "median_brightness": 133.1207658994795
+   "median_brightness": 133.00413498292127
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 1.1,
+  "pipeline_sec": 0.7,
   "ok": true,
-  "total_sec": 65.5
+  "total_sec": 2.5
  },
  "Х-4": {
   "file": "Х-4.mov",
@@ -1415,10 +1507,10 @@
    "timecode": 57.0
   },
   "duration_sec": 72.7,
-  "perception_sec": 32.5,
+  "perception_sec": 0.0,
   "tracks": 9,
   "max_inside": 2,
-  "states_sec": 26.1,
+  "states_sec": 1.6,
   "scene": {
    "desk": [
     102,
@@ -1427,10 +1519,10 @@
     479
    ],
    "safe": [
-    311,
+    299,
     376,
     464,
-    525
+    559
    ],
    "laptop": [
     229.54158782958984,
@@ -1444,14 +1536,14 @@
     199,
     284
    ],
-   "median_brightness": 135.90518766265453
+   "median_brightness": 135.84119327423554
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 1.0,
+  "pipeline_sec": 0.6,
   "ok": true,
-  "total_sec": 59.6
+  "total_sec": 2.2
  },
  "Х-40": {
   "file": "Х-40.mov",
@@ -1460,22 +1552,22 @@
    "timecode": 17.0
   },
   "duration_sec": 25.266666666666666,
-  "perception_sec": 11.6,
+  "perception_sec": 0.0,
   "tracks": 4,
   "max_inside": 1,
-  "states_sec": 9.2,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     58,
     366,
     324,
-    512
+    500
    ],
    "safe": [
-    220,
-    264,
-    304,
-    357
+    307,
+    409,
+    464,
+    548
    ],
    "laptop": null,
    "door_band": [
@@ -1484,14 +1576,14 @@
     199,
     284
    ],
-   "median_brightness": 137.41943518217306
+   "median_brightness": 137.09298501545217
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.4,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 21.2
+  "total_sec": 0.8
  },
  "Х-43": {
   "file": "Х-43.mov",
@@ -1500,22 +1592,22 @@
    "timecode": null
   },
   "duration_sec": 23.366666666666667,
-  "perception_sec": 10.6,
+  "perception_sec": 0.0,
   "tracks": 1,
   "max_inside": 1,
-  "states_sec": 8.5,
+  "states_sec": 0.7,
   "scene": {
    "desk": [
     44,
     344,
     304,
-    527
+    526
    ],
    "safe": [
     343,
-    448,
-    457,
-    525
+    442,
+    464,
+    559
    ],
    "laptop": [
     31.175861358642578,
@@ -1529,14 +1621,14 @@
     199,
     284
    ],
-   "median_brightness": 137.86264842225114
+   "median_brightness": 137.7583868737801
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 19.4
+  "total_sec": 0.9
  },
  "Х-44": {
   "file": "Х-44.mov",
@@ -1545,22 +1637,22 @@
    "timecode": 16.0
   },
   "duration_sec": 20.433333333333334,
-  "perception_sec": 9.3,
+  "perception_sec": 0.0,
   "tracks": 1,
   "max_inside": 1,
-  "states_sec": 7.4,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     46,
-    351,
+    367,
     304,
-    522
+    515
    ],
    "safe": [
     343,
-    447,
-    462,
-    525
+    442,
+    464,
+    559
    ],
    "laptop": [
     42.86832809448242,
@@ -1574,14 +1666,14 @@
     199,
     284
    ],
-   "median_brightness": 137.72702759027325
+   "median_brightness": 137.573641834743
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 17.1
+  "total_sec": 0.8
  },
  "Х-45": {
   "file": "Х-45.mov",
@@ -1590,22 +1682,22 @@
    "timecode": null
   },
   "duration_sec": 33.333333333333336,
-  "perception_sec": 14.9,
+  "perception_sec": 0.0,
   "tracks": 2,
   "max_inside": 2,
-  "states_sec": 12.1,
+  "states_sec": 0.9,
   "scene": {
    "desk": [
-    60,
+    58,
     344,
     324,
-    514
+    498
    ],
    "safe": [
     365,
-    433,
+    428,
     464,
-    525
+    550
    ],
    "laptop": null,
    "door_band": [
@@ -1614,14 +1706,14 @@
     199,
     284
    ],
-   "median_brightness": 137.5345742517892
+   "median_brightness": 137.19026766834742
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.5,
+  "pipeline_sec": 0.3,
   "ok": true,
-  "total_sec": 27.5
+  "total_sec": 1.2
  },
  "Х-46": {
   "file": "Х-46.mov",
@@ -1630,22 +1722,22 @@
    "timecode": 11.0
   },
   "duration_sec": 19.133333333333333,
-  "perception_sec": 8.9,
+  "perception_sec": 0.0,
   "tracks": 1,
   "max_inside": 1,
-  "states_sec": 7.1,
+  "states_sec": 0.6,
   "scene": {
    "desk": [
     46,
-    360,
+    364,
     303,
-    517
+    516
    ],
    "safe": [
     343,
-    450,
-    457,
-    525
+    445,
+    464,
+    559
    ],
    "laptop": [
     30.283710479736328,
@@ -1659,14 +1751,20 @@
     199,
     284
    ],
-   "median_brightness": 139.4252068762199
+   "median_brightness": 139.0085520697788
   },
-  "verdict": "no_violation",
-  "violations": [],
+  "verdict": "violation",
+  "violations": [
+   {
+    "type_code": "T8",
+    "timecode_sec": 13.05,
+    "confidence": 0.72
+   }
+  ],
   "context_events": [],
-  "pipeline_sec": 0.3,
+  "pipeline_sec": 0.2,
   "ok": true,
-  "total_sec": 16.3
+  "total_sec": 0.8
  },
  "Х-47": {
   "file": "Х-47.mov",
@@ -1675,10 +1773,10 @@
    "timecode": 68.0
   },
   "duration_sec": 72.7,
-  "perception_sec": 32.9,
+  "perception_sec": 0.0,
   "tracks": 9,
   "max_inside": 2,
-  "states_sec": 26.3,
+  "states_sec": 1.6,
   "scene": {
    "desk": [
     102,
@@ -1687,10 +1785,10 @@
     479
    ],
    "safe": [
-    311,
+    299,
     376,
     464,
-    525
+    559
    ],
    "laptop": [
     229.54158782958984,
@@ -1704,14 +1802,14 @@
     199,
     284
    ],
-   "median_brightness": 135.90518766265453
+   "median_brightness": 135.84119327423554
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 1.0,
+  "pipeline_sec": 0.7,
   "ok": true,
-  "total_sec": 60.1
+  "total_sec": 2.2
  },
  "Х-48": {
   "file": "Х-48.mov",
@@ -1720,22 +1818,22 @@
    "timecode": null
   },
   "duration_sec": 71.6,
-  "perception_sec": 32.1,
+  "perception_sec": 0.0,
   "tracks": 14,
   "max_inside": 3,
-  "states_sec": 25.8,
+  "states_sec": 1.6,
   "scene": {
    "desk": [
-    102,
+    103,
     396,
     230,
     479
    ],
    "safe": [
     285,
-    376,
+    375,
     464,
-    525
+    559
    ],
    "laptop": [
     231.6916046142578,
@@ -1749,14 +1847,14 @@
     199,
     284
    ],
-   "median_brightness": 137.13053533669486
+   "median_brightness": 136.72467418266103
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 1.0,
+  "pipeline_sec": 0.7,
   "ok": true,
-  "total_sec": 58.8
+  "total_sec": 2.3
  },
  "Х-5": {
   "file": "Х-5.mov",
@@ -1765,22 +1863,22 @@
    "timecode": null
   },
   "duration_sec": 71.6,
-  "perception_sec": 32.6,
+  "perception_sec": 0.0,
   "tracks": 14,
   "max_inside": 3,
-  "states_sec": 25.7,
+  "states_sec": 1.8,
   "scene": {
    "desk": [
-    102,
+    103,
     396,
     230,
     479
    ],
    "safe": [
     285,
-    376,
+    375,
     464,
-    525
+    559
    ],
    "laptop": [
     231.6916046142578,
@@ -1794,14 +1892,14 @@
     199,
     284
    ],
-   "median_brightness": 137.13053533669486
+   "median_brightness": 136.72467418266103
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 1.0,
+  "pipeline_sec": 0.7,
   "ok": true,
-  "total_sec": 59.3
+  "total_sec": 2.5
  },
  "Х-8": {
   "file": "Х-8.mov",
@@ -1810,10 +1908,10 @@
    "timecode": null
   },
   "duration_sec": 38.03333333333334,
-  "perception_sec": 17.3,
+  "perception_sec": 0.0,
   "tracks": 1,
   "max_inside": 1,
-  "states_sec": 13.7,
+  "states_sec": 0.9,
   "scene": {
    "desk": [
     56,
@@ -1822,10 +1920,10 @@
     492
    ],
    "safe": [
-    400,
-    228,
+    383,
+    212,
     464,
-    398
+    404
    ],
    "laptop": [
     236.4902114868164,
@@ -1839,13 +1937,13 @@
     199,
     284
    ],
-   "median_brightness": 138.8537939167209
+   "median_brightness": 138.6249923755693
   },
   "verdict": "no_violation",
   "violations": [],
   "context_events": [],
-  "pipeline_sec": 0.5,
+  "pipeline_sec": 0.4,
   "ok": true,
-  "total_sec": 31.5
+  "total_sec": 1.3
  }
 }

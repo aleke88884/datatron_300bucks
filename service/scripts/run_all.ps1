@@ -9,7 +9,8 @@ $ServiceDir = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Pat
 Set-Location $ServiceDir
 $TotalSw = [Diagnostics.Stopwatch]::StartNew()
 $StepSw = [Diagnostics.Stopwatch]::StartNew()
-$TotalSteps = 7
+$TotalSteps = 9
+$WithVlm = ($env:WITH_VLM -eq "1")   # WITH_VLM=1 — дополнительно поставить зависимости VLM и скачать Qwen2.5-VL-7B (~16 ГБ)
 
 function Step($n, $title, $desc) {
     $script:StepSw.Restart()
@@ -35,8 +36,9 @@ Write-Host ""
 Write-Host "ПОЛНЫЙ ПРОГОН СЕРВИСА КОНТРОЛЯ КАССЫ (ForteBank, Datathon 26)" -ForegroundColor Yellow
 Write-Host "Папка сервиса: $ServiceDir"
 Write-Host "План: 1) Python  2) окружение и зависимости  3) веса детектора  4) проверка датасета"
-Write-Host "      5) признаки по всем видео (самое долгое)  6) e2e-тесты  7) commit + push результатов"
-Write-Host "Ориентир по времени: 20-40 минут. Ноутбук будет нагружен и греться - это нормально."
+Write-Host "      5) признаки по всем видео (самое долгое)  6) офлайн-оценка правил  7) e2e-тесты"
+Write-Host "      8) VLM (только если WITH_VLM=1)  9) commit + push результатов"
+Write-Host "Ориентир по времени: 20-40 минут (+ до часа с WITH_VLM=1). Ноутбук будет нагружен и греться - это нормально."
 
 # ---------------------------------------------------------------- 1
 Step 1 "Поиск Python" @("Ищу Python 3.11-3.13 через лаунчер 'py' или команду 'python'.")
@@ -102,24 +104,47 @@ Step 5 "Признаки по всем видео" @(
     "Кадры и картинки НЕ сохраняются. По каждому видео ниже будут строки прогресса; оценка оставшегося времени - в них же."
 )
 $ErrorActionPreference = "Continue"
-& $venvpy scripts\collect_features.py --videos ..\open\videos --labels ..\open\open_labels.xlsx --out results
+& $venvpy scripts\collect_features.py --videos ..\open\videos --labels ..\open\open_labels.xlsx --out results --skip-items
 if ($LASTEXITCODE -ne 0) { Write-Host "  !! collect_features завершился с кодом $LASTEXITCODE - см. results\run.log; продолжаю со следующими шагами" -ForegroundColor Yellow }
 Done "признаки собраны"
 
 # ---------------------------------------------------------------- 6
-Step 6 "E2E-тесты сервиса (без Docker)" @(
+Step 6 "Офлайн-оценка правил по всем видео" @(
+    "scripts\eval_rules.py: прогоняет analyze_video по всем 42 видео из только что собранных признаков (без детектора),",
+    "печатает таблицу: вердикт против разметки, события, ошибка таймкода, список ложных и пропусков.",
+    "Ориентир на Mac (17.10): TP=11 FN=11 FP=0 TN=20. Результат сохраняется в results\eval.json и results\eval.txt."
+)
+& $venvpy scripts\eval_rules.py --json results\eval.json 2>&1 | Tee-Object -FilePath results\eval.txt
+Done "оценка правил записана"
+
+# ---------------------------------------------------------------- 7
+Step 7 "E2E-тесты сервиса (без Docker)" @(
     "pytest в режиме -v: каждый тест печатается отдельной строкой с PASSED/FAILED/SKIPPED.",
     "Поднимается настоящий сервер на случайном порту, видео гоняются через API, пайплайн - напрямую по датасету.",
     "Ожидаемо: все passed, один xfailed (test_full_recall - полнота по всем нарушениям пока не достигнута).",
     "Лог сохраняется в results\pytest.log. Это 2-6 минут."
 )
 $env:E2E_SKIP_DOCKER = "1"
+$env:FEATURES_CACHE = (Join-Path $ServiceDir "results")
 & $venvpy -m pytest -v -ra -p no:cacheprovider 2>&1 | Tee-Object -FilePath results\pytest.log
 Write-Host "  pytest завершился с кодом $LASTEXITCODE (0 = всё прошло)"
 Done "тесты отработали"
 
-# ---------------------------------------------------------------- 7
-Step 7 "Commit и push результатов" @(
+# ---------------------------------------------------------------- 8
+Step 8 "VLM: зависимости и веса (опционально)" @(
+    "Только если переменная WITH_VLM=1: pip install -r requirements-vlm.txt и python scripts\get_vlm.py",
+    "(Qwen2.5-VL-7B-Instruct, Apache-2.0, ~16 ГБ, нужна видеокарта с 8+ ГБ или 4-бит режим VLM_4BIT=1).",
+    "Включается в сервисе переменной VLM_ENABLED=1 в .env. Без WITH_VLM шаг пропускается."
+)
+if ($WithVlm) {
+    & $venvpy -m pip install --disable-pip-version-check -r requirements-vlm.txt
+    if ($LASTEXITCODE -ne 0) { Write-Host "  !! зависимости VLM не установились" -ForegroundColor Yellow }
+    & $venvpy scripts\get_vlm.py
+    if ($LASTEXITCODE -ne 0) { Write-Host "  !! веса VLM не скачались" -ForegroundColor Yellow } else { Done "VLM готова" }
+} else { Write-Host "  пропущено (WITH_VLM не задан)" }
+
+# ---------------------------------------------------------------- 9
+Step 9 "Commit и push результатов" @(
     "Добавляю в git только папку service\results, делаю commit, подтягиваю свежий main (pull --rebase) и пушу в origin main.",
     "Если push не пройдёт (нет доступа), ниже будет подсказка - тогда выполните 'git push origin main' вручную."
 )

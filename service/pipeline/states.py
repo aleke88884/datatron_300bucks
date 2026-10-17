@@ -1,13 +1,24 @@
 """Признаки состояний сцены по кадрам (2 к/с): дверь, сейф, экран ноутбука, столешница и предметы на ней.
 
 Только числовые ряды, без изображений — их можно хранить в репозитории (кадры датасета публиковать нельзя).
-Эти ряды собираются scripts/collect_features.py на всех видео; по ним подбираются пороги правил T1–T13.
+Эти ряды собираются scripts/collect_features.py на всех видео; по ним подбираются пороги правил T1–T13
+(scripts/eval_rules.py), а в проде те же функции вызывает analyze_video.
 
-Якоря сцены строятся по медианному кадру видео (люди «вымываются» медианой):
-  - столешница — по цвету дерева (HSV), выпуклая оболочка и ось (PCA);
-  - сейф — светло-серый прямоугольник в правой части кадра;
+Якоря сцены:
+  - столешница — по цвету дерева (HSV) на медианном кадре: выпуклая оболочка и ось (PCA);
+  - сейф — светло-серый заполненный прямоугольник рядом со столом; ищется на нескольких кадрах и берётся
+    самый крупный устойчивый кандидат (в закрытом состоянии фронт сейфа — самый большой однотонный блок);
   - ноутбук — медиана детекций класса laptop;
   - дверь — полоса матового стекла в дверном проёме (нормированные координаты, калибровка под эту камеру).
+
+Признаки по кадрам:
+  - door: яркость/текстура матовой полосы; occluded — в проёме человек;
+  - safe: dark_face / dark_left — доля тёмных пикселей на фронте и слева от него (открытая дверца
+    обнажает тёмный проём и смещает светлую панель), face_std, diff_vs_median; occluded — человек у сейфа;
+  - screen: mean/std/p90/blue_minus_red по верхней части рамки ноутбука (активен / заблокирован / выключен);
+  - desk: wood_frac, green_area (инкассаторская сумка), static_objs — статичные предметы на столешнице:
+    пиксели, которые когда-либо были «деревом» (wood_ever), но сейчас не дерево и не перекрыты человеком,
+    устойчивые ≥ 1.5 с (деньги, карточки, стакан, сумка, положенные на стол).
 """
 from __future__ import annotations
 
@@ -17,7 +28,6 @@ from typing import Optional
 import cv2
 import numpy as np
 
-from .detect import Detection, get_detector
 from .perception import Perception, PersonObs
 from .video import VideoInfo, iter_frames
 
@@ -28,24 +38,42 @@ WOOD_HSV = ((8, 40, 120), (28, 140, 235))      # светлое дерево с�
 GREEN_HSV = ((35, 50, 60), (90, 255, 255))      # зелёная инкассаторская сумка
 DOOR_BAND = (0.237, 0.242, 0.431, 0.336)        # матовая полоса на стекле закрытой двери (доли ширины/высоты)
 SAFE_GREY = ((0, 0, 95), (180, 35, 170))        # корпус сейфа: светло-серый, малонасыщенный
-ITEM_CLASSES = {"handbag", "backpack", "suitcase", "cup", "bottle", "wine glass", "bowl", "cell phone", "book", "remote"}
 DESK_UP = 70          # предметы стоят НА столе: расширяем область стола вверх (пикс. при высоте 848)
-DIFF_THR = 40         # порог изменения относительно медианного кадра (сумма |dB|+|dG|+|dR|)
-BLOB_MIN_AREA = 120
+OBJ_MIN_AREA = 100    # минимальная площадь предмета на столе (пикс. при 464x848)
+OBJ_STATIC_FRAMES = 3 # предмет «статичен», если наблюдается ≥ 3 кадров подряд (1.5 с при 2 к/с)
+OBJ_MATCH_IOU = 0.4
+PERSON_SHRINK = 0.2   # рамка человека сжимается на 20 % с каждой стороны для теста перекрытия предметов
+DARK_THR = 70         # «тёмный» пиксель внутри/около сейфа
+SAFE_LEFT_EXT = 0.8   # ширина зоны слева от сейфа (доля ширины сейфа): туда уходит дверца / виден проём
 
 
-def _box_overlaps(box, persons: list[PersonObs], margin: float = 0.0) -> bool:
+def _box_overlaps(box, persons: list[PersonObs], margin: float = 0.0, shrink: float = 0.0) -> bool:
     x1, y1, x2, y2 = box
     for p in persons:
         a, b, c, d = p.xyxy
+        if shrink:
+            w, h = (c - a) * shrink, (d - b) * shrink
+            a, b, c, d = a + w, b + h, c - w, d - h
         if a - margin < x2 and c + margin > x1 and b - margin < y2 and d + margin > y1:
             return True
     return False
 
 
-def median_frame(path: str, info: VideoInfo, max_frames: int = 25) -> np.ndarray:
+def _iou(a, b) -> float:
+    x1, y1 = max(a[0], b[0]), max(a[1], b[1])
+    x2, y2 = min(a[2], b[2]), min(a[3], b[3])
+    inter = max(0, x2 - x1) * max(0, y2 - y1)
+    ua = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter
+    return inter / ua if ua > 0 else 0.0
+
+
+def sample_frames(path: str, info: VideoInfo, max_frames: int = 25) -> list[np.ndarray]:
     every = max(1, int(round(info.frame_count / max_frames)))
-    frames = [f for _, _, f in iter_frames(path, every_n=every)]
+    return [f for _, _, f in iter_frames(path, every_n=every)][:max_frames]
+
+
+def median_frame(path: str, info: VideoInfo, max_frames: int = 25, frames: Optional[list[np.ndarray]] = None) -> np.ndarray:
+    frames = frames if frames is not None else sample_frames(path, info, max_frames)
     if not frames:
         raise RuntimeError("no frames for median")
     return np.median(np.stack(frames[:max_frames]), axis=0).astype(np.uint8)
@@ -84,27 +112,69 @@ def desk_region(median: np.ndarray) -> Optional[dict]:
     }
 
 
-def grey_box(median: np.ndarray) -> Optional[dict]:
-    """Корпус сейфа: светло-серый заполненный прямоугольник в правых 60 % кадра, средняя высота."""
-    H, W = median.shape[:2]
-    hsv = cv2.cvtColor(median, cv2.COLOR_BGR2HSV)
+def _grey_candidates(frame: np.ndarray) -> list[dict]:
+    H, W = frame.shape[:2]
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     m = cv2.inRange(hsv, SAFE_GREY[0], SAFE_GREY[1])
-    m[: int(0.27 * H)] = 0
-    m[int(0.62 * H):] = 0
-    m[:, : int(0.4 * W)] = 0
+    m[: int(0.25 * H)] = 0
+    m[int(0.66 * H):] = 0
+    m[:, : int(0.35 * W)] = 0
     m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((7, 7), np.uint8))
     n, lab, st, _ = cv2.connectedComponentsWithStats(m)
-    best = None
+    out = []
     for i in range(1, n):
-        x, y, w, h, a = st[i]
-        if a < 1500 or w < 40 or h < 50 or a / (w * h) < 0.6:
+        x, y, w, h, a = (int(v) for v in st[i])
+        if a < 900 or w < 40 or h < 45 or a / (w * h) < 0.5:
             continue
-        if best is None or a > best[4]:
-            best = st[i]
-    if best is None:
+        out.append({"bbox": [x, y, x + w, y + h], "area": a, "fill": float(a / (w * h))})
+    return out
+
+
+def grey_box(median: np.ndarray) -> Optional[dict]:
+    """Совместимость: лучший серый кандидат на одном кадре."""
+    c = _grey_candidates(median)
+    return max(c, key=lambda d: d["area"]) if c else None
+
+
+def safe_anchor(frames: list[np.ndarray], desk: Optional[dict]) -> Optional[dict]:
+    """Сейф по нескольким кадрам: кандидаты кластеризуются по IoU, выбирается устойчивый кластер
+    (виден ≥ 30 % кадров) с наибольшей медианной площадью рядом со столом; bbox — самый крупный член
+    кластера (закрытое состояние). Полосы у правого края кадра (стена) отбрасываются, если узкие."""
+    clusters: list[dict] = []
+    for fr in frames:
+        W = fr.shape[1]
+        for c in _grey_candidates(fr):
+            x1, y1, x2, y2 = c["bbox"]
+            if x2 >= W - 2 and (x2 - x1) < 60:      # узкая полоса у правого края — не сейф
+                continue
+            for cl in clusters:
+                if _iou(cl["bbox"], c["bbox"]) >= 0.4:
+                    cl["members"].append(c)
+                    if c["area"] > cl["area"]:
+                        cl["bbox"], cl["area"], cl["fill"] = c["bbox"], c["area"], c["fill"]
+                    break
+            else:
+                clusters.append({"bbox": c["bbox"], "area": c["area"], "fill": c["fill"], "members": [c]})
+    if not clusters:
         return None
-    x, y, w, h, a = (int(v) for v in best)
-    return {"bbox": [x, y, x + w, y + h], "area": a, "fill": float(a / (w * h))}
+    nfr = max(1, len(frames))
+    good = [cl for cl in clusters if len(cl["members"]) >= max(2, 0.3 * nfr)]
+    if not good:
+        good = clusters
+    if desk is not None:
+        dx1, dy1, dx2, dy2 = desk["bbox"]
+        dw = dx2 - dx1
+
+        def near(cl):
+            x1, y1, x2, y2 = cl["bbox"]
+            gap_x = max(0, x1 - dx2, dx1 - x2)
+            gap_y = max(0, y1 - dy2, dy1 - y2)
+            return gap_x <= 0.6 * dw and gap_y <= 0.8 * (dy2 - dy1) + 60
+        near_cl = [cl for cl in good if near(cl)]
+        if near_cl:
+            good = near_cl
+    best = max(good, key=lambda cl: float(np.median([m["area"] for m in cl["members"]])))
+    return {"bbox": best["bbox"], "area": best["area"], "fill": best["fill"], "seen": len(best["members"]), "frames": nfr}
 
 
 def laptop_box(perc: Perception, min_score: float = 0.6) -> Optional[dict]:
@@ -121,34 +191,38 @@ def _screen_region(lb: list[float]) -> tuple[int, int, int, int]:
     return int(x1), int(y1), int(x2), int(y1 + 0.6 * (y2 - y1))
 
 
-def _desk_crop_box(desk: dict, H: int, W: int) -> tuple[int, int, int, int]:
-    x1, y1, x2, y2 = desk["bbox"]
-    s = H / 848.0
-    return max(0, x1 - int(20 * s)), max(0, y1 - int(DESK_UP * s)), min(W, x2 + int(20 * s)), min(H, y2 + int(10 * s))
-
-
-def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, detect_items: bool = True) -> dict:
-    """Якоря сцены + признаки по кадрам с частотой STATE_FPS."""
+def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, detect_items: bool = False) -> dict:
+    """Якоря сцены + признаки по кадрам с частотой STATE_FPS. detect_items оставлен для совместимости (не используется)."""
     H, W = info.height, info.width
-    med = median_frame(path, info)
+    s = H / 848.0
+    samples = sample_frames(path, info, 25)
+    med = median_frame(path, info, frames=samples)
     med_gray = cv2.cvtColor(med, cv2.COLOR_BGR2GRAY)
     desk = desk_region(med)
-    safe = grey_box(med)
+    safe = safe_anchor(samples[::2] if len(samples) > 12 else samples, desk)
     lap = laptop_box(perc)
-    s = H / 848.0
     door = (int(DOOR_BAND[0] * W), int(DOOR_BAND[1] * H), int(DOOR_BAND[2] * W), int(DOOR_BAND[3] * H))
+
+    hull_mask = None
     desk_mask = None
-    desk_crop = None
     if desk is not None:
-        desk_mask = np.zeros((H, W), np.uint8)
-        cv2.fillConvexPoly(desk_mask, np.asarray(desk["hull"], np.int32), 255)
-        # предметы стоят на столе: добавляем полосу над оболочкой
-        desk_mask = cv2.dilate(desk_mask, np.ones((int(DESK_UP * s) * 2 + 1, 3), np.uint8), anchor=(1, int(DESK_UP * s) * 2))
-        desk_crop = _desk_crop_box(desk, H, W)
-    det = get_detector() if (detect_items and desk is not None) else None
+        hull_mask = np.zeros((H, W), np.uint8)
+        cv2.fillConvexPoly(hull_mask, np.asarray(desk["hull"], np.int32), 255)
+        desk_mask = cv2.dilate(hull_mask, np.ones((int(DESK_UP * s) * 2 + 1, 3), np.uint8), anchor=(1, int(DESK_UP * s) * 2))
+        # wood_ever: пиксели столешницы, которые хоть раз были деревом (по выборке кадров + медиане)
+        wood_ever = (wood_mask(med) > 0) & (hull_mask > 0)
+        for fr in samples:
+            wood_ever |= (wood_mask(fr) > 0) & (hull_mask > 0)
+        wood_ever = cv2.morphologyEx(wood_ever.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8)) > 0
     step = max(1, int(round(info.fps / STATE_FPS)))
     rows: list[dict] = []
     total = max(1, info.frame_count)
+    prev_objs: list[dict] = []
+    sx1 = sy1 = sx2 = sy2 = 0
+    if safe is not None:
+        sx1, sy1, sx2, sy2 = safe["bbox"]
+        sw = sx2 - sx1
+        lx1 = max(0, sx1 - int(SAFE_LEFT_EXT * sw))
     for idx, t, frame in iter_frames(path, every_n=step):
         persons = perc.persons[perc.frame_index(t)] if perc.persons else []
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -159,53 +233,62 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
         row["door"] = {"mean": float(band.mean()), "std": float(band.std()), "occluded": _box_overlaps(door, persons, 10 * s)}
         # --- сейф
         if safe is not None:
-            sx1, sy1, sx2, sy2 = safe["bbox"]
-            sw = sx2 - sx1
             face = gray[sy1:sy2, sx1:sx2]
-            left = gray[sy1:sy2, max(0, sx1 - int(0.6 * sw)):sx1]
-            edges = cv2.Canny(face, 50, 120)
+            left = gray[sy1:sy2, lx1:sx1]
             diff = np.abs(face.astype(int) - med_gray[sy1:sy2, sx1:sx2].astype(int)).mean()
             row["safe"] = {
-                "face_mean": float(face.mean()), "face_std": float(face.std()), "edges": float((edges > 0).mean()),
-                "left_mean": float(left.mean()) if left.size else None, "left_std": float(left.std()) if left.size else None,
+                "face_mean": float(face.mean()), "face_std": float(face.std()),
+                "dark_face": float((face < DARK_THR).mean()) if face.size else None,
+                "dark_left": float((left < DARK_THR).mean()) if left.size else None,
                 "diff_vs_median": float(diff),
-                "occluded": _box_overlaps((sx1 - int(0.6 * sw), sy1, sx2, sy2), persons, 5 * s),
+                "occluded": _box_overlaps((sx1, sy1, sx2, sy2), persons, 0, shrink=PERSON_SHRINK),
             }
         # --- экран ноутбука
         if lap is not None:
-            lx1, ly1, lx2, ly2 = _screen_region(lap["bbox"])
-            scr = frame[ly1:ly2, lx1:lx2]
-            g = gray[ly1:ly2, lx1:lx2]
+            lx1_, ly1_, lx2_, ly2_ = _screen_region(lap["bbox"])
+            scr = frame[ly1_:ly2_, lx1_:lx2_]
+            g = gray[ly1_:ly2_, lx1_:lx2_]
             row["screen"] = {
-                "mean": float(g.mean()), "std": float(g.std()), "p90": float(np.percentile(g, 90)) if g.size else None,
+                "mean": float(g.mean()) if g.size else None, "std": float(g.std()) if g.size else None,
+                "p90": float(np.percentile(g, 90)) if g.size else None,
                 "blue_minus_red": float(scr[..., 0].mean() - scr[..., 2].mean()) if scr.size else None,
-                "occluded": _box_overlaps((lx1, ly1, lx2, ly2), persons, 0),
+                "occluded": _box_overlaps((lx1_, ly1_, lx2_, ly2_), persons, 0, shrink=PERSON_SHRINK),
             }
-        # --- столешница: доля дерева, изменившиеся пятна относительно медианы, зелёная сумка, предметы
+        # --- столешница
         if desk is not None:
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            wood = cv2.inRange(hsv, WOOD_HSV[0], WOOD_HSV[1])
-            hull_mask = np.zeros((H, W), np.uint8)
-            cv2.fillConvexPoly(hull_mask, np.asarray(desk["hull"], np.int32), 255)
+            wood = cv2.inRange(hsv, WOOD_HSV[0], WOOD_HSV[1]) > 0
             hull_area = max(1, int((hull_mask > 0).sum()))
-            wood_frac = float(((wood > 0) & (hull_mask > 0)).sum() / hull_area)
-            diff = np.abs(frame.astype(int) - med.astype(int)).sum(2)
-            changed = ((diff > DIFF_THR) & (desk_mask > 0)).astype(np.uint8)
-            changed = cv2.morphologyEx(changed, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
-            n, lab, st, _ = cv2.connectedComponentsWithStats(changed)
-            blobs = []
+            wood_frac = float((wood & (hull_mask > 0)).sum() / hull_area)
+            # статичные предметы: было дерево, сейчас не дерево; тени (древесный оттенок, но темнее) — не предметы
+            shadow = (hsv[..., 0] >= WOOD_HSV[0][0]) & (hsv[..., 0] <= WOOD_HSV[1][0]) & (hsv[..., 2] < WOOD_HSV[0][2])
+            bright = hsv[..., 2] >= 232          # пересвеченные светлые купюры/бумага: ярче любого дерева
+            obj = (wood_ever & (~wood | bright) & ~shadow).astype(np.uint8)
+            obj = cv2.morphologyEx(obj, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+            obj = cv2.morphologyEx(obj, cv2.MORPH_CLOSE, np.ones((7, 7), np.uint8))
+            n, lab, st, _ = cv2.connectedComponentsWithStats(obj)
+            cur: list[dict] = []
             for i in range(1, n):
                 bx, by, bw, bh, ba = (int(v) for v in st[i])
-                if ba < BLOB_MIN_AREA * s * s:
+                if ba < OBJ_MIN_AREA * s * s:
                     continue
                 sel = lab == i
                 hmean = hsv[sel].mean(0)
-                blobs.append({
-                    "bbox": [bx, by, bx + bw, by + bh], "area": ba,
+                box = (bx, by, bx + bw, by + bh)
+                age = 1
+                for po in prev_objs:
+                    if _iou(po["bbox"], box) >= OBJ_MATCH_IOU:
+                        age = po["age"] + 1
+                        break
+                cur.append({
+                    "bbox": list(box), "area": ba,
                     "hsv": [float(hmean[0]), float(hmean[1]), float(hmean[2])],
-                    "person": _box_overlaps((bx, by, bx + bw, by + bh), persons, 0),
+                    "person": _box_overlaps(box, persons, 0, shrink=PERSON_SHRINK),
+                    "age": age,
                 })
-            blobs.sort(key=lambda b: -b["area"])
+            cur.sort(key=lambda b: -b["area"])
+            prev_objs = cur
+            static_objs = [b for b in cur if b["age"] >= OBJ_STATIC_FRAMES]
             green = cv2.inRange(hsv, GREEN_HSV[0], GREEN_HSV[1])
             green = ((green > 0) & (desk_mask > 0)).astype(np.uint8)
             gn, glab, gst, _ = cv2.connectedComponentsWithStats(green)
@@ -213,25 +296,12 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
             gbox = [int(v) for v in gst[gbest[1]][:4]] if gbest[0] > 0 else None
             row["desk"] = {
                 "wood_frac": wood_frac,
-                "blobs": blobs[:6],
+                "objs": cur[:8],
+                "static_objs": static_objs[:8],
                 "green_area": gbest[0],
                 "green_bbox": [gbox[0], gbox[1], gbox[0] + gbox[2], gbox[1] + gbox[3]] if gbox else None,
                 "person_over_desk": _box_overlaps(tuple(desk["bbox"]), persons, 0),
             }
-            if det is not None and desk_crop is not None:
-                cx1, cy1, cx2, cy2 = desk_crop
-                crop = frame[cy1:cy2, cx1:cx2]
-                up = cv2.resize(crop, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-                items = []
-                for d in det(up, conf=0.2):
-                    if d.cls not in ITEM_CLASSES:
-                        continue
-                    bx1, by1, bx2, by2 = d.xyxy[0] / 2 + cx1, d.xyxy[1] / 2 + cy1, d.xyxy[2] / 2 + cx1, d.xyxy[3] / 2 + cy1
-                    ix1, iy1, ix2, iy2 = int(bx1), int(by1), max(int(bx1) + 1, int(bx2)), max(int(by1) + 1, int(by2))
-                    static = float(np.abs(gray[iy1:iy2, ix1:ix2].astype(int) - med_gray[iy1:iy2, ix1:ix2].astype(int)).mean())
-                    items.append({"cls": d.cls, "score": round(d.score, 3), "bbox": [round(bx1, 1), round(by1, 1), round(bx2, 1), round(by2, 1)],
-                                  "diff_vs_median": round(static, 1), "person": _box_overlaps((bx1, by1, bx2, by2), persons, 0)})
-                row["items"] = items
         rows.append(row)
         if progress and idx % (step * 10) == 0:
             progress("states", int(100 * idx / total))
@@ -239,5 +309,6 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
         "width": W, "height": H, "fps": info.fps, "duration_sec": info.duration_sec,
         "desk": desk, "safe": safe, "laptop": lap, "door_band": list(door),
         "median_brightness": float(med_gray.mean()),
+        "version": 2,
     }
     return {"scene": scene, "state_fps": STATE_FPS, "frames": rows}

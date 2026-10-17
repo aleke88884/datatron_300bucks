@@ -1,0 +1,49 @@
+видео  разм.      t  вердикт      события                                      Δt  scene
+Х-1    V       22.0  FN no_violation                                                  c=[1] v=[3] obj=0 bag=0 safe=0 scr={'active': 52, 'locked': 0, 'off': 0}
+Х-2    V       10.0  FN no_violation                                                  c=[1] v=[3] obj=0 bag=0 safe=0 scr={'active': 34, 'locked': 0, 'off': 0}
+Х-3    -             TN no_violation                                                  c=[1] v=[3] obj=0 bag=0 safe=0 scr={'active': 40, 'locked': 0, 'off': 0}
+Х-4    V       57.0  FN no_violation                                                  c=[1] v=[3, 12] obj=60 bag=0 safe=0 scr={'active': 146, 'locked': 0, 'off': 0}
+Х-5    -             TN no_violation                                                  c=[2] v=[1, 21] obj=88 bag=0 safe=0 scr={'active': 143, 'locked': 0, 'off': 0}
+Х-8    -             TN no_violation                                                  c=[1] v=[] obj=0 bag=1 safe=0 scr={'active': 0, 'locked': 0, 'off': 76}
+Х-10   -             TN no_violation                                                  c=[1] v=[] obj=18 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 0}
+Х-11   V       18.0  TP violation T3@16.1(0.95) | ctx T9@16                   1.9  c=[1] v=[] obj=26 bag=0 safe=1 scr={'active': 0, 'locked': 17, 'off': 14}
+Х-12   -             TN no_violation  | ctx T9@32                                     c=[1] v=[] obj=23 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 65}
+Х-13   V       47.0  TP violation T1@64.1(0.82)                              17.1  c=[1] v=[] obj=106 bag=96 safe=0 scr={'active': 0, 'locked': 0, 'off': 117}
+Х-14   -             TN no_violation                                                  c=[1] v=[] obj=179 bag=20 safe=0 scr={'active': 0, 'locked': 0, 'off': 209}
+Х-15   V       15.0  TP violation T1@20.1(0.8)                                5.1  c=[1] v=[] obj=33 bag=35 safe=0 scr={'active': 0, 'locked': 0, 'off': 41}
+Х-16   -             TN no_violation                                                  c=[1] v=[3] obj=0 bag=14 safe=0 scr={'active': 0, 'locked': 46, 'off': 0}
+Х-17   V        7.0  TP violation T10@7.0(0.72)                               0.0  c=[1] v=[3] obj=0 bag=16 safe=0 scr={'active': 0, 'locked': 30, 'off': 0}
+Х-18   V       20.0  TP violation T4@16.1(0.9)                                3.9  c=[1] v=[3, 6] obj=10 bag=0 safe=0 scr={'active': 0, 'locked': 46, 'off': 0}
+Х-19   -             TN no_violation                                                  c=[1] v=[3, 7] obj=18 bag=0 safe=0 scr={'active': 61, 'locked': 54, 'off': 0}
+Х-20   V        5.0  FN no_violation                                                  c=[1] v=[] obj=4 bag=0 safe=0 scr={'active': 0, 'locked': 23, 'off': 1}
+Х-21   -             TN no_violation                                                  c=[1] v=[] obj=20 bag=0 safe=1 scr={'active': 0, 'locked': 38, 'off': 1}
+Х-22   V       14.0  FN no_violation                                                  c=[1] v=[] obj=6 bag=0 safe=8 scr={'active': 9, 'locked': 1, 'off': 31}
+Х-23   -             TN no_violation                                                  c=[1] v=[] obj=7 bag=0 safe=3 scr={'active': 0, 'locked': 23, 'off': 1}
+Х-24   V        8.0  TP violation T1@5.5(0.82)                                2.5  c=[1] v=[] obj=2 bag=30 safe=2 scr={'active': 0, 'locked': 29, 'off': 1}
+Х-25   -             TN no_violation                                                  c=[1] v=[] obj=16 bag=27 safe=6 scr={'active': 0, 'locked': 58, 'off': 5}
+Х-26   V        9.0  FN no_violation                                                  c=[1] v=[] obj=6 bag=0 safe=3 scr={'active': 0, 'locked': 38, 'off': 2}
+Х-27   -             TN no_violation                                                  c=[1] v=[] obj=11 bag=0 safe=12 scr={'active': 0, 'locked': 50, 'off': 2}
+Х-28   V        7.0  TP violation T1@7.1(0.85), T3@7.1(0.82)                  0.1  c=[1] v=[] obj=28 bag=0 safe=2 scr={'active': 18, 'locked': 0, 'off': 0}
+Х-29   -             TN no_violation                                                  c=[1] v=[] obj=12 bag=0 safe=6 scr={'active': 0, 'locked': 18, 'off': 1}
+Х-30   V       13.0  TP violation T5@12.5(0.88)                               0.5  c=[1] v=[2] obj=0 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 0}
+Х-31   -             TN no_violation                                                  c=[1] v=[] obj=2 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 0}
+Х-32   V        5.0  FN no_violation                                                  c=[1] v=[] obj=0 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 0}
+Х-33   V        6.0  TP violation T5@11.0(0.86)                               5.0  c=[1] v=[2] obj=6 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 0}
+Х-34   V       13.0  FN no_violation                                                  c=[1] v=[3] obj=0 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 34}
+Х-35   -             TN no_violation                                                  c=[1] v=[3] obj=0 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 112}
+Х-37   -             TN no_violation                                                  c=[1] v=[3] obj=0 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 31}
+Х-38   V       33.0  TP violation T7@31.0(0.74)                               2.0  c=[1] v=[2, 6, 10, 14, 21] obj=60 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 116}
+Х-39   -             TN no_violation                                                  c=[1] v=[3, 9] obj=1 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 158}
+Х-40   V       17.0  FN no_violation                                                  c=[1] v=[] obj=5 bag=1 safe=0 scr={'active': 0, 'locked': 0, 'off': 0}
+Х-43   -             TN no_violation                                                  c=[1] v=[] obj=20 bag=3 safe=0 scr={'active': 0, 'locked': 0, 'off': 47}
+Х-44   V       16.0  FN no_violation                                                  c=[1] v=[] obj=17 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 41}
+Х-45   -             TN no_violation                                                  c=[1] v=[] obj=34 bag=11 safe=0 scr={'active': 0, 'locked': 0, 'off': 0}
+Х-46   V       11.0  TP violation T8@13.1(0.72)                               2.1  c=[1] v=[] obj=16 bag=0 safe=0 scr={'active': 0, 'locked': 0, 'off': 39}
+Х-47   V       68.0  FN no_violation                                                  c=[1] v=[3, 12] obj=60 bag=0 safe=0 scr={'active': 146, 'locked': 0, 'off': 0}
+Х-48   -             TN no_violation                                                  c=[2] v=[1, 21] obj=88 bag=0 safe=0 scr={'active': 143, 'locked': 0, 'off': 0}
+
+TP=11 FN=11 FP=0 TN=20   |  recall=0.50  FP на чистых=0/20
+ошибка таймкода (по найденным нарушениям): медиана 2.1 с, среднее 3.6 с, в допуске ≤3.0 с: 7/11
+ложные: []
+пропуски: ['Х-1', 'Х-2', 'Х-4', 'Х-20', 'Х-22', 'Х-26', 'Х-32', 'Х-34', 'Х-40', 'Х-44', 'Х-47']
+время: 16 с

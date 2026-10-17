@@ -13,6 +13,7 @@ from typing import Iterator, Optional
 import cv2
 import numpy as np
 
+from . import rules_scene as _scene_rules
 from .context import Event, VideoContext
 from .video import VideoInfo, open_capture
 
@@ -113,7 +114,7 @@ def detect_t1_valuables_unattended(ctx: VideoContext) -> list[Event]:
     Входы: ctx.states['cashier_at_desk'], ctx.states['cash_on_desk'], ctx.states['bag_on_desk'].
     Кадры: момент выхода (с рамкой вокруг ценностей на столе), +1 с, +3 с. Примеры: X-15, X-26.
     """
-    return []
+    return _scene_rules.rule_t1(ctx)
 
 
 def detect_t2_safe_left_open(ctx: VideoContext) -> list[Event]:
@@ -124,7 +125,7 @@ def detect_t2_safe_left_open(ctx: VideoContext) -> list[Event]:
     Входы: ctx.states['safe_open'], ctx.states['cashier_near_safe'], ctx.states['cashier_in_room'].
     Отрицательные примеры (сейф закрывают): X-21, X-19, X-39, X-5. Положительные: X-22, X-20.
     """
-    return []
+    return _scene_rules.rule_t2(ctx)
 
 
 # ---------------------------------------------------------------------------
@@ -240,6 +241,9 @@ def find_glowing_regions(path: str, info: VideoInfo, t0: float, t1: float) -> li
 def detect_t3_workstation_unlocked(ctx: VideoContext) -> list[Event]:
     """T3. Незаблокированное рабочее место (АРМ) при уходе.
 
+    Два варианта: (а) при освещении — экран активен и кассир ушёл от стола (rules_scene.rule_t3_lit, X-28);
+    (б) в темноте — после выключения света экран продолжает светиться (ниже, X-11).
+
     Реализованный признак (по контексту T9): после выключения освещения в кассе (кассир гасит свет, уходя)
     в тёмных кадрах сохраняется компактная, яркая, неподвижная область с высоким локальным контрастом —
     экран ноутбука остаётся активным (Х-11). В чистом Х-12 свет тоже гаснет, но крышка ноутбука закрыта
@@ -293,6 +297,8 @@ def detect_t3_workstation_unlocked(ctx: VideoContext) -> list[Event]:
             extras={"region": reg, "evidence_boxes": [reg["xyxy"]] * 3, "t9": t9.timecode_sec},
         )
         events.append(ev)
+    if not events:
+        events.extend(_scene_rules.rule_t3_lit(ctx))
     return events
 
 
@@ -304,7 +310,7 @@ def detect_t4_unauthorized_person(ctx: VideoContext) -> list[Event]:
     Входы: ctx.tracks (роли: cashier/client/other), ctx.zones['room'], ctx.zones['client_seat']. Примеры: X-18, X-33.
     Без распознавания лиц: роли только по положению и трекам.
     """
-    return []
+    return _scene_rules.rule_t4(ctx)
 
 
 def detect_t5_client_in_work_zone(ctx: VideoContext) -> list[Event]:
@@ -313,7 +319,7 @@ def detect_t5_client_in_work_zone(ctx: VideoContext) -> list[Event]:
     Признак: трек с ролью client/other пересёк линию стола и находится в рабочей зоне (сторона стола с ноутбуком,
     машинкой, сейфом). Таймкод = момент пересечения. Входы: ctx.tracks, ctx.zones['work_zone']. Пример: X-30.
     """
-    return []
+    return _scene_rules.rule_t5(ctx)
 
 
 def detect_t6_count_without_client(ctx: VideoContext) -> list[Event]:
@@ -323,7 +329,7 @@ def detect_t6_count_without_client(ctx: VideoContext) -> list[Event]:
     (деньги в руках/в машинке) ещё ≥ 2 с. Таймкод = момент выхода клиента из зоны обслуживания.
     Входы: ctx.states['client_present'], ctx.states['cash_handling']. Пример: X-34.
     """
-    return []
+    return _scene_rules.rule_t6(ctx)
 
 
 def detect_t7_cash_exposed_on_entry(ctx: VideoContext) -> list[Event]:
@@ -332,7 +338,7 @@ def detect_t7_cash_exposed_on_entry(ctx: VideoContext) -> list[Event]:
     Признак: деньги на столе (cash_on_desk) в момент, когда новый трек входит в помещение.
     Таймкод = момент входа. Входы: ctx.states['cash_on_desk'], ctx.tracks (появление трека в зоне двери). Примеры: X-4, X-38.
     """
-    return []
+    return _scene_rules.rule_t7(ctx)
 
 
 def detect_t8_personal_items(ctx: VideoContext) -> list[Event]:
@@ -342,7 +348,7 @@ def detect_t8_personal_items(ctx: VideoContext) -> list[Event]:
     либо действие «пьёт» (стакан у лица). Таймкод = момент появления предмета на столе / начала действия.
     Входы: ctx.detections (классы handbag, cup, can, phone), ctx.zones['desk']. Примеры: X-40, X-46, X-24.
     """
-    return []
+    return _scene_rules.rule_t8(ctx)
 
 
 def detect_t10_cash_handover_inside(ctx: VideoContext) -> list[Event]:
@@ -352,7 +358,7 @@ def detect_t10_cash_handover_inside(ctx: VideoContext) -> list[Event]:
     от него на стол/кассиру. Таймкод = момент входа инкассатора в помещение. Входы: ctx.tracks, ctx.detections['bag'].
     Пример: X-17; отрицательный (приём через передаточное устройство): X-14.
     """
-    return []
+    return _scene_rules.rule_t10(ctx)
 
 
 def detect_t11_cash_moved_out_of_zone(ctx: VideoContext) -> list[Event]:
@@ -383,7 +389,7 @@ def detect_t13_empty_cash_desk_door_open(ctx: VideoContext) -> list[Event]:
     стало истинным (последний человек вышел при открытой двери / дверь открылась в пустой кассе).
     Входы: ctx.states['n_people'], ctx.states['door_open']. Пример: X-32.
     """
-    return []
+    return _scene_rules.rule_t13(ctx)
 
 
 # Порядок = порядок кодов. Выключить правило — убрать из списка.
