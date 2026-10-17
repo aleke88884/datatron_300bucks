@@ -12,7 +12,7 @@ if str(SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICE_DIR))
 
 from pipeline.detectors import DETECTORS  # noqa: E402
-from pipeline.rules import CLAUSES, DOCUMENTS, RULES, api_rule  # noqa: E402
+from pipeline.rules import CLAUSES, DOCUMENTS, QUOTE_SEP, QUOTES, RULES, api_rule, expand_clause  # noqa: E402
 
 ALL_CODES = [f"T{i}" for i in range(1, 14)]
 
@@ -29,7 +29,8 @@ def test_rule_entry_is_complete(code):
     assert isinstance(r["examples"], list) and r["examples"]
     for ref in [r["rule"], *r["secondary"]]:
         assert ref["document"] and ref["clause"] and ref["url"]
-        assert ref["url"] in {d["url"] for d in DOCUMENTS.values()}, "только adilet-ссылки на два постановления НБРК"
+        assert ref["url"] in {d["url"] for d in DOCUMENTS.values()}, "только adilet-ссылки на акты из DOCUMENTS"
+        assert ref["quote"].strip(), "у каждого пункта есть дословная цитата"
 
 
 def _doc_key_by_url(url: str) -> str:
@@ -43,26 +44,16 @@ def test_clauses_exist_in_source_tables(code):
     for ref in [r["rule"], *r["secondary"]]:
         doc = _doc_key_by_url(ref["url"])
         known = CLAUSES[doc]
-        parts = [p.strip() for p in ref["clause"].split(",")]
-        # «п. 16 пп. 3), пп. 4)» → второй элемент наследует номер пункта
-        expanded = []
-        base = None
-        for p in parts:
-            m = re.match(r"^(п\. [\d–-]+)", p)
-            if m:
-                base = m.group(1)
-                expanded.append(p)
-            else:
-                assert base and p.startswith("пп."), p
-                expanded.append(f"{base} {p}")
-        for p in expanded:
+        # «п. 16 пп. 3), пп. 4)» → второй элемент наследует номер пункта; «п. 20 абз. 2» — один ключ
+        for p in expand_clause(ref["clause"]):
             assert p in known, f"{code}: пункт «{p}» отсутствует в таблице {doc}"
 
 
 def test_documents_have_registration_and_urls():
     for key, d in DOCUMENTS.items():
         assert d["url"].startswith("https://adilet.zan.kz/rus/docs/V")
-        assert "Национального Банка" in d["title"] and "№" in d["title"]
+        assert ("Национального Банка" in d["title"] or "финансового рынка" in d["title"]) and "№" in d["title"]
+        assert d["mirror"].endswith(d["url"].rsplit("/", 1)[1])
     assert "приостановлено" in DOCUMENTS["R14"]["note"]
 
 
@@ -70,7 +61,57 @@ def test_documents_have_registration_and_urls():
 def test_api_rule_shape(code):
     r = api_rule(code)
     assert set(r) >= {"document", "clause", "url"}
-    assert set(r) <= {"document", "clause", "url", "note"}
+    assert set(r) <= {"document", "clause", "url", "quote", "note"}
+    assert r["quote"]
+
+
+def _norm(t: str) -> str:
+    return re.sub(r"\s+", " ", t)
+
+
+def test_quotes_cover_clauses():
+    """Каждому пункту из CLAUSES соответствует цитата, и наоборот; в цитате нет многоточий."""
+    for doc, clauses in CLAUSES.items():
+        assert set(clauses) == set(QUOTES[doc]), doc
+        for k, q in QUOTES[doc].items():
+            assert "…" not in q and "..." not in q, (doc, k)
+
+
+@pytest.mark.parametrize("code", ALL_CODES)
+def test_api_quote_is_joined_verbatim_quotes(code):
+    r = RULES[code]["rule"]
+    doc = _doc_key_by_url(r["url"])
+    assert api_rule(code)["quote"] == QUOTE_SEP.join(QUOTES[doc][k] for k in expand_clause(r["clause"]))
+
+
+def test_quotes_are_in_docs():
+    """Каждая цитата дословно присутствует в docs/RULES_SOURCES.md (таблица «пункт → цитата»)."""
+    docs = _norm((SERVICE_DIR.parent / "docs" / "RULES_SOURCES.md").read_text(encoding="utf-8"))
+    for doc, qs in QUOTES.items():
+        for k, q in qs.items():
+            assert _norm(q) in docs, f"{doc} {k}: цитата отсутствует в docs/RULES_SOURCES.md"
+
+
+def test_t3_cites_exact_it_security_clause():
+    """FAQ 32: T3 привязан к точному пункту (п. 71 пп. 9) Требований ИБ), а не к «внутренним требованиям банка»."""
+    r = RULES["T3"]["rule"]
+    assert r["clause"] == "п. 71 пп. 9)" and r["url"].endswith("V2600038336")
+    assert "30" in r["quote"] and "уточняется" not in r["note"]
+    assert "не нарушает" in r["note"], "честно: автоблокировка по таймауту, а не в момент ухода"
+    assert any(x["url"].endswith("V1800016772") for x in RULES["T3"]["secondary"]), "историческая редакция (НБРК № 48)"
+
+
+def test_descriptions_are_observable_only():
+    """ТЗ п. 7: в описаниях нет выводов о нарушении/блокировке — только наблюдаемое и пометка для проверки человеком."""
+    import inspect
+
+    from pipeline import detectors, rules_scene
+
+    src = inspect.getsource(rules_scene) + inspect.getsource(detectors)
+    for bad in ("не заблокировано", "должен быть исключён", "должен оставаться", "не допускаются", "должна оставаться",
+                "должны храниться", "должны выполняться", "должны находиться", "не должна оставаться",
+                "без предъявления документов"):
+        assert bad not in src, f"вывод в описании: «{bad}»"
 
 
 def test_detectors_cover_every_type_once():

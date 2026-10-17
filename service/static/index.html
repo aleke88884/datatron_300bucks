@@ -195,7 +195,7 @@
         +'<div class="tc">таймкод: <b>'+fmt(v.timecode_sec)+'</b>'+(v.end_sec!=null?' – '+fmt(v.end_sec):'')+(v.confidence!=null?' · уверенность '+Math.round(v.confidence*100)+'%':'')+'</div>'
         +'<div class="frames">'+frames+'</div>'
         +'<div>'+esc(v.description)+'</div>'
-        +(r.document?'<div class="rule"><b>Нормативное основание:</b> '+esc(r.clause)+' — '+esc(r.document)+(r.url?' · <a href="'+esc(r.url)+'" target="_blank" rel="noopener">открыть на adilet.zan.kz</a>':'')+(r.note?'<div class="meta" style="margin-top:4px">'+esc(r.note)+'</div>':'')+'</div>':'');
+        +(r.document?'<div class="rule"><b>Нормативное основание:</b> '+esc(r.clause)+' — '+esc(r.document)+(r.url?' · <a href="'+esc(r.url)+'" target="_blank" rel="noopener">открыть на adilet.zan.kz</a>':'')+(r.quote?'<div class="meta" style="margin-top:4px"><i>«'+esc(r.quote)+'»</i></div>':'')+(r.note?'<div class="meta" style="margin-top:4px">'+esc(r.note)+'</div>':'')+'</div>':'');
       events.appendChild(el);
     });
     const ctxEv = (m.context_events||[]);

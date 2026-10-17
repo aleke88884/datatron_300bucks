@@ -16,6 +16,7 @@ class Rule(BaseModel):
     document: str
     clause: str
     url: str
+    quote: Optional[str] = None
     note: Optional[str] = None
 
 
