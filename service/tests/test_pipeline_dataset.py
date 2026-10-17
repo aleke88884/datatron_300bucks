@@ -25,7 +25,7 @@ LIGHTS_OFF_VIDEOS = {"Х-11", "Х-12"}   # в обоих кассир выклю
 SCREEN_ON_VIDEOS = {"Х-11", "Х-28"}    # где T3 должен сработать: Х-11 (экран светится в темноте), Х-28 (кассир ушёл, экран активен)
 # Ожидаемые срабатывания правил по датасету (офлайн-оценка scripts/eval_rules.py, 17.10.2026): 11 из 22 нарушений, 0 ложных
 EXPECTED_TP = {"Х-11", "Х-13", "Х-15", "Х-17", "Х-18", "Х-24", "Х-28", "Х-30", "Х-33", "Х-38", "Х-46"}
-EXPECTED_TYPES = {"Х-17": "T10", "Х-18": "T4", "Х-30": "T5", "Х-33": "T5", "Х-38": "T7", "Х-46": "T8", "Х-15": "T1", "Х-24": "T1"}
+EXPECTED_TYPES = {"Х-17": "T10", "Х-18": "T4", "Х-30": "T5", "Х-33": "T4", "Х-38": "T7", "Х-46": "T8", "Х-15": "T1", "Х-24": "T1"}
 LABEL_TOLERANCE_SEC = 3.0
 
 
@@ -176,6 +176,19 @@ def test_timecodes_near_labels(results, labels):
         if min(abs(v["timecode_sec"] - labels[n]["timecode"]) for v in r["violations"]) <= LABEL_TOLERANCE_SEC:
             ok += 1
     assert tot == 0 or ok / tot >= 0.5, f"в допуске {ok} из {tot}"
+
+
+# Таймкод = начало нарушающего действия (pipeline.timing): кассир трогается к выходу (Х-15, Х-24), посторонний
+# дошёл до стола (Х-18), стакан появился на столе (Х-46). До уточнения: 20.1 / 5.5 / 16.1 / 13.1 с.
+REFINED_TIMECODES = {"Х-15": ("T1", 1.0), "Х-24": ("T1", 1.0), "Х-18": ("T4", 1.0), "Х-46": ("T8", 1.0)}
+
+
+def test_refined_timecodes_match_labels(results, labels):
+    for name, (code, tol) in REFINED_TIMECODES.items():
+        evs = [v for v in results[name]["violations"] if v["type_code"] == code]
+        assert evs, f"{name}: нет события {code}"
+        err = min(abs(v["timecode_sec"] - labels[name]["timecode"]) for v in evs)
+        assert err <= tol, f"{name}: {code} в {[v['timecode_sec'] for v in evs]}, разметка {labels[name]['timecode']}"
 
 
 def test_no_false_positives_on_clean_videos(results, labels):

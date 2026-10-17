@@ -13,6 +13,7 @@ import numpy as np
 
 from .context import Event, VideoContext
 from .scene import DESK_OBJ_MIN, GRID_FPS, Scene
+from . import timing as _timing
 
 DT = 1.0 / GRID_FPS
 
@@ -25,6 +26,7 @@ T2_ENABLED = False           # признак «тёмный проём у се�
 T3_AWAY_SEC = 2.0            # экран активен, кассир вне зоны стола не менее 2 с
 T4_SEC = 1.5                 # ≥ 3 уверенных человек внутри не менее 1.5 с
 T5_SEC = 1.0                 # посетитель в рабочей зоне не менее 1 с
+T5_AT_DESK_FRAC = 0.3        # доля наблюдений посетителя у стола (стопа на столе ± 0.15 роста); меньше — посторонний (T4)
 T6_AFTER_SEC = 4.0           # окно после ухода посетителя
 T6_MIN_FRAC = 0.5            # доля окна, когда на столе остаются наличные/ценности
 T6_ENABLED = False           # признак «предмет на столе» не отличает деньги от документов клиента (ложные X-5, X-19) — выключено
@@ -142,22 +144,32 @@ def rule_t1(ctx: VideoContext) -> list[Event]:
             continue
         t0 = float(sc.t[i_leave])
         t_leave = float(sc.t[a])
+        # начало действия — кассир трогается с последней остановки у стола/сейфа (pipeline.timing)
+        t_walk = _timing.refine_leave_onset(sc, getattr(ctx, "tracks", None), t_leave)
+        if t_walk is not None:
+            t0 = t_walk
         dur = (b - a + 1) * DT
-        what = "остаётся инкассаторская сумка" if sc.bag_on_desk[lo:i_leave + 1].any() else "остаются наличные/ценности (предмет, положенный на столешницу)"
+        what = "остаётся зелёный предмет, по виду инкассаторская сумка/ценности" if sc.bag_on_desk[lo:i_leave + 1].any() else "остаются наличные/ценности (предмет, положенный на столешницу)"
         gone = not sc.cashier_inside[a:b + 1].any()
         where = "вышел из помещения" if gone else "отошёл от стола"
         conf = min(0.95, 0.7 + 0.05 * min(dur, 4.0) + (0.05 if gone else 0.0))
+        if t_walk is not None:
+            start = f"заканчивает работу у стола/сейфа и направляется к выходу, затем {'выходит из помещения' if gone else 'отходит от стола'}"
+        else:
+            start = ("встал и " if i_leave < a else "") + where
         desc = (
-            f"В {t0:.1f} с кассир {('встал и ' if i_leave < a else '')}{where} (с {t_leave:.1f} с вне рабочего места "
+            f"В {t0:.1f} с кассир {start} (с {t_leave:.1f} с вне рабочего места "
             f"не менее {dur:.1f} с), при этом на столешнице без присмотра {what}. "
             f"Признак для проверки человеком (где хранятся наличные при уходе кассира)."
         )
         box = _obj_box(sc, i_leave)
+        cbox = _timing.cashier_box_at(sc, getattr(ctx, "tracks", None), t0)
+        ev_t = [_clip(sc, t0), _clip(sc, max(t0 + 1.0, t_leave)), _clip(sc, t_leave + 1.5)]
         events.append(Event(
             type_code="T1", timecode_sec=round(t0, 2), end_sec=round(float(sc.t[b]), 2), confidence=round(conf, 2),
-            description=desc, evidence_times=_ev_times(sc, t_leave, (-0.5, 1.0, 3.0)),
+            description=desc, evidence_times=ev_t,
             evidence_captions=["кассир покидает рабочее место, ценности на столе", "ценности на столе без присмотра", "рабочее место без кассира"],
-            extras={"evidence_boxes": [box] * 3 if box else [], "away_sec": dur, "gone": gone},
+            extras={"evidence_boxes": [cbox or box, box, box] if (box or cbox) else [], "away_sec": dur, "gone": gone},
         ))
         break
     return events
@@ -244,6 +256,12 @@ def rule_t4(ctx: VideoContext) -> list[Event]:
     for a, b in sc.runs(cond, T4_SEC):
         t0 = float(sc.t[a])
         dur = (b - a + 1) * DT
+        # начало действия — вошедший дошёл от проёма до места, где остаётся (pipeline.timing)
+        ent = _timing.refine_entry_time(sc, getattr(ctx, "tracks", None), t0, float(sc.t[b]))
+        nboxes: list = []
+        if ent is not None:
+            t0 = ent[0]
+            nboxes = [_timing.track_box_at(getattr(ctx, "tracks", None), ent[1], t) for t in _ev_times(sc, t0, (0.0, 1.0, 2.5))]
         conf = min(0.92, 0.7 + 0.05 * min(dur, 4.0))
         desc = (
             f"В {t0:.1f} с в кассовом помещении одновременно находятся {int(sc.n_strong[a])} человека не менее {dur:.1f} с: "
@@ -253,7 +271,7 @@ def rule_t4(ctx: VideoContext) -> list[Event]:
             type_code="T4", timecode_sec=round(t0, 2), end_sec=round(float(sc.t[b]), 2), confidence=round(conf, 2),
             description=desc, evidence_times=_ev_times(sc, t0, (0.0, 1.0, 2.5)),
             evidence_captions=["третье лицо входит в кассу", "посторонний внутри кассового помещения", "посторонний остаётся внутри"],
-            extras={"n": int(sc.n_strong[a])},
+            extras={"n": int(sc.n_strong[a]), "evidence_boxes": nboxes},
         ))
         break
     return events
@@ -272,6 +290,28 @@ def rule_t5(ctx: VideoContext) -> list[Event]:
         t0 = float(sc.t[a])
         dur = (b - a + 1) * DT
         conf = min(0.9, 0.68 + 0.05 * min(dur, 4.0))
+        # Клиент в рабочей зоне (T5) подходит к столу кассира (оборудование, наличные). Человек, который вошёл и
+        # стоит в помещении в стороне от стола — у входа, за спиной кассира, — не обслуживается: это посторонний (T4).
+        tracks = getattr(ctx, "tracks", None)
+        at_desk = _timing.visitors_at_desk_frac(sc, tracks, float(sc.t[a]), float(sc.t[b]))
+        if at_desk is not None and at_desk[0] < T5_AT_DESK_FRAC:
+            t_in = _timing.track_first_inside(tracks, at_desk[1])
+            if t_in is not None and t0 - 2.0 <= t_in < t0:
+                t0 = t_in
+            ev_t = _ev_times(sc, t0, (0.0, 1.0, 2.5))
+            vboxes = [_timing.track_box_at(tracks, at_desk[1], t) for t in ev_t]
+            desc = (
+                f"В {t0:.1f} с в кассовое помещение входит посторонний и остаётся в нём не менее {dur:.1f} с: стоит "
+                f"в стороне от стола обслуживания, за спиной кассира (на стороне рабочего места), к столу как клиент "
+                f"не подходит. Требует проверки человеком: допущен ли этот человек в кассовый узел."
+            )
+            events.append(Event(
+                type_code="T4", timecode_sec=round(t0, 2), end_sec=round(float(sc.t[b]), 2), confidence=round(conf, 2),
+                description=desc, evidence_times=ev_t,
+                evidence_captions=["посторонний входит в кассу", "посторонний за спиной кассира", "посторонний остаётся в помещении"],
+                extras={"evidence_boxes": vboxes, "reclassified_from": "T5", "at_desk_frac": round(at_desk[0], 2)},
+            ))
+            break
         desc = (
             f"В {t0:.1f} с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и хранилищем) и "
             f"находится там не менее {dur:.1f} с. Признак для проверки человеком."
@@ -400,17 +440,26 @@ def rule_t8(ctx: VideoContext) -> list[Event]:
     if len(drink) >= T8_DRINK_MIN_DET and max(d["score"] for _, d in drink) >= T8_DRINK_MIN_SCORE:
         i0, d0 = drink[0]
         t0 = float(sc.t[i0])
-        best = max(drink, key=lambda x: x[1]["score"])[1]
+        i_best, best = max(drink, key=lambda x: x[1]["score"])
+        box = tuple(int(v) for v in best["xyxy"])
+        t_best = float(sc.t[i_best])
+        ev_t = _ev_times(sc, t_best, (0.0, 1.0, 2.0))
+        boxes = [box] * 3
+        # первое появление напитка: перепроверка нескольких секунд до срабатывания по кропу стола (pipeline.timing)
+        on = _timing.refine_object_onset(ctx.path, sc.info, t0, zone, {"cup", "bottle", "wine glass"})
+        if on is not None and on[0] < t0:
+            t0 = on[0]
+            ev_t = [_clip(sc, t0), _clip(sc, t0 + 1.0), _clip(sc, t_best)]
+            boxes = [on[1], on[1], box]
         desc = (
             f"С {t0:.1f} с на рабочем столе кассира обнаружен предмет типа стакан/бутылка, рядом с наличными и "
             f"оборудованием. Признак для проверки человеком (личные вещи на рабочем месте)."
         )
-        box = tuple(int(v) for v in best["xyxy"])
         events.append(Event(
             type_code="T8", timecode_sec=round(t0, 2), confidence=0.72, description=desc,
-            evidence_times=_ev_times(sc, float(sc.t[max(drink, key=lambda x: x[1]['score'])[0]]), (0.0, 1.0, 2.0)),
-            evidence_captions=["напиток на рабочем столе кассира", "напиток рядом с наличными", "напиток на рабочем месте"],
-            extras={"evidence_boxes": [box] * 3, "kind": "drink", "n_det": len(drink)},
+            evidence_times=ev_t,
+            evidence_captions=["напиток появляется на рабочем столе кассира", "напиток рядом с наличными", "кассир пользуется напитком на рабочем месте"],
+            extras={"evidence_boxes": boxes, "kind": "drink", "n_det": len(drink)},
         ))
     elif False and len(bag) >= T8_BAG_MIN_DET and max(d["score"] for _, d in bag) >= T8_BAG_MIN_SCORE:   # сумки по YOLO: ложные на интерьере — выключено
         i0, d0 = bag[0]
