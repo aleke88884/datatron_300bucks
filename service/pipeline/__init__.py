@@ -188,6 +188,15 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         ctx.zones = scene.anchors
         ctx.cache["scene_summary"] = scene_summary(scene)
         perception_ok = True
+        # состояние двери (T13): область двери по движению створки у входов/выходов, ряд «открыта/закрыта»
+        try:
+            from .door import door_features, door_summary
+
+            progress("door", 55)
+            ctx.cache["door"] = door_features(path, info, perc, progress=progress)
+            ctx.cache["scene_summary"]["door"] = door_summary(ctx.cache["door"])
+        except Exception as exc:  # noqa: BLE001 — без признаков двери молчит только T13
+            log.exception("door features failed: %s", exc)
     except Exception as exc:  # noqa: BLE001 — без восприятия работают только правила по яркости (T9/T3-тёмный)
         log.exception("perception layer failed, falling back to brightness-only rules: %s", exc)
         ctx.cache["perception_error"] = f"{type(exc).__name__}: {exc}"
