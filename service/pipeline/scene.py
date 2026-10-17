@@ -22,16 +22,19 @@ from typing import Optional
 
 import numpy as np
 
+from .camera import REF_FRAME_H
 from .perception import Perception, PersonObs, Track
 from .video import VideoInfo
 
 GRID_FPS = 2.0
 STRONG_SCORE = 0.62          # уверенная детекция человека
-STRONG_H = 0.10              # минимальная высота рамки (доля высоты кадра) для «настоящего» человека внутри
+STRONG_H = 0.10              # минимальная высота рамки (доля высоты эталонного кадра 848, × масштаб сцены) для «настоящего» человека внутри
 CASHIER_MIN_WORK_FRAC = 0.5  # доля наблюдений трека в рабочей зоне, чтобы считать его кассиром
 DESK_PAD = 0.12              # расширение bbox стола для теста «у стола»
-BAG_AREA_MIN = 60            # зелёная сумка на столе (пикс. при 464x848)
-DESK_OBJ_MIN = 150           # статичный предмет на столешнице (пикс.)
+# Площади в Scene (bag_area, desk_obj_area, desk_objs[].area) приведены к пикселям эталонного кадра 464x848
+# делением на масштаб сцены² (camera.scene_scale): пороги ниже не зависят от разрешения и приближения камеры.
+BAG_AREA_MIN = 60            # зелёная сумка на столе (эталонные пикс.)
+DESK_OBJ_MIN = 150           # статичный предмет на столешнице (эталонные пикс.)
 SCREEN_ACTIVE = dict(mean=125.0, p90=185.0, bmr=10.0)   # «экран активен»: яркий, светлый, холодный оттенок (X-28)
 SCREEN_LOCKED = dict(std=50.0, p90=180.0)                # «экран заблокирован»: яркие обои, высокая дисперсия (X-29, X-22)
 SAFE_OPEN_DELTA = 0.20        # прирост доли тёмных пикселей относительно базовой (10-й перцентиль) → «открыт»
@@ -66,6 +69,8 @@ class Scene:
     cashier_track_ids: list[int] = field(default_factory=list)
     visitor_track_ids: list[int] = field(default_factory=list)
     items: list[list[dict]] = field(default_factory=list)    # полнокадровые детекции предметов (handbag, cup, ...)
+    scale: float = 1.0                                       # масштаб сцены относительно эталонного кадра (camera.py)
+    camera: dict = field(default_factory=dict)               # сводка самокалибровки камеры (camera.calibrate)
     notes: list[str] = field(default_factory=list)
     # наличные, сливающиеся с деревом (pipeline/cashdetect.py): пачка бежевых купюр лежит на столе
     cash_present: np.ndarray = field(default_factory=lambda: np.zeros(0, bool))
@@ -142,8 +147,47 @@ def _side_value(pt, center, normal) -> float:
     return (pt[0] - center[0]) * normal[0] + (pt[1] - center[1]) * normal[1]
 
 
-def _strong(o: PersonObs, info: VideoInfo) -> bool:
-    return o.score >= STRONG_SCORE and o.h >= STRONG_H * info.height
+def _strong(o: PersonObs, info: VideoInfo, scale: Optional[float] = None) -> bool:
+    s = scale if scale else info.height / REF_FRAME_H
+    return o.score >= STRONG_SCORE and o.h >= STRONG_H * REF_FRAME_H * s
+
+
+FRAGMENT_MAX_SEC = 3.0       # обрывок трека кассира: короткий трек «посетителя»…
+FRAGMENT_GAP_SEC = 2.0       # …вплотную по времени к треку кассира (без пересечения)…
+FRAGMENT_DIST = 1.0          # …и в том же месте (центры рамок ближе роста человека)
+
+
+def _rejoin_cashier_fragments(perc: Perception, roles: dict[int, str], cashier_ids: list[int]) -> None:
+    """Обрывки трека кассира → кассир. При другом ракурсе/повороте кадра детектор чаще теряет человека на 1–2
+    кадра, и трек кассира рвётся: короткий кусок (≤ 3 с) становится «посетителем» и может дать ложное
+    «посетитель в рабочей зоне». Человек не может исчезнуть в точке, где через ≤ 2 с появляется кассир, —
+    такой кусок присоединяется к кассиру. Треки, пересекающиеся с кассиром по времени, не трогаются."""
+    if not cashier_ids:
+        return
+    by_id = {tr.id: tr for tr in perc.tracks}
+    changed = True
+    while changed:
+        changed = False
+        for tid, role in list(roles.items()):
+            tr = by_id.get(tid)
+            if role != "visitor" or tr is None or not tr.obs or tr.t1 - tr.t0 > FRAGMENT_MAX_SEC:
+                continue
+            for cid in list(cashier_ids):
+                ct = by_id.get(cid)
+                if ct is None or not ct.obs or (tr.t0 <= ct.t1 and ct.t0 <= tr.t1):
+                    continue
+                if 0.0 <= ct.t0 - tr.t1 <= FRAGMENT_GAP_SEC:
+                    a, b = tr.obs[-1], ct.obs[0]
+                elif 0.0 <= tr.t0 - ct.t1 <= FRAGMENT_GAP_SEC:
+                    a, b = ct.obs[-1], tr.obs[0]
+                else:
+                    continue
+                (ax, ay), (bx, by) = _center(a.xyxy), _center(b.xyxy)
+                if np.hypot(ax - bx, ay - by) <= FRAGMENT_DIST * max(a.h, b.h, 1.0):
+                    roles[tid] = "cashier"
+                    cashier_ids.append(tid)
+                    changed = True
+                    break
 
 
 # ---------------------------------------------------------------------------
@@ -158,6 +202,9 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[
     frames = states.get("frames", [])
     H, W = info.height, info.width
     notes: list[str] = []
+    scale = float(sc.get("scale") or H / REF_FRAME_H)       # масштаб сцены (camera.calibrate), иначе H/848
+    area_k = 1.0 / (scale * scale)                            # пикс. кадра → эталонные пикс.
+    gain = float(sc.get("exposure_gain") or 1.0)             # приведение яркости экрана к эталонной экспозиции
 
     # --- сетка времени: по кадрам состояний (2 к/с), иначе по длительности
     if frames:
@@ -185,7 +232,7 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[
     stats: dict[int, dict] = {}
     for tr in perc.tracks:
         inside_obs = [o for o in tr.obs if o.inside]
-        strong_obs = [o for o in inside_obs if _strong(o, info)]
+        strong_obs = [o for o in inside_obs if _strong(o, info, scale)]
         if not inside_obs:
             roles[tr.id] = "outside"
             continue
@@ -212,6 +259,7 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[
                     cashier_ids.append(tid)
         else:
             notes.append("нет трека, работающего у стола — кассир не определён")
+    _rejoin_cashier_fragments(perc, roles, cashier_ids)
     # рабочая сторона стола — та, где находится кассир
     work_side = None
     if center is not None and cashier_ids:
@@ -260,7 +308,7 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[
             continue
         ps = perc.persons[j]
         n_inside[i] = sum(1 for o in ps if o.inside)
-        n_strong[i] = sum(1 for o in ps if o.inside and _strong(o, info))
+        n_strong[i] = sum(1 for o in ps if o.inside and _strong(o, info, scale))
         best_c = None
         for o in ps:
             if not o.inside:
@@ -270,7 +318,7 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[
                 cashier_inside[i] = True
                 if best_c is None or o.h > best_c.h:
                     best_c = o
-            elif role == "visitor" and _strong(o, info):
+            elif role == "visitor" and _strong(o, info, scale):
                 n_visitors[i] += 1
                 visitor_ids[i].append(o.track_id)
                 wz = in_work_zone(o.xyxy)
@@ -303,19 +351,28 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[
             lights_off[i] = True
         s = f.get("screen")
         if s and not s.get("occluded") and s.get("mean") is not None:
-            if s["mean"] >= SCREEN_ACTIVE["mean"] and (s.get("p90") or 0) >= SCREEN_ACTIVE["p90"] and (s.get("blue_minus_red") or 0) >= SCREEN_ACTIVE["bmr"]:
+            mean_, p90_ = s["mean"] * gain, (s.get("p90") or 0) * gain
+            bmr_, std_ = (s.get("blue_minus_red") or 0) * gain, (s.get("std") or 0) * gain
+            if mean_ >= SCREEN_ACTIVE["mean"] and p90_ >= SCREEN_ACTIVE["p90"] and bmr_ >= SCREEN_ACTIVE["bmr"]:
                 screen[i] = "active"
-            elif s["std"] >= SCREEN_LOCKED["std"] and (s.get("p90") or 0) >= SCREEN_LOCKED["p90"]:
+            elif std_ >= SCREEN_LOCKED["std"] and p90_ >= SCREEN_LOCKED["p90"]:
                 screen[i] = "locked"
             else:
                 screen[i] = "off"
         d = f.get("desk")
         if d:
-            bag_area[i] = float(d.get("green_area") or 0)
-            objs = [b for b in d.get("static_objs", []) if not b.get("person")]
+            bag_area[i] = float(d.get("green_area") or 0) * area_k
+            gb = d.get("green_bbox")
+            if gb and desk_bbox is not None and gb[1] > desk_bbox[3]:
+                # зелёное пятно целиком ниже нижней кромки стола — не на столешнице (сиденье стула, пол):
+                # states.desk_mask расширяет зону стола и вниз, а при другой экспозиции/перекодировке бирюзовое
+                # сиденье кассира проходит зелёный порог
+                bag_area[i] = 0.0
+            statics = [b if area_k == 1.0 else {**b, "area": b["area"] * area_k} for b in d.get("static_objs", [])]
+            objs = [b for b in statics if not b.get("person")]
             desk_objs[i] = objs
             desk_obj_area[i] = float(sum(b["area"] for b in objs))
-            desk_obj_area_any[i] = float(sum(b["area"] for b in d.get("static_objs", [])))
+            desk_obj_area_any[i] = float(sum(b["area"] for b in statics))
         sf = f.get("safe")
         if sf and not sf.get("occluded"):
             v = sf.get("dark_left")
@@ -344,6 +401,7 @@ def build_scene(perc: Perception, states: dict, info: VideoInfo, cash: Optional[
         cashier_near_safe=cashier_near_safe, desk_obj_area_any=desk_obj_area_any,
         work_side=work_side, cashier_track_ids=cashier_ids, visitor_track_ids=visitor_ids_all, items=items, notes=notes,
         cash_present=cash_present, cash_boxes=cash_boxes, cash_area=cash_area,
+        scale=scale,
     )
 
 
@@ -363,5 +421,6 @@ def scene_summary(scene: Scene) -> dict:
         "safe_open_frames": int(sum(1 for v in scene.safe_open_score if v is not None and v >= 1.0)),
         "lights_off_frames": int(scene.lights_off.sum()),
         "cash_frames": int(scene.cash_present.sum()) if len(scene.cash_present) else 0,
+        "camera": scene.camera or None,
         "notes": scene.notes,
     }

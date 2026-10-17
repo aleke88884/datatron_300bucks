@@ -282,10 +282,16 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
         if light:
             raise RuntimeError("light mode: perception skipped")
         perc, states = _perceive(path, info, progress)
+        from .camera import calibrate
         from .scene import build_scene, scene_summary
 
+        # самокалибровка под камеру ролика (масштаб, экспозиция, тест «внутри» без геометрии двери) — camera.py;
+        # до наличных/двери/позы: они читают perc (рамки людей, флаг «внутри»)
+        camera = calibrate(perc, states, info)
+        states.setdefault("scene", {}).update(scale=camera["scale"], exposure_gain=camera["gain"])
         cash = _cash_features(path, info, perc, progress)
         scene = build_scene(perc, states, info, cash=cash)
+        scene.camera = camera
         ctx.scene = scene
         ctx.tracks = perc.tracks
         ctx.cache["perception"] = perc      # полные детекции 3 к/с (T8: personal_items)
