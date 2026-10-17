@@ -1,0 +1,17 @@
+# Датасет и производные от него кадры — публиковать нельзя (условия кейса, FAQ п. 6)
+open/
+analysis/
+
+# Секреты и локальное окружение
+service/.env
+service/.venv/
+service/data/
+
+# Python / macOS
+__pycache__/
+*.pyc
+.DS_Store
+.claude/
+
+# Временные файлы Word
+~$*

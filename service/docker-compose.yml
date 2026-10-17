@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    image: fortebank-cashdesk:cpu
+    container_name: fortebank-cashdesk
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+    ports:
+      - "8000:8000"
+    volumes:
+      - cashdesk-data:/app/data
+    restart: unless-stopped
+    # Ограничение ресурсов при необходимости:
+    # deploy:
+    #   resources:
+    #     limits: { cpus: "4", memory: 8g }
+
+volumes:
+  cashdesk-data:

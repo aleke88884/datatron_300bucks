@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Контроль кассовой дисциплины</title>
+<style>
+  :root{--bg:#f4f6fa;--card:#fff;--text:#1a2233;--muted:#6b7585;--line:#dde3ec;--accent:#2a5bd7;--ok:#1d9a5b;--bad:#d7342a;--warn:#c98a00;--radius:12px}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0;font-weight:650}
+  header .sub{color:var(--muted);font-size:13px}
+  main{max-width:1080px;margin:0 auto;padding:24px 16px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+  .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+  input[type=text],input[type=password]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit}
+  .field{flex:1 1 260px}
+  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;font-family:inherit}
+  button.secondary{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  button:disabled{opacity:.5;cursor:default}
+  .drop{border:2px dashed #b9c4d6;border-radius:var(--radius);padding:38px 20px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;background:#fafbfd}
+  .drop.over{border-color:var(--accent);background:#eef3ff;color:var(--accent)}
+  .drop strong{color:var(--text)}
+  .drop input{display:none}
+  .status{display:flex;align-items:center;gap:12px;margin-top:14px;font-size:14px}
+  .bar{flex:1;height:8px;background:#e7ebf2;border-radius:6px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.2px}
+  .pill.ok{background:#e4f6ec;color:var(--ok)} .pill.bad{background:#fde9e7;color:var(--bad)} .pill.proc{background:#eef3ff;color:var(--accent)} .pill.fail{background:#fff4df;color:var(--warn)}
+  .verdict{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .verdict .big{font-size:26px;font-weight:700}
+  .verdict.ok .big{color:var(--ok)} .verdict.bad .big{color:var(--bad)}
+  .meta{color:var(--muted);font-size:13px}
+  .event{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;padding:16px;margin-top:14px;background:#fff}
+  .event h3{margin:0 0 6px;font-size:16px}
+  .event .code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eef1f6;border-radius:6px;padding:2px 7px;font-size:12px;margin-right:6px}
+  .event .tc{color:var(--muted);font-size:13px}
+  .frames{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+  .frames figure{margin:0;width:200px}
+  .frames img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;cursor:zoom-in}
+  .frames figcaption{font-size:12px;color:var(--muted);margin-top:4px;text-align:center}
+  .rule{background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:10px}
+  .rule a{color:var(--accent)}
+  .err{color:var(--bad);font-size:14px;margin-top:10px;white-space:pre-wrap}
+  .hidden{display:none}
+  dialog{border:0;border-radius:12px;padding:0;max-width:92vw;max-height:92vh;background:transparent}
+  dialog img{max-width:92vw;max-height:92vh;border-radius:10px}
+  dialog::backdrop{background:rgba(0,0,0,.7)}
+  footer{color:var(--muted);font-size:12px;text-align:center;margin-top:30px}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Контроль кассовой дисциплины по видео</h1><div class="sub">Локальный анализ записи кассы · вердикт, таймкод, кадры-доказательства, нормативное обоснование</div></div>
+  <div class="sub" id="health">проверка сервиса…</div>
+</header>
+<main>
+  <section class="card">
+    <div class="row">
+      <div class="field"><label for="apikey">Ключ API (заголовок <code>X-API-Key</code>)</label><input id="apikey" type="password" placeholder="введите ключ" autocomplete="off"></div>
+      <div><button class="secondary" id="toggleKey" type="button">показать</button></div>
+    </div>
+    <div style="height:14px"></div>
+    <div class="drop" id="drop">
+      <input type="file" id="file" accept=".mov,.mp4,video/quicktime,video/mp4">
+      <div><strong>Перетащите видео (.mov) сюда</strong> или нажмите, чтобы выбрать файл</div>
+      <div style="font-size:12px;margin-top:6px">до 300 МБ · обработка до 4 минут · видео не сохраняется после анализа</div>
+      <div id="fname" style="margin-top:8px;font-size:13px;color:var(--text)"></div>
+    </div>
+    <div class="row" style="margin-top:14px;align-items:center">
+      <button id="send" type="button" disabled>Отправить на анализ</button>
+      <span class="meta" id="jobinfo"></span>
+    </div>
+    <div class="status hidden" id="status"><span class="pill proc" id="stpill">загрузка</span><div class="bar"><i id="barfill"></i></div><span id="stage" class="meta"></span></div>
+    <div class="err hidden" id="error"></div>
+  </section>
+
+  <section class="card hidden" id="result">
+    <div class="verdict" id="verdict">
+      <div class="big" id="vtext"></div>
+      <div class="meta" id="vmeta"></div>
+      <div style="margin-left:auto"><button class="secondary" id="dl" type="button">Скачать JSON</button></div>
+    </div>
+    <div id="events"></div>
+  </section>
+  <footer>Анализ выполняется локально, без облачных сервисов и без распознавания лиц. Нормативная база: акты Национального Банка РК (adilet.zan.kz).</footer>
+</main>
+<dialog id="zoom"><img id="zoomimg" alt=""></dialog>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const apikey=$('apikey'), drop=$('drop'), fileInp=$('file'), send=$('send'), fname=$('fname');
+  const statusBox=$('status'), stpill=$('stpill'), barfill=$('barfill'), stage=$('stage'), errBox=$('error'), jobinfo=$('jobinfo');
+  const result=$('result'), verdict=$('verdict'), vtext=$('vtext'), vmeta=$('vmeta'), events=$('events'), dl=$('dl');
+  let file=null, lastJson=null, pollTimer=null;
+
+  try{ apikey.value = localStorage.getItem('fb_api_key') || ''; }catch(e){}
+  apikey.addEventListener('input', ()=>{ try{ localStorage.setItem('fb_api_key', apikey.value); }catch(e){} });
+  $('toggleKey').onclick = ()=>{ const p = apikey.type==='password'; apikey.type = p?'text':'password'; $('toggleKey').textContent = p?'скрыть':'показать'; };
+
+  fetch('/health').then(r=>r.json()).then(h=>{ $('health').textContent = 'сервис доступен · очередь: '+h.queue; }).catch(()=>{ $('health').textContent='сервис недоступен'; });
+
+  function setFile(f){
+    if(!f) return;
+    if(!/\.(mov|mp4)$/i.test(f.name)){ showError('Поддерживаются файлы .mov (и .mp4).'); return; }
+    file=f; fname.textContent = f.name+' · '+(f.size/1048576).toFixed(1)+' МБ'; send.disabled=false; hideError();
+  }
+  drop.onclick = ()=> fileInp.click();
+  fileInp.onchange = ()=> setFile(fileInp.files[0]);
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+  drop.addEventListener('drop', e=>{ const f=e.dataTransfer.files && e.dataTransfer.files[0]; setFile(f); });
+
+  function showError(msg){ errBox.textContent=msg; errBox.classList.remove('hidden'); }
+  function hideError(){ errBox.classList.add('hidden'); errBox.textContent=''; }
+  function setStatus(kind, text, pct){
+    statusBox.classList.remove('hidden');
+    stpill.className='pill '+kind; stpill.textContent=text;
+    if(pct!=null) barfill.style.width=Math.max(0,Math.min(100,pct))+'%';
+  }
+  const STAGES={queued:'в очереди',starting:'запуск',decoding:'декодирование видео',detection:'детекция объектов',rules:'проверка правил',evidence:'подготовка кадров',describing:'формирование описаний',done:'готово'};
+
+  send.onclick = ()=>{
+    if(!file) return;
+    if(!apikey.value.trim()){ showError('Укажите ключ API.'); return; }
+    hideError(); result.classList.add('hidden'); events.innerHTML=''; lastJson=null; send.disabled=true;
+    const fd=new FormData(); fd.append('file', file, file.name);
+    const xhr=new XMLHttpRequest();
+    xhr.open('POST','/api/v1/analyze');
+    xhr.setRequestHeader('X-API-Key', apikey.value.trim());
+    xhr.upload.onprogress = e=>{ if(e.lengthComputable){ setStatus('proc','загрузка', e.loaded/e.total*100); stage.textContent='отправка файла '+Math.round(e.loaded/e.total*100)+'%'; } };
+    xhr.onload = ()=>{
+      if(xhr.status===202 || xhr.status===200){
+        const j=JSON.parse(xhr.responseText); jobinfo.textContent='job_id: '+j.job_id; poll(j.job_id);
+      } else { send.disabled=false; statusBox.classList.add('hidden'); showError(httpMessage(xhr)); }
+    };
+    xhr.onerror = ()=>{ send.disabled=false; statusBox.classList.add('hidden'); showError('Сеть недоступна или сервер не отвечает.'); };
+    setStatus('proc','загрузка',0); stage.textContent='отправка файла';
+    xhr.send(fd);
+  };
+
+  function httpMessage(xhr){
+    let detail=''; try{ detail=JSON.parse(xhr.responseText).detail||''; }catch(e){}
+    if(xhr.status===401) return 'Ошибка 401: неверный или отсутствующий ключ API.';
+    if(xhr.status===413) return 'Ошибка 413: файл слишком большой (лимит 300 МБ).';
+    if(xhr.status===415) return 'Ошибка 415: неподдерживаемый формат файла.';
+    return 'Ошибка '+xhr.status+(detail?': '+detail:'');
+  }
+
+  function poll(jobId){
+    clearInterval(pollTimer);
+    const tick = async ()=>{
+      try{
+        const r=await fetch('/api/v1/jobs/'+jobId,{headers:{'X-API-Key':apikey.value.trim()}});
+        if(r.status===401){ clearInterval(pollTimer); setStatus('fail','ошибка'); showError('Ошибка 401: ключ API отклонён.'); send.disabled=false; return; }
+        const j=await r.json();
+        if(j.status==='processing'){
+          const p=j.progress||{}; setStatus('proc','обработка', p.percent==null?15:p.percent); stage.textContent=STAGES[p.stage]||p.stage||'';
+        } else if(j.status==='done'){
+          clearInterval(pollTimer); setStatus('ok','готово',100); stage.textContent='обработка завершена'; send.disabled=false; render(j);
+        } else {
+          clearInterval(pollTimer); setStatus('fail','ошибка',100); stage.textContent=''; send.disabled=false; showError('Обработка не удалась: '+(j.error||'неизвестная ошибка'));
+        }
+      }catch(e){ /* временная сетевая ошибка — продолжаем опрос */ }
+    };
+    tick(); pollTimer=setInterval(tick,2000);
+  }
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmt(t){ return (Math.round(t*10)/10).toFixed(1)+' с'; }
+
+  function render(j){
+    lastJson=j; result.classList.remove('hidden');
+    const bad = j.verdict==='violation';
+    verdict.className='verdict '+(bad?'bad':'ok');
+    vtext.textContent = bad ? 'Нарушение выявлено' : 'Нарушений не выявлено';
+    const m=j.meta||{};
+    vmeta.innerHTML = '<span class="pill '+(bad?'bad':'ok')+'">'+esc(j.verdict)+'</span> · событий: '+(j.violations||[]).length
+      + (m.duration_sec!=null?' · длительность '+fmt(m.duration_sec):'') + (m.processing_time_sec!=null?' · обработка '+m.processing_time_sec+' с':'');
+    events.innerHTML='';
+    (j.violations||[]).forEach((v,i)=>{
+      const el=document.createElement('div'); el.className='event';
+      let frames='';
+      (v.evidence_frames||[]).forEach(f=>{ frames+='<figure><img src="data:image/jpeg;base64,'+f.image_base64+'" alt="кадр '+fmt(f.timestamp_sec)+'"><figcaption>'+fmt(f.timestamp_sec)+'</figcaption></figure>'; });
+      const r=v.rule||{};
+      el.innerHTML =
+        '<h3>'+(v.type_code?'<span class="code">'+esc(v.type_code)+'</span>':'')+esc(v.type)+'</h3>'
+        +'<div class="tc">таймкод: <b>'+fmt(v.timecode_sec)+'</b>'+(v.end_sec!=null?' – '+fmt(v.end_sec):'')+(v.confidence!=null?' · уверенность '+Math.round(v.confidence*100)+'%':'')+'</div>'
+        +'<div class="frames">'+frames+'</div>'
+        +'<div>'+esc(v.description)+'</div>'
+        +(r.document?'<div class="rule"><b>Нормативное основание:</b> '+esc(r.clause)+' — '+esc(r.document)+(r.url?' · <a href="'+esc(r.url)+'" target="_blank" rel="noopener">открыть на adilet.zan.kz</a>':'')+(r.note?'<div class="meta" style="margin-top:4px">'+esc(r.note)+'</div>':'')+'</div>':'');
+      events.appendChild(el);
+    });
+    events.querySelectorAll('img').forEach(img=>img.onclick=()=>{ $('zoomimg').src=img.src; $('zoom').showModal(); });
+  }
+  $('zoom').onclick=()=>$('zoom').close();
+
+  dl.onclick=()=>{
+    if(!lastJson) return;
+    const blob=new Blob([JSON.stringify(lastJson,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='result_'+lastJson.job_id+'.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  };
+})();
+</script>
+</body>
+</html>
