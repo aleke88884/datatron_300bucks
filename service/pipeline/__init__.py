@@ -20,6 +20,10 @@ from .video import brightness_series, encode_jpeg_base64, read_frame_at
 PIPELINE_VERSION = "0.1.0-skeleton"
 MIN_CONFIDENCE = 0.5          # политика вердикта (ПЛАН 5.4): событие учитывается при уверенности ≥ порога
 MAX_EVIDENCE_FRAMES = 3       # ТЗ: 1–3 кадра
+# Контекстные события: описывают условия сцены, но САМИ ПО СЕБЕ не являются нарушением и не дают вердикт.
+# T9 (свет выключен) встречается и в чистом Х-12, и в Х-11; нарушение в Х-11 — то, что кассир уходит в темноте,
+# оставив экран активным/сейф открытым (T2/T3). Контекст используется правилами T1–T3 как усиливающий фактор.
+CONTEXT_ONLY_TYPES = {"T9"}
 
 log = logging.getLogger("pipeline")
 
@@ -99,6 +103,9 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         events.extend(found)
     events = [e for e in events if e.confidence >= MIN_CONFIDENCE]
     events.sort(key=lambda e: (e.timecode_sec, e.type_code))
+    context_events = [e for e in events if e.type_code in CONTEXT_ONLY_TYPES]
+    events = [e for e in events if e.type_code not in CONTEXT_ONLY_TYPES]
+    ctx.context_events = context_events
 
     progress("evidence", 80)
     violations = [event_to_violation(ctx, ev) for ev in events]
@@ -117,6 +124,17 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
             "pipeline_version": PIPELINE_VERSION,
             "pipeline_time_sec": round(time.time() - t0, 2),
             "rules_checked": [d.__name__ for d in DETECTORS],
+            # контекст сцены (не нарушения): например, T9 — освещение выключено с t по end
+            "context_events": [
+                {
+                    "type_code": e.type_code,
+                    "name": RULES[e.type_code]["name"],
+                    "timecode_sec": round(float(e.timecode_sec), 2),
+                    "end_sec": None if e.end_sec is None else round(float(e.end_sec), 2),
+                    "description": e.description,
+                }
+                for e in context_events
+            ],
         },
     }
     progress("done", 100)

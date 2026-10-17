@@ -42,4 +42,5 @@ class VideoContext:
     tracks: Any = None            # треки людей с ролями (кассир/клиент/посторонний)
     states: Any = None            # per-second булевы состояния: cashier_in_room, safe_open, cash_on_desk, ...
     zones: Any = None             # зоны, построенные от детекций (стол, сейф, дверь, зона клиента)
+    context_events: list = field(default_factory=list)  # контекстные события (T9 и т. п.), заполняет analyze_video
     cache: dict[str, Any] = field(default_factory=dict)
