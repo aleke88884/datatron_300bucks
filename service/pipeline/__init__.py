@@ -52,6 +52,14 @@ def warmup() -> None:
     except Exception as exc:  # noqa: BLE001
         log.warning("detector not available at warmup: %s", exc)
     try:
+        from .pose import get_estimator
+
+        est = get_estimator()
+        if est.available():
+            est._session()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("pose model not available at warmup: %s", exc)
+    try:
         from .vlm import get_describer
 
         d = get_describer()
@@ -113,6 +121,27 @@ def _cash_features(path: str, info, perc, progress) -> Optional[dict]:
     except Exception as exc:  # noqa: BLE001
         log.warning("cash features failed: %s", exc)
         return None
+
+
+POSE_MIN_LEFT_SEC = 20.0   # поза запускается, только если до мягкого дедлайна есть этот запас
+
+
+def _attach_pose(ctx: VideoContext, path: str, info, perc, progress) -> None:
+    """Поза людей (RTMPose) для правил по рукам (pipeline.rules_hands) → ctx.cache["pose"].
+    Кеш results/hands/<видео>.json читается только при FEATURES_CACHE; без модели правила по рукам молчат."""
+    bud = _budget.current()
+    if bud is not None and bud.left_soft() < POSE_MIN_LEFT_SEC:
+        bud.note("поза рук (T6) пропущена (мало времени)")
+        ctx.cache["pose"] = None
+        return
+    try:
+        from .pose import load_or_compute
+
+        progress("pose", 55)
+        ctx.cache["pose"] = load_or_compute(path, info, perc, _features_cache_dir(), progress=progress)
+    except Exception as exc:  # noqa: BLE001 — поза необязательна: без неё работают остальные правила
+        log.warning("pose layer skipped: %s", exc)
+        ctx.cache["pose"] = None
 
 
 def detector_code(det: Callable) -> str:
@@ -279,6 +308,7 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
             ctx.cache["timeline"] = build_timeline(scene, info.duration_sec)
         except Exception as exc:  # noqa: BLE001
             log.warning("timeline build failed: %s", exc)
+        _attach_pose(ctx, path, info, perc, progress)
     except Exception as exc:  # noqa: BLE001 — без восприятия работают только правила по яркости (T9/T3-тёмный)
         if light:
             log.info("light mode: brightness-only rules")

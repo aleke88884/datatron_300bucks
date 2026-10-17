@@ -13,6 +13,7 @@ from typing import Iterator, Optional
 import cv2
 import numpy as np
 
+from . import rules_hands as _hand_rules
 from . import rules_scene as _scene_rules
 from .context import Event, VideoContext
 from .video import VideoInfo, open_capture
@@ -328,8 +329,9 @@ def detect_t6_count_without_client(ctx: VideoContext) -> list[Event]:
     Признак: клиент покинул зону обслуживания (ушёл к двери/вышел), а кассир продолжает работать с наличными
     (деньги в руках/в машинке) ещё ≥ 2 с. Таймкод = момент выхода клиента из зоны обслуживания.
     Входы: ctx.states['client_present'], ctx.states['cash_handling']. Пример: X-34.
+    Два пути: по предметам на столе (rules_scene.rule_t6) и по позе рук кассира (rules_hands.rule_t6_hands).
     """
-    return _scene_rules.rule_t6(ctx)
+    return _scene_rules.rule_t6(ctx) or _hand_rules.rule_t6_hands(ctx)
 
 
 def detect_t7_cash_exposed_on_entry(ctx: VideoContext) -> list[Event]:
