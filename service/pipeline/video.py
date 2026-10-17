@@ -126,31 +126,58 @@ def brightness_series(path: str, target_fps: float = 10.0) -> tuple[np.ndarray, 
     return np.asarray(times), np.asarray(vals), info
 
 
-def read_frame_at(path: str, t_sec: float, info: Optional[VideoInfo] = None) -> Optional[np.ndarray]:
-    """Кадр, ближайший к t_sec. Позиционируемся по индексу кадра, затем читаем."""
+def read_frames_at(path: str, times: list[float], info: Optional[VideoInfo] = None) -> list[Optional[np.ndarray]]:
+    """Кадры, ближайшие к моментам times (в том же порядке), за один последовательный проход.
+
+    Позиционирование через CAP_PROP_POS_FRAMES на части роликов (переменный fps, Х-11, Х-23, Х-28, Х-37, Х-39,
+    Х-45) попадает на несколько секунд позже нужного кадра. Детекции считаются последовательным декодированием
+    (индекс кадра / fps), поэтому и кадры-доказательства читаем так же: grab() каждого кадра, retrieve() — только
+    нужных. Стоимость — декодирование до последнего запрошенного момента."""
+    if not times:
+        return []
     if info is None:
         info = probe(path)
-    target = max(0, min(int(round(t_sec * info.fps)), max(info.frame_count - 1, 0)))
+    last = max(info.frame_count - 1, 0)
+    targets = [max(0, min(int(round(float(t) * info.fps)), last)) if last > 0 else max(0, int(round(float(t) * info.fps)))
+               for t in times]
+    want = set(targets)
+    stop = max(targets)
+    got: dict[int, np.ndarray] = {}
+    prev: Optional[np.ndarray] = None
+    prev_idx = -1
     cap = open_capture(path)
     try:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, target)
-        ok, frame = cap.read()
-        if ok and frame is not None:
-            return frame
-        # fallback: последовательное чтение (для контейнеров с неточным seek)
-        cap.release()
-        cap = open_capture(path)
         idx = 0
-        last = None
-        while idx <= target:
-            ok, fr = cap.read()
-            if not ok:
+        while idx <= stop:
+            if not cap.grab():
                 break
-            last = fr
+            if idx in want or idx == stop:
+                ok, frame = cap.retrieve()
+                if ok and frame is not None:
+                    got[idx] = frame
+                    prev, prev_idx = frame, idx
             idx += 1
-        return last
+        # запрошенный кадр за фактическим концом записи (заголовок завысил число кадров) — последний прочитанный
+        if prev is None or idx <= stop:
+            ok, frame = cap.retrieve()
+            if ok and frame is not None:
+                prev, prev_idx = frame, idx - 1
     finally:
         cap.release()
+    out: list[Optional[np.ndarray]] = []
+    for k in targets:
+        if k in got:
+            out.append(got[k])
+        elif prev is not None and k >= prev_idx:
+            out.append(prev)
+        else:
+            out.append(None)
+    return out
+
+
+def read_frame_at(path: str, t_sec: float, info: Optional[VideoInfo] = None) -> Optional[np.ndarray]:
+    """Кадр, ближайший к t_sec (точный, последовательным декодированием; см. read_frames_at)."""
+    return read_frames_at(path, [t_sec], info)[0]
 
 
 def encode_jpeg_base64(frame: np.ndarray, quality: int = 82, max_side: Optional[int] = None) -> str:

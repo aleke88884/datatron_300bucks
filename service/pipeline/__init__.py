@@ -20,7 +20,7 @@ from .detectors import DETECTORS
 from .draw import box as draw_box
 from .draw import caption
 from .rules import RULES, api_rule
-from .video import brightness_series, encode_jpeg_base64, read_frame_at
+from .video import brightness_series, encode_jpeg_base64, read_frames_at
 
 PIPELINE_VERSION = "0.3.0"
 MIN_CONFIDENCE = 0.5          # политика вердикта (ПЛАН 5.4): событие учитывается при уверенности ≥ порога
@@ -118,18 +118,47 @@ def _run_detectors(ctx: VideoContext, dets: list[Callable]) -> list[Event]:
     return events
 
 
+def _evidence_times(ctx: VideoContext, ev: Event) -> list[float]:
+    times = ev.evidence_times[:MAX_EVIDENCE_FRAMES] or [ev.timecode_sec]
+    hi = max(ctx.info.duration_sec - 0.05, 0.0)
+    return [max(0.0, min(float(ts), hi)) for ts in times]
+
+
+def prefetch_evidence_frames(ctx: VideoContext, events: list[Event]) -> None:
+    """Все кадры-доказательства всех событий — одним последовательным проходом по видео (точные кадры,
+    без неточного seek; см. video.read_frames_at). Результат — ctx.cache["evidence_frames"]: {t: кадр}."""
+    if os.environ.get("EVIDENCE_FRAMES") == "0" or not events:
+        return
+    want = sorted({round(t, 3) for ev in events for t in _evidence_times(ctx, ev)}
+                  | {round(float(ev.timecode_sec), 3) for ev in events})
+    try:
+        frames = read_frames_at(ctx.path, want, ctx.info)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("evidence prefetch failed: %s", exc)
+        return
+    ctx.cache["evidence_frames"] = {t: f for t, f in zip(want, frames) if f is not None}
+
+
+def _frames_for(ctx: VideoContext, times: list[float]) -> list:
+    cached = ctx.cache.get("evidence_frames") or {}
+    out = [cached.get(round(t, 3)) for t in times]
+    missing = [t for t, f in zip(times, out) if f is None]
+    if missing:
+        fetched = dict(zip(missing, read_frames_at(ctx.path, missing, ctx.info)))
+        out = [f if f is not None else fetched.get(t) for t, f in zip(times, out)]
+    return out
+
+
 def build_evidence(ctx: VideoContext, ev: Event) -> list[dict]:
     if os.environ.get("EVIDENCE_FRAMES") == "0":
         return [{"timestamp_sec": round(float(ev.timecode_sec), 2), "image_base64": ""}]
-    times = ev.evidence_times[:MAX_EVIDENCE_FRAMES] or [ev.timecode_sec]
+    times = _evidence_times(ctx, ev)
     caps = list(ev.evidence_captions) + [""] * len(times)
     rule = RULES[ev.type_code]
     frames: list[dict] = []
     # рамки вокруг объекта/зоны: ev.extras["evidence_boxes"] — список (x1, y1, x2, y2) или None на каждый кадр
     boxes = list(ev.extras.get("evidence_boxes") or []) + [None] * len(times)
-    for ts, cap_text, xyxy in zip(times, caps, boxes):
-        ts = max(0.0, min(float(ts), max(ctx.info.duration_sec - 0.05, 0.0)))
-        frame = read_frame_at(ctx.path, ts, ctx.info)
+    for ts, cap_text, xyxy, frame in zip(times, caps, boxes, _frames_for(ctx, times)):
         if frame is None:
             continue
         if xyxy is not None:
@@ -142,7 +171,7 @@ def build_evidence(ctx: VideoContext, ev: Event) -> list[dict]:
         frames.append({"timestamp_sec": round(ts, 2), "image_base64": encode_jpeg_base64(frame)})
     if not frames:
         # ТЗ требует хотя бы один кадр: берём кадр события без подписи
-        frame = read_frame_at(ctx.path, ev.timecode_sec, ctx.info)
+        frame = _frames_for(ctx, [round(float(ev.timecode_sec), 3)])[0]
         if frame is not None:
             frames.append({"timestamp_sec": round(ev.timecode_sec, 2), "image_base64": encode_jpeg_base64(frame)})
     return frames
@@ -204,7 +233,9 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     events = [e for e in events if e.type_code not in CONTEXT_ONLY_TYPES]
 
     progress("evidence", 80)
+    prefetch_evidence_frames(ctx, events)
     violations = [event_to_violation(ctx, ev) for ev in events]
+    ctx.cache.pop("evidence_frames", None)
 
     progress("describing", 95)
     # VLM-слой: уточнение описаний по кадрам события (ПЛАН 5.1, п. 4); без модели остаются шаблоны из правил
