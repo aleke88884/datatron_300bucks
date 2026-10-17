@@ -188,6 +188,12 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
         ctx.zones = scene.anchors
         ctx.cache["scene_summary"] = scene_summary(scene)
         perception_ok = True
+        try:   # дорожки состояний сцены для UI (pipeline/timeline.py); сбой не влияет на вердикт
+            from .timeline import build_timeline
+
+            ctx.cache["timeline"] = build_timeline(scene, info.duration_sec)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("timeline build failed: %s", exc)
     except Exception as exc:  # noqa: BLE001 — без восприятия работают только правила по яркости (T9/T3-тёмный)
         log.exception("perception layer failed, falling back to brightness-only rules: %s", exc)
         ctx.cache["perception_error"] = f"{type(exc).__name__}: {exc}"
@@ -230,6 +236,8 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
             "perception": perception_ok,
             "scene": ctx.cache.get("scene_summary"),
             "perception_error": ctx.cache.get("perception_error"),
+            # интервалы состояний сцены (кассир, посетители, сейф, стол, экран, свет) — для шкалы времени в UI
+            "timeline": ctx.cache.get("timeline"),
             # контекст сцены (не нарушения): например, T9 — освещение выключено с t по end
             "context_events": [
                 {

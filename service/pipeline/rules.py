@@ -192,10 +192,34 @@ def get_rule(code: str) -> dict[str, Any]:
     return RULES[code]
 
 
-def api_rule(code: str) -> dict[str, str]:
-    """Объект `rule` для ответа API: document, clause, url (+ note)."""
+def clause_summaries(doc_short: str, clause: str) -> list[dict[str, str]]:
+    """'п. 16 пп. 3), пп. 4)' → [{'clause': 'п. 16 пп. 3)', 'summary': ...}, ...] по справочнику CLAUSES.
+    Краткое содержание (пересказ, не цитата) — только для пунктов, которые есть в CLAUSES; прочие пропускаются."""
+    doc = next((k for k, d in DOCUMENTS.items() if d["short"] == doc_short), None)
+    table = CLAUSES.get(doc or "", {})
+    out: list[dict[str, str]] = []
+    point = ""
+    for part in (p.strip() for p in clause.split(",")):
+        if part.startswith("п. "):
+            point = part.split(" пп.")[0]
+            key = part
+        elif part.startswith("пп.") and point:
+            key = f"{point} {part}"
+        else:
+            continue
+        if key in table:
+            out.append({"clause": key, "summary": table[key]})
+    return out
+
+
+def api_rule(code: str) -> dict[str, Any]:
+    """Объект `rule` для ответа API: document, clause, url (+ note, document_short, clause_summaries — для UI)."""
     r = RULES[code]["rule"]
-    out = {"document": r["document"], "clause": r["clause"], "url": r["url"]}
+    out: dict[str, Any] = {"document": r["document"], "clause": r["clause"], "url": r["url"]}
     if r.get("note"):
         out["note"] = r["note"]
+    out["document_short"] = r.get("document_short", "")
+    summ = clause_summaries(out["document_short"], r["clause"])
+    if summ:
+        out["clause_summaries"] = summ
     return out

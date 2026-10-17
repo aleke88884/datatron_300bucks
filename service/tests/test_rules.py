@@ -70,7 +70,21 @@ def test_documents_have_registration_and_urls():
 def test_api_rule_shape(code):
     r = api_rule(code)
     assert set(r) >= {"document", "clause", "url"}
-    assert set(r) <= {"document", "clause", "url", "note"}
+    assert set(r) <= {"document", "clause", "url", "note", "document_short", "clause_summaries"}
+
+
+@pytest.mark.parametrize("code", ALL_CODES)
+def test_api_rule_clause_summaries_come_from_clauses_table(code):
+    """Краткое содержание пункта для UI берётся только из CLAUSES (без выдуманных пунктов) и покрывает весь clause."""
+    r = api_rule(code)
+    doc = next(k for k, d in DOCUMENTS.items() if d["short"] == r["document_short"])
+    summ = r.get("clause_summaries") or []
+    assert summ, f"{code}: нет краткого содержания для {r['clause']}"
+    for item in summ:
+        assert CLAUSES[doc][item["clause"]] == item["summary"]
+    # каждый номер пункта из clause представлен
+    for num in re.findall(r"(?<!п)п\. (\d+)", r["clause"]):
+        assert any(item["clause"].startswith(f"п. {num}") for item in summ), (code, num)
 
 
 def test_detectors_cover_every_type_once():

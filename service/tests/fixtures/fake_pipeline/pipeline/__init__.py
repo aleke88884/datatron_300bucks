@@ -8,6 +8,16 @@ import time
 PIPELINE_VERSION = "fake-test"
 
 
+# дорожки состояний сцены в формате pipeline/timeline.py — чтобы UI и API проверялись на непустых данных
+TIMELINE = {
+    "step": 0.5, "duration": 6.0, "anchors": {"desk": True, "safe": True, "laptop": True},
+    "lanes": {"cashier": [[0.0, 1.5]], "at_desk": [[0.0, 1.5]], "visitors": [[3.0, 6.0, 1]], "safe_open": [],
+              "safe_unknown": [], "desk_items": [[0.5, 6.0]], "bag": [], "desk_unknown": [], "screen_active": [[0.0, 6.0]],
+              "screen_locked": [], "screen_unknown": [], "lights_off": []},
+    "unreliable": [],
+}
+
+
 def warmup() -> None:
     return None
 
@@ -49,7 +59,7 @@ def analyze_video(path, progress=None):
                     "end_sec": 4.0,
                 }
             ],
-            "meta": {"pipeline_version": PIPELINE_VERSION},
+            "meta": {"pipeline_version": PIPELINE_VERSION, "duration_sec": 6.0, "timeline": TIMELINE},
         }
     progress("fake-stage", 42)
     time.sleep(1.5)

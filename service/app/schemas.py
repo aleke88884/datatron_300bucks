@@ -12,11 +12,18 @@ class EvidenceFrame(BaseModel):
     image_base64: str = Field(description="JPEG в base64 без префикса data:")
 
 
+class ClauseSummary(BaseModel):
+    clause: str
+    summary: str = Field(description="краткое содержание пункта (пересказ, не дословная цитата)")
+
+
 class Rule(BaseModel):
     document: str
     clause: str
     url: str
     note: Optional[str] = None
+    document_short: Optional[str] = None
+    clause_summaries: Optional[list[ClauseSummary]] = None
 
 
 class Violation(BaseModel):
