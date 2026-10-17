@@ -43,6 +43,9 @@
   .frames figcaption{font-size:12px;color:var(--muted);margin-top:4px;text-align:center}
   .rule{background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:10px}
   .rule a{color:var(--accent)}
+  .ctx{border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:10px;padding:14px 16px;margin-top:14px;background:#fffdf7}
+  .ctx h3{margin:0 0 8px;font-size:15px}
+  .ctx li{margin:4px 0;font-size:14px}
   .err{color:var(--bad);font-size:14px;margin-top:10px;white-space:pre-wrap}
   .hidden{display:none}
   dialog{border:0;border-radius:12px;padding:0;max-width:92vw;max-height:92vh;background:transparent}
@@ -195,6 +198,12 @@
         +(r.document?'<div class="rule"><b>Нормативное основание:</b> '+esc(r.clause)+' — '+esc(r.document)+(r.url?' · <a href="'+esc(r.url)+'" target="_blank" rel="noopener">открыть на adilet.zan.kz</a>':'')+(r.note?'<div class="meta" style="margin-top:4px">'+esc(r.note)+'</div>':'')+'</div>':'');
       events.appendChild(el);
     });
+    const ctxEv = (m.context_events||[]);
+    if(ctxEv.length){
+      const c=document.createElement('div'); c.className='ctx';
+      c.innerHTML='<h3>Контекст сцены (не нарушения)</h3><ul>'+ctxEv.map(e=>'<li><span class="code">'+esc(e.type_code)+'</span><b>'+esc(e.name)+'</b> · '+fmt(e.timecode_sec)+(e.end_sec!=null?' – '+fmt(e.end_sec):'')+'<div class="meta">'+esc(e.description)+'</div></li>').join('')+'</ul>';
+      events.appendChild(c);
+    }
     events.querySelectorAll('img').forEach(img=>img.onclick=()=>{ $('zoomimg').src=img.src; $('zoom').showModal(); });
   }
   $('zoom').onclick=()=>$('zoom').close();
