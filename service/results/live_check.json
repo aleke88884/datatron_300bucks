@@ -1,0 +1,111 @@
+{
+ "note": "live analyze_video without FEATURES_CACHE, 8-core M3 8GB, 18.10.2026; nominal = all cores, no deadlines; production = ORT 4 threads (WORKERS=2), soft 168 s / hard 240 s",
+ "nominal": {
+  "Х-14": {
+   "time_sec": 143.6,
+   "verdict": "no_violation",
+   "events": [],
+   "stages": {
+    "decoding": 0.0,
+    "detection": 1.4,
+    "states": 125.5,
+    "cash": 128.9,
+    "door": 130.8,
+    "pose": 130.8,
+    "rules": 143.6,
+    "evidence": 143.6,
+    "describing": 143.6,
+    "done": 143.6
+   },
+   "degraded": false,
+   "camera": {
+    "mode": "fixed",
+    "scale": 1.0,
+    "gain": 1.0,
+    "person_h": 0.158,
+    "conflict": 0.0,
+    "residual": 0.0
+   }
+  },
+  "Х-22": {
+   "time_sec": 22.1,
+   "verdict": "no_violation",
+   "events": [],
+   "stages": {
+    "decoding": 0.0,
+    "detection": 0.3,
+    "states": 18.6,
+    "cash": 19.3,
+    "door": 20.0,
+    "pose": 20.3,
+    "rules": 22.1,
+    "evidence": 22.1,
+    "describing": 22.1,
+    "done": 22.1
+   },
+   "degraded": false,
+   "camera": {
+    "mode": "fixed",
+    "scale": 1.0,
+    "gain": 1.0,
+    "person_h": 0.234,
+    "conflict": 0.0,
+    "residual": 0.0
+   }
+  },
+  "Х-29": {
+   "time_sec": 24.0,
+   "verdict": "no_violation",
+   "events": [],
+   "stages": {
+    "decoding": 0.0,
+    "detection": 0.3,
+    "states": 20.2,
+    "cash": 21.1,
+    "door": 22.0,
+    "pose": 22.3,
+    "rules": 24.0,
+    "evidence": 24.0,
+    "describing": 24.0,
+    "done": 24.0
+   },
+   "degraded": false,
+   "camera": {
+    "mode": "fixed",
+    "scale": 1.0,
+    "gain": 1.0,
+    "person_h": 0.231,
+    "conflict": 0.0,
+    "residual": 0.0
+   }
+  }
+ },
+ "production_X14": {
+  "Х-14": {
+   "time_sec": 89.1,
+   "verdict": "no_violation",
+   "events": [],
+   "stages": {
+    "decoding": 0.0,
+    "detection": 1.5,
+    "states": 74.7,
+    "cash": 78.8,
+    "door": 81.2,
+    "pose": 81.2,
+    "rules": 89.1,
+    "evidence": 89.1,
+    "describing": 89.1,
+    "done": 89.1
+   },
+   "degraded": true,
+   "camera": {
+    "mode": "fixed",
+    "scale": 1.0,
+    "gain": 1.0,
+    "person_h": 0.158,
+    "conflict": 0.0,
+    "residual": 0.0
+   }
+  }
+ }
+}

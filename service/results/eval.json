@@ -36,9 +36,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.241,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      42.0,
+      92.0,
+      348.0
+     ],
+     "t_first_motion": 1.17,
+     "peak": 0.6962,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.5
   },
   {
    "name": "Х-2",
@@ -75,9 +96,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.233,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      44.0,
+      90.0,
+      282.0
+     ],
+     "t_first_motion": 3.05,
+     "peak": 0.7727,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.4
   },
   {
    "name": "Х-3",
@@ -113,9 +155,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.235,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      44.0,
+      92.0,
+      290.0
+     ],
+     "t_first_motion": 1.4,
+     "peak": 0.6088,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.4
   },
   {
    "name": "Х-4",
@@ -123,9 +186,16 @@
     "violation": true,
     "timecode": 57.0
    },
-   "verdict": "no_violation",
-   "ok": "FN",
-   "violations": [],
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T7",
+     "timecode_sec": 55.1,
+     "confidence": 0.74,
+     "description": "В 55.1 с в кассу входит посетитель, при этом на столешнице кассира открыто лежит пачка купюр (светлый прямоугольный предмет, виден не менее 3.0 с до входа). Признак для проверки человеком."
+    }
+   ],
    "context": [],
    "scene": {
     "roles": {
@@ -162,9 +232,30 @@
     "desk_obj_frames": 60,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 46,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.237,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      44.0,
+      98.0,
+      402.0
+     ],
+     "t_first_motion": 6.08,
+     "peak": 0.5969,
+     "crossings": 3
+    }
    },
-   "elapsed": 0.6
+   "elapsed": 2.4
   },
   {
    "name": "Х-5",
@@ -219,9 +310,30 @@
     "desk_obj_frames": 88,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 5,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.224,
+     "conflict": 0.002,
+     "residual": 0.002
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      44.0,
+      104.0,
+      406.0
+     ],
+     "t_first_motion": 1.17,
+     "peak": 0.6286,
+     "crossings": 3
+    }
    },
-   "elapsed": 0.6
+   "elapsed": 1.5
   },
   {
    "name": "Х-8",
@@ -253,9 +365,22 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.131,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет входов/выходов уверенных треков"
+    }
    },
-   "elapsed": 0.4
+   "elapsed": 0.8
   },
   {
    "name": "Х-10",
@@ -286,9 +411,22 @@
     "desk_obj_frames": 18,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 4,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.147,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет входов/выходов уверенных треков"
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-11",
@@ -303,7 +441,7 @@
      "type_code": "T3",
      "timecode_sec": 16.06,
      "confidence": 0.95,
-     "description": "В 16.1 с освещение в кассе выключено (свет гасят, покидая рабочее место), при этом экран ноутбука (АРМ) остаётся активным: в темноте до конца записи (25.6 с) на месте экрана сохраняется неподвижная светящаяся область 23×48 пикс. (яркость 227 при 51 вокруг, контраст ×4.5). Рабочее место при уходе не заблокировано — экран не погашен."
+     "description": "В 16.1 с освещение в кассе выключено (свет гасят, покидая рабочее место), при этом экран ноутбука (АРМ) остаётся активным: в темноте до конца записи (25.6 с) на месте экрана сохраняется неподвижная светящаяся область 23×48 пикс. (яркость 227 при 51 вокруг, контраст ×4.5). Признак для проверки человеком: п. 71 пп. 9) Требований № 53 допускает автоблокировку по таймауту 30 мин."
     }
    ],
    "context": [
@@ -333,9 +471,30 @@
     "desk_obj_frames": 26,
     "safe_open_frames": 1,
     "lights_off_frames": 19,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.233,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      56.0,
+      112.0,
+      376.0
+     ],
+     "t_first_motion": 15.93,
+     "peak": 0.822,
+     "crossings": 1
+    }
    },
-   "elapsed": 1.4
+   "elapsed": 1.6
   },
   {
    "name": "Х-12",
@@ -377,9 +536,30 @@
     "desk_obj_frames": 23,
     "safe_open_frames": 0,
     "lights_off_frames": 20,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.214,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      56.0,
+      106.0,
+      472.0
+     ],
+     "t_first_motion": 32.25,
+     "peak": 0.8202,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.6
+   "elapsed": 1.3
   },
   {
    "name": "Х-13",
@@ -392,9 +572,9 @@
    "violations": [
     {
      "type_code": "T1",
-     "timecode_sec": 64.1,
+     "timecode_sec": 57.76,
      "confidence": 0.82,
-     "description": "В 64.1 с кассир вышел из помещения (с 64.1 с вне рабочего места не менее 1.5 с), при этом на столешнице без присмотра остаётся инкассаторская сумка. Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
+     "description": "В 57.8 с кассир заканчивает работу у стола/сейфа и направляется к выходу, затем выходит из помещения (с 64.1 с вне рабочего места не менее 1.5 с), при этом на столешнице без присмотра остаётся зелёный предмет, по виду инкассаторская сумка/ценности. Признак для проверки человеком (где хранятся наличные при уходе кассира)."
     }
    ],
    "context": [],
@@ -420,9 +600,30 @@
     "desk_obj_frames": 106,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.222,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      106.0,
+      348.0
+     ],
+     "t_first_motion": 58.89,
+     "peak": 0.6006,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.7
+   "elapsed": 2.1
   },
   {
    "name": "Х-14",
@@ -461,9 +662,22 @@
     "desk_obj_frames": 179,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 12,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.158,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет входов/выходов уверенных треков"
+    }
    },
-   "elapsed": 1.3
+   "elapsed": 3.5
   },
   {
    "name": "Х-15",
@@ -476,9 +690,9 @@
    "violations": [
     {
      "type_code": "T1",
-     "timecode_sec": 20.06,
+     "timecode_sec": 15.05,
      "confidence": 0.8,
-     "description": "В 20.1 с кассир вышел из помещения (с 20.1 с вне рабочего места не менее 1.0 с), при этом на столешнице без присмотра остаётся инкассаторская сумка. Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
+     "description": "В 15.0 с кассир заканчивает работу у стола/сейфа и направляется к выходу, затем выходит из помещения (с 20.1 с вне рабочего места не менее 1.0 с), при этом на столешнице без присмотра остаётся зелёный предмет, по виду инкассаторская сумка/ценности. Признак для проверки человеком (где хранятся наличные при уходе кассира)."
     }
    ],
    "context": [],
@@ -505,9 +719,30 @@
     "desk_obj_frames": 33,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.236,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      112.0,
+      352.0
+     ],
+     "t_first_motion": 14.75,
+     "peak": 0.6118,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.3
+   "elapsed": 0.6
   },
   {
    "name": "Х-16",
@@ -543,9 +778,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.231,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      102.0,
+      344.0
+     ],
+     "t_first_motion": 2.57,
+     "peak": 0.6483,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.4
   },
   {
    "name": "Х-17",
@@ -560,7 +816,7 @@
      "type_code": "T10",
      "timecode_sec": 7.0,
      "confidence": 0.72,
-     "description": "В 2.0 с в кассовое помещение входит посетитель (инкассатор) и уже в 7.0 с, через 5.0 с, инкассаторская сумка оказывается на столе кассира: передача ценностей происходит внутри кассы из рук в руки, без предъявления документов и проверки целостности сумки и пломбы, а посторонний находится у рабочего места кассира."
+     "description": "В 2.0 с в кассовое помещение входит посетитель (инкассатор) и уже в 7.0 с, через 5.0 с, инкассаторская сумка оказывается на столе кассира: передача происходит внутри кассы, посетитель находится у рабочего места кассира. Предъявление документов и состояние пломбы по видео не наблюдаются; признак для проверки человеком."
     }
    ],
    "context": [],
@@ -591,9 +847,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.23,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      108.0,
+      350.0
+     ],
+     "t_first_motion": 2.93,
+     "peak": 0.6374,
+     "crossings": 2
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-18",
@@ -606,9 +883,9 @@
    "violations": [
     {
      "type_code": "T4",
-     "timecode_sec": 16.05,
+     "timecode_sec": 19.39,
      "confidence": 0.9,
-     "description": "В 16.1 с в кассовом помещении одновременно находятся 3 человека не менее 7.0 с: помимо кассира и обслуживаемого клиента внутри присутствует ещё одно лицо. Доступ посторонних в кассовый узел должен быть исключён."
+     "description": "В 19.4 с в кассовом помещении одновременно находятся 3 человека не менее 7.0 с: помимо кассира и обслуживаемого клиента внутри присутствует ещё одно лицо. Признак для проверки человеком."
     }
    ],
    "context": [],
@@ -639,9 +916,30 @@
     "desk_obj_frames": 10,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.26,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      102.0,
+      352.0
+     ],
+     "t_first_motion": 1.64,
+     "peak": 0.6287,
+     "crossings": 2
+    }
    },
-   "elapsed": 0.3
+   "elapsed": 0.6
   },
   {
    "name": "Х-19",
@@ -683,9 +981,30 @@
     "desk_obj_frames": 18,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.237,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      108.0,
+      352.0
+     ],
+     "t_first_motion": 1.87,
+     "peak": 0.6509,
+     "crossings": 3
+    }
    },
-   "elapsed": 0.5
+   "elapsed": 0.7
   },
   {
    "name": "Х-20",
@@ -718,9 +1037,22 @@
     "desk_obj_frames": 4,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.231,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет входов/выходов уверенных треков"
+    }
    },
-   "elapsed": 0.1
+   "elapsed": 0.2
   },
   {
    "name": "Х-21",
@@ -754,9 +1086,22 @@
     "desk_obj_frames": 20,
     "safe_open_frames": 1,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.234,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет движения створки рядом с входами/выходами"
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-22",
@@ -789,9 +1134,30 @@
     "desk_obj_frames": 6,
     "safe_open_frames": 8,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.234,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      102.0,
+      350.0
+     ],
+     "t_first_motion": 14.77,
+     "peak": 0.5955,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-23",
@@ -824,7 +1190,28 @@
     "desk_obj_frames": 7,
     "safe_open_frames": 3,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.234,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      102.0,
+      350.0
+     ],
+     "t_first_motion": 12.9,
+     "peak": 0.5977,
+     "crossings": 1
+    }
    },
    "elapsed": 0.2
   },
@@ -839,9 +1226,9 @@
    "violations": [
     {
      "type_code": "T1",
-     "timecode_sec": 5.5,
+     "timecode_sec": 8.33,
      "confidence": 0.82,
-     "description": "В 5.5 с кассир встал и отошёл от стола (с 12.5 с вне рабочего места не менее 2.5 с), при этом на столешнице без присмотра остаётся инкассаторская сумка. Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
+     "description": "В 8.3 с кассир заканчивает работу у стола/сейфа и направляется к выходу, затем отходит от стола (с 12.5 с вне рабочего места не менее 2.5 с), при этом на столешнице без присмотра остаётся зелёный предмет, по виду инкассаторская сумка/ценности. Признак для проверки человеком (где хранятся наличные при уходе кассира)."
     }
    ],
    "context": [],
@@ -867,9 +1254,30 @@
     "desk_obj_frames": 2,
     "safe_open_frames": 2,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.234,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      24.0,
+      124.0,
+      404.0
+     ],
+     "t_first_motion": 8.8,
+     "peak": 0.6256,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-25",
@@ -906,9 +1314,30 @@
     "desk_obj_frames": 16,
     "safe_open_frames": 6,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.228,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      24.0,
+      126.0,
+      400.0
+     ],
+     "t_first_motion": 25.46,
+     "peak": 0.6131,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.3
+   "elapsed": 0.4
   },
   {
    "name": "Х-26",
@@ -916,9 +1345,16 @@
     "violation": true,
     "timecode": 9.0
    },
-   "verdict": "no_violation",
-   "ok": "FN",
-   "violations": [],
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T1",
+     "timecode_sec": 8.03,
+     "confidence": 0.85,
+     "description": "В 8.0 с кассир заканчивает работу у стола/сейфа и направляется к выходу, затем отходит от стола (с 17.1 с вне рабочего места не менее 3.0 с), при этом на столешнице без присмотра остаётся пачка купюр (светлый прямоугольный предмет на столешнице). Признак для проверки человеком (где хранятся наличные при уходе кассира)."
+    }
+   ],
    "context": [],
    "scene": {
     "roles": {
@@ -942,9 +1378,30 @@
     "desk_obj_frames": 6,
     "safe_open_frames": 3,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 24,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.225,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      24.0,
+      126.0,
+      404.0
+     ],
+     "t_first_motion": 13.34,
+     "peak": 0.6144,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.5
   },
   {
    "name": "Х-27",
@@ -978,9 +1435,30 @@
     "desk_obj_frames": 11,
     "safe_open_frames": 12,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.228,
+     "conflict": 0.013,
+     "residual": 0.013
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      24.0,
+      126.0,
+      396.0
+     ],
+     "t_first_motion": 19.65,
+     "peak": 0.5953,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.4
   },
   {
    "name": "Х-28",
@@ -992,16 +1470,16 @@
    "ok": "TP",
    "violations": [
     {
-     "type_code": "T1",
-     "timecode_sec": 7.06,
-     "confidence": 0.85,
-     "description": "В 7.1 с кассир встал и отошёл от стола (с 13.6 с вне рабочего места не менее 3.0 с), при этом на столешнице без присмотра остаются наличные/ценности (предмет, положенный на столешницу). Ранее принятые наличные и ценности должны храниться в запираемых устройствах, а кассир — не покидать рабочее место, оставляя их открыто."
-    },
-    {
      "type_code": "T3",
      "timecode_sec": 7.06,
      "confidence": 0.82,
-     "description": "В 7.1 с кассир встал и отошёл от рабочего места, экран ноутбука (АРМ) остаётся активным не менее 3.0 с (яркий рабочий экран, не экран блокировки). Рабочее место при уходе не заблокировано."
+     "description": "В 7.1 с кассир встал и отошёл от рабочего места, экран ноутбука (АРМ) остаётся активным не менее 3.0 с (яркий рабочий экран, не экран блокировки). Признак для проверки человеком: п. 71 пп. 9) Требований № 53 допускает автоблокировку по таймауту 30 мин."
+    },
+    {
+     "type_code": "T1",
+     "timecode_sec": 10.08,
+     "confidence": 0.85,
+     "description": "В 10.1 с кассир заканчивает работу у стола/сейфа и направляется к выходу, затем отходит от стола (с 13.6 с вне рабочего места не менее 3.0 с), при этом на столешнице без присмотра остаются наличные/ценности (предмет, положенный на столешницу). Признак для проверки человеком (где хранятся наличные при уходе кассира)."
     }
    ],
    "context": [],
@@ -1026,9 +1504,30 @@
     "desk_obj_frames": 28,
     "safe_open_frames": 2,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.232,
+     "conflict": 0.042,
+     "residual": 0.042
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      312.0,
+      376.0
+     ],
+     "t_first_motion": 10.59,
+     "peak": 0.5965,
+     "crossings": 1
+    }
    },
-   "elapsed": 1.3
+   "elapsed": 0.4
   },
   {
    "name": "Х-29",
@@ -1062,7 +1561,28 @@
     "desk_obj_frames": 12,
     "safe_open_frames": 6,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.232,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      24.0,
+      124.0,
+      394.0
+     ],
+     "t_first_motion": 10.82,
+     "peak": 0.6134,
+     "crossings": 1
+    }
    },
    "elapsed": 0.2
   },
@@ -1076,10 +1596,16 @@
    "ok": "TP",
    "violations": [
     {
+     "type_code": "T13",
+     "timecode_sec": 4.01,
+     "confidence": 0.8,
+     "description": "В 4.0 с кассир входит в кассовое помещение и не закрывает за собой дверь: дверь остаётся открытой до конца записи (18.7 с), не менее 15.9 с. В 16.7 с через открытую дверь в помещение проходит ещё один человек. Кассовое помещение не изолировано: вход в кассу должен быть закрыт."
+    },
+    {
      "type_code": "T5",
      "timecode_sec": 12.54,
      "confidence": 0.88,
-     "description": "В 12.5 с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и хранилищем) и находится там не менее 6.5 с. Клиент должен оставаться по свою сторону кассы; передача наличных — через передаточное устройство."
+     "description": "В 12.5 с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и хранилищем) и находится там не менее 6.5 с. Признак для проверки человеком."
     }
    ],
    "context": [],
@@ -1105,9 +1631,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.234,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      24.0,
+      124.0,
+      370.0
+     ],
+     "t_first_motion": 2.34,
+     "peak": 0.5924,
+     "crossings": 2
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.5
   },
   {
    "name": "Х-31",
@@ -1142,9 +1689,30 @@
     "desk_obj_frames": 2,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.212,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      28.0,
+      124.0,
+      362.0
+     ],
+     "t_first_motion": 5.86,
+     "peak": 0.6579,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-32",
@@ -1152,9 +1720,16 @@
     "violation": true,
     "timecode": 5.0
    },
-   "verdict": "no_violation",
-   "ok": "FN",
-   "violations": [],
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T13",
+     "timecode_sec": 5.68,
+     "confidence": 0.8,
+     "description": "В 5.7 с кассир входит в кассовое помещение и не закрывает за собой дверь: дверь остаётся открытой до конца записи (21.1 с), не менее 17.3 с. Кассовое помещение не изолировано: вход в кассу должен быть закрыт."
+    }
+   ],
    "context": [],
    "scene": {
     "roles": {
@@ -1177,9 +1752,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.203,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      28.0,
+      128.0,
+      360.0
+     ],
+     "t_first_motion": 3.04,
+     "peak": 0.6054,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.5
   },
   {
    "name": "Х-33",
@@ -1191,10 +1787,16 @@
    "ok": "TP",
    "violations": [
     {
-     "type_code": "T5",
-     "timecode_sec": 11.0,
+     "type_code": "T13",
+     "timecode_sec": 6.0,
+     "confidence": 0.77,
+     "description": "В 6.0 с кассир входит в кассовое помещение и не закрывает за собой дверь: дверь остаётся открытой до конца записи (14.1 с), не менее 10.1 с. В 13.3 с через открытую дверь в помещение проходит ещё один человек. Кассовое помещение не изолировано: вход в кассу должен быть закрыт."
+    },
+    {
+     "type_code": "T4",
+     "timecode_sec": 10.67,
      "confidence": 0.86,
-     "description": "В 11.0 с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и хранилищем) и находится там не менее 3.5 с. Клиент должен оставаться по свою сторону кассы; передача наличных — через передаточное устройство."
+     "description": "В 10.7 с в кассовое помещение входит посторонний и остаётся в нём не менее 3.5 с: стоит в стороне от стола обслуживания, за спиной кассира (на стороне рабочего места), к столу как клиент не подходит. Требует проверки человеком: допущен ли этот человек в кассовый узел."
     }
    ],
    "context": [],
@@ -1221,9 +1823,30 @@
     "desk_obj_frames": 6,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.209,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      158.0,
+      348.0
+     ],
+     "t_first_motion": 2.93,
+     "peak": 0.6947,
+     "crossings": 2
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.4
   },
   {
    "name": "Х-34",
@@ -1231,9 +1854,16 @@
     "violation": true,
     "timecode": 13.0
    },
-   "verdict": "no_violation",
-   "ok": "FN",
-   "violations": [],
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T6",
+     "timecode_sec": 12.71,
+     "confidence": 0.62,
+     "description": "Признак операции с наличными без клиента (требует проверки): в 11.4 с клиент встаёт и уходит от кассы, а с 12.7 с кассир за столом продолжает работу — рука вынесена к оборудованию/наличным (вероятно, пересчёт на счётной машинке) не менее 3.7 с, уже без клиента. Приём и пересчёт наличных должны выполняться в присутствии клиента."
+    }
+   ],
    "context": [],
    "scene": {
     "roles": {
@@ -1263,9 +1893,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.23,
+     "conflict": 0.017,
+     "residual": 0.017
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      158.0,
+      364.0
+     ],
+     "t_first_motion": 2.11,
+     "peak": 0.7252,
+     "crossings": 2
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.4
   },
   {
    "name": "Х-35",
@@ -1306,9 +1957,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.22,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      158.0,
+      340.0
+     ],
+     "t_first_motion": 2.1,
+     "peak": 0.6924,
+     "crossings": 2
+    }
    },
-   "elapsed": 0.5
+   "elapsed": 0.8
   },
   {
    "name": "Х-37",
@@ -1344,9 +2016,30 @@
     "desk_obj_frames": 0,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.224,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      158.0,
+      342.0
+     ],
+     "t_first_motion": 3.05,
+     "peak": 0.7111,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.1
+   "elapsed": 0.2
   },
   {
    "name": "Х-38",
@@ -1361,7 +2054,7 @@
      "type_code": "T7",
      "timecode_sec": 31.04,
      "confidence": 0.74,
-     "description": "В 31.0 с в кассу входит посетитель, при этом на столешнице кассира открыто лежат наличные/ценности (видны не менее 3.0 с до входа). Ранее принятые деньги должны находиться в запираемых устройствах, а не открыто на столе при приёме следующего клиента."
+     "description": "В 31.0 с в кассу входит посетитель, при этом на столешнице кассира открыто лежат наличные/ценности (видны не менее 3.0 с до входа). Признак для проверки человеком."
     }
    ],
    "context": [],
@@ -1410,9 +2103,30 @@
     "desk_obj_frames": 60,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.219,
+     "conflict": 0.007,
+     "residual": 0.007
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      160.0,
+      376.0
+     ],
+     "t_first_motion": 1.17,
+     "peak": 0.6708,
+     "crossings": 7
+    }
    },
-   "elapsed": 0.6
+   "elapsed": 1.3
   },
   {
    "name": "Х-39",
@@ -1459,9 +2173,30 @@
     "desk_obj_frames": 1,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.215,
+     "conflict": 0.002,
+     "residual": 0.002
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      160.0,
+      340.0
+     ],
+     "t_first_motion": 2.1,
+     "peak": 0.6843,
+     "crossings": 4
+    }
    },
-   "elapsed": 0.7
+   "elapsed": 1.2
   },
   {
    "name": "Х-40",
@@ -1469,9 +2204,16 @@
     "violation": true,
     "timecode": 17.0
    },
-   "verdict": "no_violation",
-   "ok": "FN",
-   "violations": [],
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T8",
+     "timecode_sec": 18.07,
+     "confidence": 0.75,
+     "description": "С 5.7 по 7.4 с у кассира в руках сумка (личная вещь, не инкассаторская сумка), не выходя из кассового помещения, в 18.1 с кассир с внесённой сумкой занимает рабочее место (садится за стол). Личные вещи работников должны храниться вне кассового узла."
+    }
+   ],
    "context": [],
    "scene": {
     "roles": {
@@ -1496,9 +2238,30 @@
     "desk_obj_frames": 5,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.221,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      0.0,
+      158.0,
+      364.0
+     ],
+     "t_first_motion": 2.58,
+     "peak": 0.6687,
+     "crossings": 1
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.6
   },
   {
    "name": "Х-43",
@@ -1529,9 +2292,22 @@
     "desk_obj_frames": 20,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.141,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет движения створки рядом с входами/выходами"
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-44",
@@ -1566,9 +2342,22 @@
     "desk_obj_frames": 17,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.138,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет входов/выходов уверенных треков"
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.3
   },
   {
    "name": "Х-45",
@@ -1601,9 +2390,22 @@
     "desk_obj_frames": 34,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 0,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.147,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет движения створки рядом с входами/выходами"
+    }
    },
-   "elapsed": 0.3
+   "elapsed": 0.5
   },
   {
    "name": "Х-46",
@@ -1616,9 +2418,9 @@
    "violations": [
     {
      "type_code": "T8",
-     "timecode_sec": 13.05,
-     "confidence": 0.72,
-     "description": "С 13.1 с на рабочем столе кассира находится стакан/бутылка (напиток), рядом с наличными и оборудованием; кассир пользуется им на рабочем месте. Личные вещи, еда и напитки на кассовом рабочем месте не допускаются."
+     "timecode_sec": 11.05,
+     "confidence": 0.76,
+     "description": "С 11.0 с в зоне рабочего стола кассира находится стакан/бутылка с напитком: предмет распознан 15 раз до 19.1 с и находится на рабочем месте кассира, где ведутся операции с наличными. Личные вещи, еда и напитки работников хранятся вне кассового узла."
     }
    ],
    "context": [],
@@ -1641,9 +2443,22 @@
     "desk_obj_frames": 16,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 22,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.138,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": false,
+     "reason": "нет входов/выходов уверенных треков"
+    }
    },
-   "elapsed": 0.2
+   "elapsed": 0.5
   },
   {
    "name": "Х-47",
@@ -1651,9 +2466,16 @@
     "violation": true,
     "timecode": 68.0
    },
-   "verdict": "no_violation",
-   "ok": "FN",
-   "violations": [],
+   "verdict": "violation",
+   "ok": "TP",
+   "violations": [
+    {
+     "type_code": "T7",
+     "timecode_sec": 55.1,
+     "confidence": 0.74,
+     "description": "В 55.1 с в кассу входит посетитель, при этом на столешнице кассира открыто лежит пачка купюр (светлый прямоугольный предмет, виден не менее 3.0 с до входа). Признак для проверки человеком."
+    }
+   ],
    "context": [],
    "scene": {
     "roles": {
@@ -1690,9 +2512,30 @@
     "desk_obj_frames": 60,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 46,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.237,
+     "conflict": 0.0,
+     "residual": 0.0
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      44.0,
+      98.0,
+      402.0
+     ],
+     "t_first_motion": 6.08,
+     "peak": 0.5969,
+     "crossings": 3
+    }
    },
-   "elapsed": 0.6
+   "elapsed": 1.7
   },
   {
    "name": "Х-48",
@@ -1747,13 +2590,34 @@
     "desk_obj_frames": 88,
     "safe_open_frames": 0,
     "lights_off_frames": 0,
-    "notes": []
+    "cash_frames": 5,
+    "camera": {
+     "mode": "fixed",
+     "scale": 1.0,
+     "gain": 1.0,
+     "person_h": 0.224,
+     "conflict": 0.002,
+     "residual": 0.002
+    },
+    "notes": [],
+    "door": {
+     "found": true,
+     "roi": [
+      0.0,
+      44.0,
+      104.0,
+      406.0
+     ],
+     "t_first_motion": 1.17,
+     "peak": 0.6286,
+     "crossings": 3
+    }
    },
-   "elapsed": 0.6
+   "elapsed": 1.1
   }
  ],
- "tp": 11,
- "fn": 11,
+ "tp": 17,
+ "fn": 5,
  "fp": 0,
  "tn": 20
 }
