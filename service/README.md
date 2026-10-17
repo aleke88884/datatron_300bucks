@@ -210,6 +210,18 @@ cd service && .venv/bin/python scripts/eval_rules.py            # таблица
 cd service && .venv/bin/python scripts/eval_rules.py --names Х-28 Х-29 --json results/eval.json
 ```
 
+Устойчивость к другому ракурсу: `scripts/robustness.py` строит варианты видео (отражение, повороты ±15–20°,
+перспектива, приближение, экспозиция, альбомный 1280×720) во временной папке вне репозитория, прогоняет по ним
+живой пайплайн и сравнивает вердикт/типы/таймкоды с оригиналом; таблица — `results/robustness.md`. Масштаб,
+экспозиция и тест «внутри кассы» калибруются по самому ролику (`pipeline/camera.py`, режим и коэффициенты —
+в `meta.scene.camera`; `CAMERA_INSIDE=auto|fixed|relative`).
+
+```bash
+cd service && .venv/bin/python scripts/robustness.py --workers 4 --report results/robustness.md   # 88 живых прогонов, ~20–30 мин на свободной машине
+cd service && .venv/bin/python scripts/robustness.py --reuse --report results/robustness.md       # только сцена и правила по сохранённым признакам
+cd service && .venv/bin/python scripts/robustness.py --timing Х-14                                 # время живого прогона самого длинного видео
+```
+
 ## VLM-слой: человеческие описания событий (необязательно, нужен GPU)
 
 Правила T1–T13 дают шаблонное описание события («кассир вне зоны стола, на столе наличные»). Локальная

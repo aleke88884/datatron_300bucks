@@ -179,9 +179,14 @@ def analyze_video(path: str, progress: Optional[ProgressFn] = None) -> dict:
     perception_ok = False
     try:
         perc, states = _perceive(path, info, progress)
+        from .camera import calibrate
         from .scene import build_scene, scene_summary
 
+        # самокалибровка под камеру ролика (масштаб, экспозиция, тест «внутри» без геометрии двери) — camera.py
+        camera = calibrate(perc, states, info)
+        states.setdefault("scene", {}).update(scale=camera["scale"], exposure_gain=camera["gain"])
         scene = build_scene(perc, states, info)
+        scene.camera = camera
         ctx.scene = scene
         ctx.tracks = perc.tracks
         ctx.states = states

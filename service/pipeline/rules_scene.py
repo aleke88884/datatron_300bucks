@@ -64,7 +64,7 @@ def _desk_zone(sc: Scene) -> Optional[tuple[float, float, float, float]]:
     if not d:
         return None
     x1, y1, x2, y2 = d["bbox"]
-    s = sc.info.height / 848.0
+    s = getattr(sc, "scale", None) or sc.info.height / 848.0   # масштаб сцены (camera.py), эталон — кадр 848
     return (x1 - 10 * s, y1 - 110 * s, x2 + 10 * s, y2 + 10 * s)
 
 

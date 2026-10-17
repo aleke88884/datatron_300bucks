@@ -185,14 +185,17 @@ def _ring_mean(gray: np.ndarray, x: int, y: int, w: int, h: int) -> float:
     return float(gray[y0:y1, x0:x1][ring].mean()) if ring.any() else 255.0
 
 
-def find_glowing_regions(path: str, info: VideoInfo, t0: float, t1: float) -> list[dict]:
+def find_glowing_regions(path: str, info: VideoInfo, t0: float, t1: float, gain: float = 1.0) -> list[dict]:
     """Стабильно светящиеся компактные области на тёмном участке [t0; t1] (кандидаты «экран активен»).
 
     Карта «доля тёмных кадров, в которых пиксель светится» → компоненты связности с долей ≥ 80 % →
     фильтр по площади, заполненности bbox, яркости и локальному контрасту (область / кольцо вокруг неё)
     на усреднённом тёмном кадре. Движущиеся объекты (человек в светлой одежде) размазываются по карте и
     не образуют стабильной области; проёмы в освещённый коридор стабильны, но крупные и низкоконтрастные.
+    gain — приведение экспозиции камеры к эталонной (camera.exposure_gain): абсолютные пороги яркости делятся на него.
     """
+    bright_thr = T3_BRIGHT / max(gain, 1e-3)
+    mean_thr = T3_MIN_MEAN / max(gain, 1e-3)
     every_n = max(1, int(round(info.fps / T3_SAMPLE_FPS)))
     n = 0
     bright_cnt: Optional[np.ndarray] = None
@@ -204,7 +207,7 @@ def find_glowing_regions(path: str, info: VideoInfo, t0: float, t1: float) -> li
             bright_cnt = np.zeros(gray.shape, dtype=np.float32)
             gray_sum = np.zeros(gray.shape, dtype=np.float32)
             bgr_sum = np.zeros(frame.shape, dtype=np.float32)
-        bright_cnt += gray > T3_BRIGHT
+        bright_cnt += gray > bright_thr
         gray_sum += gray
         bgr_sum += frame
         n += 1
@@ -232,7 +235,7 @@ def find_glowing_regions(path: str, info: VideoInfo, t0: float, t1: float) -> li
             "xyxy": (x, y, x + w, y + h), "area": area, "area_frac": area_frac, "fill": fill, "mean": mean,
             "ring": ring, "contrast": contrast, "blue_minus_red": b - r, "stability": stability, "frames": n,
         }
-        if fill >= T3_MIN_FILL and mean >= T3_MIN_MEAN and contrast >= T3_MIN_CONTRAST:
+        if fill >= T3_MIN_FILL and mean >= mean_thr and contrast >= T3_MIN_CONTRAST:
             out.append(cand)
     out.sort(key=lambda c: -c["contrast"] * c["area"])
     return out
@@ -257,7 +260,8 @@ def detect_t3_workstation_unlocked(ctx: VideoContext) -> list[Event]:
         t1 = float(t9.end_sec if t9.end_sec is not None else ctx.info.duration_sec)
         if t1 - t0 < T3_MIN_DARK_SEC:
             continue
-        regions = find_glowing_regions(ctx.path, ctx.info, t0, t1)
+        gain = float((getattr(ctx.scene, "camera", None) or {}).get("gain") or 1.0)   # экспозиция камеры (camera.py)
+        regions = find_glowing_regions(ctx.path, ctx.info, t0, t1, gain)
         if not regions:
             continue
         reg = regions[0]

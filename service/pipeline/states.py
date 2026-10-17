@@ -28,6 +28,7 @@ from typing import Optional
 import cv2
 import numpy as np
 
+from .camera import REF_FRAME_H, apply_gain_hsv, exposure_gain, exposure_level, scene_scale
 from .perception import Perception, PersonObs
 from .video import VideoInfo, iter_frames
 
@@ -79,8 +80,9 @@ def median_frame(path: str, info: VideoInfo, max_frames: int = 25, frames: Optio
     return np.median(np.stack(frames[:max_frames]), axis=0).astype(np.uint8)
 
 
-def wood_mask(bgr: np.ndarray) -> np.ndarray:
-    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+def wood_mask(bgr: np.ndarray, gain: float = 1.0) -> np.ndarray:
+    """Маска светлого дерева. gain — приведение яркости к эталонной экспозиции (camera.exposure_gain)."""
+    hsv = apply_gain_hsv(cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV), gain)
     m = cv2.inRange(hsv, WOOD_HSV[0], WOOD_HSV[1])
     m[: int(0.18 * bgr.shape[0])] = 0     # сверху стол быть не может (там стекло/плакаты)
     m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
@@ -88,11 +90,13 @@ def wood_mask(bgr: np.ndarray) -> np.ndarray:
     return m
 
 
-def desk_region(median: np.ndarray) -> Optional[dict]:
-    """Столешница: объединение крупных деревянных компонент → bbox, выпуклая оболочка, ось."""
-    m = wood_mask(median)
+def desk_region(median: np.ndarray, gain: float = 1.0, scale: Optional[float] = None) -> Optional[dict]:
+    """Столешница: объединение крупных деревянных компонент → bbox, выпуклая оболочка, ось.
+    Минимальная площадь компоненты — 500 эталонных пикс. × масштаб сцены²."""
+    m = wood_mask(median, gain)
     n, lab, st, _ = cv2.connectedComponentsWithStats(m)
-    keep = [i for i in range(1, n) if st[i, 4] >= 500]
+    s = scale if scale else median.shape[0] / REF_FRAME_H
+    keep = [i for i in range(1, n) if st[i, 4] >= 500 * s * s]
     if not keep:
         return None
     sel = np.isin(lab, keep).astype(np.uint8)
@@ -112,9 +116,11 @@ def desk_region(median: np.ndarray) -> Optional[dict]:
     }
 
 
-def _grey_candidates(frame: np.ndarray) -> list[dict]:
+def _grey_candidates(frame: np.ndarray, scale: Optional[float] = None, gain: float = 1.0) -> list[dict]:
+    """Светло-серые заполненные прямоугольники (кандидаты на фронт сейфа). Размеры — в эталонных пикс. × масштаб."""
     H, W = frame.shape[:2]
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    k = scale if scale else H / REF_FRAME_H
+    hsv = apply_gain_hsv(cv2.cvtColor(frame, cv2.COLOR_BGR2HSV), gain)
     m = cv2.inRange(hsv, SAFE_GREY[0], SAFE_GREY[1])
     m[: int(0.25 * H)] = 0
     m[int(0.66 * H):] = 0
@@ -124,7 +130,7 @@ def _grey_candidates(frame: np.ndarray) -> list[dict]:
     out = []
     for i in range(1, n):
         x, y, w, h, a = (int(v) for v in st[i])
-        if a < 900 or w < 40 or h < 45 or a / (w * h) < 0.5:
+        if a < 900 * k * k or w < 40 * k or h < 45 * k or a / (w * h) < 0.5:
             continue
         out.append({"bbox": [x, y, x + w, y + h], "area": a, "fill": float(a / (w * h))})
     return out
@@ -136,16 +142,17 @@ def grey_box(median: np.ndarray) -> Optional[dict]:
     return max(c, key=lambda d: d["area"]) if c else None
 
 
-def safe_anchor(frames: list[np.ndarray], desk: Optional[dict]) -> Optional[dict]:
+def safe_anchor(frames: list[np.ndarray], desk: Optional[dict], scale: Optional[float] = None, gain: float = 1.0) -> Optional[dict]:
     """Сейф по нескольким кадрам: кандидаты кластеризуются по IoU, выбирается устойчивый кластер
     (виден ≥ 30 % кадров) с наибольшей медианной площадью рядом со столом; bbox — самый крупный член
     кластера (закрытое состояние). Полосы у правого края кадра (стена) отбрасываются, если узкие."""
     clusters: list[dict] = []
     for fr in frames:
         W = fr.shape[1]
-        for c in _grey_candidates(fr):
+        k = scale if scale else fr.shape[0] / REF_FRAME_H
+        for c in _grey_candidates(fr, scale, gain):
             x1, y1, x2, y2 = c["bbox"]
-            if x2 >= W - 2 and (x2 - x1) < 60:      # узкая полоса у правого края — не сейф
+            if x2 >= W - 2 and (x2 - x1) < 60 * k:      # узкая полоса у правого края — не сейф
                 continue
             for cl in clusters:
                 if _iou(cl["bbox"], c["bbox"]) >= 0.4:
@@ -169,7 +176,7 @@ def safe_anchor(frames: list[np.ndarray], desk: Optional[dict]) -> Optional[dict
             x1, y1, x2, y2 = cl["bbox"]
             gap_x = max(0, x1 - dx2, dx1 - x2)
             gap_y = max(0, y1 - dy2, dy1 - y2)
-            return gap_x <= 0.6 * dw and gap_y <= 0.8 * (dy2 - dy1) + 60
+            return gap_x <= 0.6 * dw and gap_y <= 0.8 * (dy2 - dy1) + 60 * (scale or 1.0)
         near_cl = [cl for cl in good if near(cl)]
         if near_cl:
             good = near_cl
@@ -194,12 +201,15 @@ def _screen_region(lb: list[float]) -> tuple[int, int, int, int]:
 def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, detect_items: bool = False) -> dict:
     """Якоря сцены + признаки по кадрам с частотой STATE_FPS. detect_items оставлен для совместимости (не используется)."""
     H, W = info.height, info.width
-    s = H / 848.0
+    # масштаб сцены (H/848 для эталонной камеры, иначе по росту людей) и приведение экспозиции — camera.py
+    s = scene_scale(perc, info)
     samples = sample_frames(path, info, 25)
     med = median_frame(path, info, frames=samples)
     med_gray = cv2.cvtColor(med, cv2.COLOR_BGR2GRAY)
-    desk = desk_region(med)
-    safe = safe_anchor(samples[::2] if len(samples) > 12 else samples, desk)
+    expo = exposure_level(med_gray)
+    gain = exposure_gain(expo)
+    desk = desk_region(med, gain, s)
+    safe = safe_anchor(samples[::2] if len(samples) > 12 else samples, desk, s, gain)
     lap = laptop_box(perc)
     door = (int(DOOR_BAND[0] * W), int(DOOR_BAND[1] * H), int(DOOR_BAND[2] * W), int(DOOR_BAND[3] * H))
 
@@ -210,9 +220,9 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
         cv2.fillConvexPoly(hull_mask, np.asarray(desk["hull"], np.int32), 255)
         desk_mask = cv2.dilate(hull_mask, np.ones((int(DESK_UP * s) * 2 + 1, 3), np.uint8), anchor=(1, int(DESK_UP * s) * 2))
         # wood_ever: пиксели столешницы, которые хоть раз были деревом (по выборке кадров + медиане)
-        wood_ever = (wood_mask(med) > 0) & (hull_mask > 0)
+        wood_ever = (wood_mask(med, gain) > 0) & (hull_mask > 0)
         for fr in samples:
-            wood_ever |= (wood_mask(fr) > 0) & (hull_mask > 0)
+            wood_ever |= (wood_mask(fr, gain) > 0) & (hull_mask > 0)
         wood_ever = cv2.morphologyEx(wood_ever.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8)) > 0
     step = max(1, int(round(info.fps / STATE_FPS)))
     rows: list[dict] = []
@@ -256,7 +266,8 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
             }
         # --- столешница
         if desk is not None:
-            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            hsv_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            hsv = apply_gain_hsv(hsv_raw, gain)
             wood = cv2.inRange(hsv, WOOD_HSV[0], WOOD_HSV[1]) > 0
             hull_area = max(1, int((hull_mask > 0).sum()))
             wood_frac = float((wood & (hull_mask > 0)).sum() / hull_area)
@@ -289,7 +300,9 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
             cur.sort(key=lambda b: -b["area"])
             prev_objs = cur
             static_objs = [b for b in cur if b["age"] >= OBJ_STATIC_FRAMES]
-            green = cv2.inRange(hsv, GREEN_HSV[0], GREEN_HSV[1])
+            # зелёная маска (V ≥ 60) без коррекции экспозиции: в осветлённом тёмном кадре насыщенными становятся
+            # тени и бирюзовое сиденье стула под столом, а сама сумка проходит порог и без коррекции
+            green = cv2.inRange(hsv_raw, GREEN_HSV[0], GREEN_HSV[1])
             green = ((green > 0) & (desk_mask > 0)).astype(np.uint8)
             gn, glab, gst, _ = cv2.connectedComponentsWithStats(green)
             gbest = max(((int(gst[i, 4]), i) for i in range(1, gn)), default=(0, 0))
@@ -309,6 +322,7 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
         "width": W, "height": H, "fps": info.fps, "duration_sec": info.duration_sec,
         "desk": desk, "safe": safe, "laptop": lap, "door_band": list(door),
         "median_brightness": float(med_gray.mean()),
+        "scale": round(float(s), 4), "exposure_level": round(expo, 2), "exposure_gain": round(float(gain), 4),
         "version": 2,
     }
     return {"scene": scene, "state_fps": STATE_FPS, "frames": rows}
