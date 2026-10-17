@@ -70,7 +70,7 @@ class Server:
 
     def submit(self, path: Path | str, **kw) -> str:
         r = self.post_video(path, **kw)
-        assert r.status_code == 202, r.text
+        assert r.status_code == 200, r.text
         return r.json()["job_id"]
 
     def wait_job(self, job_id: str, timeout: float = 240.0, poll: float = 0.5) -> dict:
@@ -156,7 +156,15 @@ def server(tmp_path_factory) -> Server:
 @pytest.fixture(scope="module")
 def fragile_server(tmp_path_factory) -> Server:
     """Сервер с подменным пайплайном и коротким таймаутом — для проверки таймаута/падений воркера."""
-    s = start_server(tmp_path_factory.mktemp("fragile"), env_overrides={"JOB_TIMEOUT_SEC": "4"}, fake_pipeline=True)
+    s = start_server(tmp_path_factory.mktemp("fragile"), env_overrides={"JOB_TIMEOUT_SEC": "4", "WORKERS": "2"}, fake_pipeline=True)
+    yield s
+    stop_server(s)
+
+
+@pytest.fixture(scope="module")
+def pool_server(tmp_path_factory) -> Server:
+    """Подменный пайплайн, 2 воркера, лимит 15 с (мягкий дедлайн 10.5 с): деградация, частичные результаты, параллелизм."""
+    s = start_server(tmp_path_factory.mktemp("pool"), env_overrides={"JOB_TIMEOUT_SEC": "15", "WORKERS": "2"}, fake_pipeline=True)
     yield s
     stop_server(s)
 

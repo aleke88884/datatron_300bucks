@@ -214,16 +214,30 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
         for fr in samples:
             wood_ever |= (wood_mask(fr) > 0) & (hull_mask > 0)
         wood_ever = cv2.morphologyEx(wood_ever.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8)) > 0
+    from . import budget as _budget
+
     step = max(1, int(round(info.fps / STATE_FPS)))
     rows: list[dict] = []
     total = max(1, info.frame_count)
+    bud = _budget.current()
+    gov = _budget.StrideGovernor(
+        "состояния", bud.states_deadline() if bud else None, bud.states_truncate_ts() if bud else None, budget=bud,
+    )
+    grid_total = max(1, total // step)
+    # восприятие обрезано по времени → строки состояний за его пределами опирались бы на устаревших «людей»
+    limit_t = None
+    if perc.degrade.get("stopped") and perc.times:
+        limit_t = perc.times[-1] + 1.0 / max(perc.sample_fps, 0.5)
     prev_objs: list[dict] = []
     sx1 = sy1 = sx2 = sy2 = 0
     if safe is not None:
         sx1, sy1, sx2, sy2 = safe["bbox"]
         sw = sx2 - sx1
         lx1 = max(0, sx1 - int(SAFE_LEFT_EXT * sw))
-    for idx, t, frame in iter_frames(path, every_n=step):
+    prev_t = -1.0
+    for idx, t, frame in iter_frames(path, every_n=step, take=gov.take):
+        if limit_t is not None and t > limit_t:
+            break
         persons = perc.persons[perc.frame_index(t)] if perc.persons else []
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         row: dict = {"t": round(t, 2), "brightness": float(gray.mean()), "n_inside": sum(1 for p in persons if p.inside)}
@@ -278,7 +292,8 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
                 age = 1
                 for po in prev_objs:
                     if _iou(po["bbox"], box) >= OBJ_MATCH_IOU:
-                        age = po["age"] + 1
+                        # возраст в «номинальных» кадрах (по времени): при штатном шаге +1, при деградации шаг больше
+                        age = po["age"] + max(1, int(round((t - prev_t) * STATE_FPS)))
                         break
                 cur.append({
                     "bbox": list(box), "area": ba,
@@ -303,12 +318,19 @@ def extract_states(path: str, info: VideoInfo, perc: Perception, progress=None, 
                 "person_over_desk": _box_overlaps(tuple(desk["bbox"]), persons, 0),
             }
         rows.append(row)
+        prev_t = t
         if progress and idx % (step * 10) == 0:
             progress("states", int(100 * idx / total))
+        if not gov.update(idx // step, grid_total):
+            break
     scene = {
         "width": W, "height": H, "fps": info.fps, "duration_sec": info.duration_sec,
         "desk": desk, "safe": safe, "laptop": lap, "door_band": list(door),
         "median_brightness": float(med_gray.mean()),
         "version": 2,
     }
+    if gov.k > 1 or gov.stopped:
+        scene["degrade"] = gov.summary()       # только если сработал бюджет времени (в кеше признаков не бывает)
+        if bud is not None:
+            bud.stats["states"] = scene["degrade"]
     return {"scene": scene, "state_fps": STATE_FPS, "frames": rows}

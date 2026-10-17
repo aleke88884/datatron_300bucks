@@ -120,8 +120,14 @@ class YoloxDetector:
         if not self.path.exists():
             raise FileNotFoundError(f"нет весов детектора {self.path}; запустите scripts/get_models.sh")
         so = ort.SessionOptions()
+        # Потоки: явный аргумент → ORT_INTRA_THREADS (воркер задаёт cores // WORKERS) → умолчание ORT.
+        # Без спин-ожидания: при двух параллельных заданиях простаивающие потоки ORT не жгут CPU соседа.
+        threads = threads or int(os.environ.get("ORT_INTRA_THREADS", "0") or 0) or None
         if threads:
             so.intra_op_num_threads = threads
+            so.inter_op_num_threads = 1
+        if os.environ.get("ORT_ALLOW_SPINNING", "0") != "1":
+            so.add_session_config_entry("session.intra_op.allow_spinning", "0")
         self.session = ort.InferenceSession(str(self.path), so, providers=[p.strip() for p in os.environ.get("ORT_PROVIDERS", "CPUExecutionProvider").split(",") if p.strip()])
         self.input_name = self.session.get_inputs()[0].name
         self.size = input_size
