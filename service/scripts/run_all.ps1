@@ -106,6 +106,9 @@ Step 5 "Признаки по всем видео" @(
 $ErrorActionPreference = "Continue"
 & $venvpy scripts\collect_features.py --videos ..\open\videos --labels ..\open\open_labels.xlsx --out results --skip-items
 if ($LASTEXITCODE -ne 0) { Write-Host "  !! collect_features завершился с кодом $LASTEXITCODE - см. results\run.log; продолжаю со следующими шагами" -ForegroundColor Yellow }
+# признаки двери (T13) зависят от треков людей — пересчитываем после perception
+& $venvpy scripts\collect_door.py --videos ..\open\videos --force
+if ($LASTEXITCODE -ne 0) { Write-Host "  !! collect_door завершился с кодом $LASTEXITCODE; продолжаю" -ForegroundColor Yellow }
 Done "признаки собраны"
 
 # ---------------------------------------------------------------- 6

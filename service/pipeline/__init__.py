@@ -263,6 +263,15 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
         ctx.zones = scene.anchors
         ctx.cache["scene_summary"] = scene_summary(scene)
         perception_ok = True
+        # состояние двери (T13): область двери по движению створки у входов/выходов, ряд «открыта/закрыта»
+        try:
+            from .door import door_features, door_summary
+
+            progress("door", 55)
+            ctx.cache["door"] = door_features(path, info, perc, progress=progress)
+            ctx.cache["scene_summary"]["door"] = door_summary(ctx.cache["door"])
+        except Exception as exc:  # noqa: BLE001 — без признаков двери молчит только T13
+            log.exception("door features failed: %s", exc)
         try:   # дорожки состояний сцены для UI (pipeline/timeline.py); сбой не влияет на вердикт
             from .timeline import build_timeline
 
