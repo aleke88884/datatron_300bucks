@@ -37,10 +37,33 @@ class VideoDecodeError(RuntimeError):
     pass
 
 
+_ascii_copies: dict[str, str] = {}
+
+
+def _ascii_copy(path: str) -> Optional[str]:
+    """Windows: OpenCV может не открыть путь с кириллицей — копия во временный файл с ASCII-именем."""
+    if os.name != "nt" or path.isascii():
+        return None
+    if path not in _ascii_copies:
+        import hashlib
+        import shutil
+        import tempfile
+
+        dst = os.path.join(tempfile.gettempdir(), "cashdesk_" + hashlib.md5(path.encode("utf-8")).hexdigest()[:12] + os.path.splitext(path)[1])
+        if not os.path.exists(dst):
+            shutil.copy2(path, dst)
+        _ascii_copies[path] = dst
+    return _ascii_copies[path]
+
+
 def open_capture(path: str) -> cv2.VideoCapture:
     cap = cv2.VideoCapture(path, cv2.CAP_FFMPEG)
     if not cap.isOpened():
         cap = cv2.VideoCapture(path)
+    if not cap.isOpened():
+        alt = _ascii_copy(path)
+        if alt:
+            cap = cv2.VideoCapture(alt, cv2.CAP_FFMPEG)
     if not cap.isOpened():
         raise VideoDecodeError(f"cannot open video: {path}")
     return cap
