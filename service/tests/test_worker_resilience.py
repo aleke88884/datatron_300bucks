@@ -86,6 +86,9 @@ def test_violation_passes_through_api_unchanged(fragile_server):
     img = assert_jpeg_base64(v["evidence_frames"][0]["image_base64"])
     assert img.shape[:2] == (64, 48)
     assert v["rule"] == {"document": "Правила № 231 (тест)", "clause": "п. 20", "url": "https://adilet.zan.kz/rus/docs/V1900019680"}
+    # meta (в т.ч. дорожки состояний для шкалы времени UI) проходит через API без изменений
+    tl = res["meta"]["timeline"]
+    assert tl["duration"] == 6.0 and tl["lanes"]["visitors"] == [[3.0, 6.0, 1]] and tl["lanes"]["cashier"] == [[0.0, 1.5]]
 
 
 # ---------------------------------------------------------------- деградация, частичные результаты, пул, очистка

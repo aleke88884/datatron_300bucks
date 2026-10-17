@@ -219,6 +219,12 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
         ctx.zones = scene.anchors
         ctx.cache["scene_summary"] = scene_summary(scene)
         perception_ok = True
+        try:   # дорожки состояний сцены для UI (pipeline/timeline.py); сбой не влияет на вердикт
+            from .timeline import build_timeline
+
+            ctx.cache["timeline"] = build_timeline(scene, info.duration_sec)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("timeline build failed: %s", exc)
     except Exception as exc:  # noqa: BLE001 — без восприятия работают только правила по яркости (T9/T3-тёмный)
         if light:
             log.info("light mode: brightness-only rules")
@@ -283,6 +289,8 @@ def _pack_result(info, violations: list, ctx: VideoContext, context_events: list
             "perception_error": ctx.cache.get("perception_error") if not light else None,
             "degraded": bool(bud is not None and bud.degraded) or light,
             "degrade_reasons": (list(bud.reasons) if bud is not None else []) + (["light mode: только правила по яркости"] if light else []),
+            # интервалы состояний сцены (кассир, посетители, сейф, стол, экран, свет) — для шкалы времени в UI
+            "timeline": ctx.cache.get("timeline"),
             # контекст сцены (не нарушения): например, T9 — освещение выключено с t по end
             "context_events": [
                 {

@@ -3,216 +3,756 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Контроль кассовой дисциплины</title>
 <style>
-  :root{--bg:#f4f6fa;--card:#fff;--text:#1a2233;--muted:#6b7585;--line:#dde3ec;--accent:#2a5bd7;--ok:#1d9a5b;--bad:#d7342a;--warn:#c98a00;--radius:12px}
+  :root{
+    --bg:#f3f5f9;--surface:#fff;--surface-2:#f7f9fc;--text:#172033;--muted:#5f6b7d;--line:#dde3ec;--line-2:#c9d2df;
+    --accent:#2456d3;--accent-soft:#e8efff;--on-accent:#fff;
+    --ok:#147a47;--ok-soft:#e3f5ea;--bad:#c42b2b;--bad-soft:#fdeceb;--warn:#9a6200;--warn-soft:#fff3d9;
+    --l-cashier:#2f6fdb;--l-cashier-soft:rgba(47,111,219,.32);--l-visitor:#7c4ddb;--l-safe:#d9480f;--l-desk:#0f8f63;--l-bag:#065f46;
+    --l-screen:#0b8bc4;--l-locked:#6b7a90;--l-dark:#334155;--hatch:rgba(100,116,139,.38);--track:#eef1f6;
+    --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+    --radius:14px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1219;--surface:#151c26;--surface-2:#1b2431;--text:#e5eaf2;--muted:#9aa6b8;--line:#28323f;--line-2:#3a4656;
+      --accent:#7ea4ff;--accent-soft:#1d2a47;--on-accent:#0d1219;
+      --ok:#4cc38a;--ok-soft:#12291e;--bad:#ff6b6b;--bad-soft:#2f1618;--warn:#f0b54a;--warn-soft:#2b2312;
+      --l-cashier:#5b8ff0;--l-cashier-soft:rgba(91,143,240,.33);--l-visitor:#a685f5;--l-safe:#ff8a4c;--l-desk:#34c391;--l-bag:#8de0bf;
+      --l-screen:#38bdf8;--l-locked:#94a3b8;--l-dark:#64748b;--hatch:rgba(148,163,184,.33);--track:#1f2935;
+      --shadow:none;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1219;--surface:#151c26;--surface-2:#1b2431;--text:#e5eaf2;--muted:#9aa6b8;--line:#28323f;--line-2:#3a4656;
+    --accent:#7ea4ff;--accent-soft:#1d2a47;--on-accent:#0d1219;
+    --ok:#4cc38a;--ok-soft:#12291e;--bad:#ff6b6b;--bad-soft:#2f1618;--warn:#f0b54a;--warn-soft:#2b2312;
+    --l-cashier:#5b8ff0;--l-cashier-soft:rgba(91,143,240,.33);--l-visitor:#a685f5;--l-safe:#ff8a4c;--l-desk:#34c391;--l-bag:#8de0bf;
+    --l-screen:#38bdf8;--l-locked:#94a3b8;--l-dark:#64748b;--hatch:rgba(148,163,184,.33);--track:#1f2935;
+    --shadow:none;
+  }
   *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
-  header{background:#fff;border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-  header h1{font-size:18px;margin:0;font-weight:650}
-  header .sub{color:var(--muted);font-size:13px}
-  main{max-width:1080px;margin:0 auto;padding:24px 16px 60px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px}
-  .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:15px}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  .hidden{display:none!important}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  header.top{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 16px}
+  .top-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .logo{width:36px;height:36px;border-radius:10px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;flex:none}
+  .top h1{font-size:17px;margin:0;font-weight:680;letter-spacing:-.1px}
+  .top .sub{color:var(--muted);font-size:13px}
+  .top .grow{flex:1 1 260px;min-width:0}
+  .health{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);min-width:0;max-width:100%}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line-2);flex:none}
+  .dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)}
+  .iconbtn{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:7px 10px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+  .iconbtn:hover{border-color:var(--line-2)}
+
+  main{max-width:1180px;margin:0 auto;padding:18px 16px 60px}
+  .disclaimer{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);color:var(--text);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);border-radius:12px;padding:10px 14px;font-size:13.5px;margin-bottom:16px}
+  .disclaimer svg{flex:none;color:var(--warn);margin-top:1px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow);min-width:0}
+  .card h2{font-size:15px;margin:0 0 12px;font-weight:650}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
   label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
-  input[type=text],input[type=password]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit}
-  .field{flex:1 1 260px}
-  button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;font-family:inherit}
-  button.secondary{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  input[type=text],input[type=password]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:inherit;background:var(--surface);color:var(--text)}
+  input:focus-visible,button:focus-visible,.drop:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .field{flex:1 1 260px;min-width:0}
+  button.btn{background:var(--accent);color:var(--on-accent);border:1px solid var(--accent);border-radius:9px;padding:10px 16px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+  button.btn.secondary{background:transparent;color:var(--accent)}
+  button.btn.ghost{background:transparent;color:var(--text);border-color:var(--line)}
+  button.btn.small{padding:6px 11px;font-size:13px;font-weight:550}
   button:disabled{opacity:.5;cursor:default}
-  .drop{border:2px dashed #b9c4d6;border-radius:var(--radius);padding:38px 20px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;background:#fafbfd}
-  .drop.over{border-color:var(--accent);background:#eef3ff;color:var(--accent)}
-  .drop strong{color:var(--text)}
+
+  .drop{border:2px dashed var(--line-2);border-radius:var(--radius);padding:30px 18px;text-align:center;color:var(--muted);cursor:pointer;transition:background .15s,border-color .15s;background:var(--surface-2)}
+  .drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .drop strong{color:var(--text);font-size:15.5px}
   .drop input{display:none}
-  .status{display:flex;align-items:center;gap:12px;margin-top:14px;font-size:14px}
-  .bar{flex:1;height:8px;background:#e7ebf2;border-radius:6px;overflow:hidden}
+  .drop .hint{font-size:12.5px;margin-top:6px}
+  .fname{margin-top:10px;font-size:13.5px;color:var(--text);font-weight:550;word-break:break-all}
+
+  .steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding:0;list-style:none}
+  .steps li{font-size:12.5px;padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px}
+  .steps li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--line-2)}
+  .steps li.done{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent);background:var(--ok-soft)}
+  .steps li.done::before{background:var(--ok)}
+  .steps li.cur{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+  .steps li.cur::before{background:var(--accent);animation:pulse 1s ease-in-out infinite}
+  .steps li.fail{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
+  .steps li.fail::before{background:var(--bad)}
+  @keyframes pulse{50%{opacity:.25}}
+  @media (prefers-reduced-motion: reduce){.steps li.cur::before{animation:none}}
+  .status{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:13.5px;flex-wrap:wrap}
+  .bar{flex:1 1 200px;height:8px;background:var(--track);border-radius:6px;overflow:hidden;min-width:120px}
   .bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
-  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.2px}
-  .pill.ok{background:#e4f6ec;color:var(--ok)} .pill.bad{background:#fde9e7;color:var(--bad)} .pill.proc{background:#eef3ff;color:var(--accent)} .pill.fail{background:#fff4df;color:var(--warn)}
-  .verdict{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-  .verdict .big{font-size:26px;font-weight:700}
-  .verdict.ok .big{color:var(--ok)} .verdict.bad .big{color:var(--bad)}
   .meta{color:var(--muted);font-size:13px}
-  .event{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;padding:16px;margin-top:14px;background:#fff}
-  .event h3{margin:0 0 6px;font-size:16px}
-  .event .code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eef1f6;border-radius:6px;padding:2px 7px;font-size:12px;margin-right:6px}
-  .event .tc{color:var(--muted);font-size:13px}
-  .frames{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
-  .frames figure{margin:0;width:200px}
-  .frames img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;cursor:zoom-in}
-  .frames figcaption{font-size:12px;color:var(--muted);margin-top:4px;text-align:center}
-  .rule{background:#f7f9fc;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:10px}
-  .rule a{color:var(--accent)}
-  .ctx{border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:10px;padding:14px 16px;margin-top:14px;background:#fffdf7}
+  .err{display:flex;gap:10px;align-items:flex-start;color:var(--bad);background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:10px;padding:10px 12px;font-size:14px;margin-top:12px;white-space:pre-wrap}
+
+  .verdict{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-radius:var(--radius);padding:18px 20px;border:1px solid var(--line);margin-bottom:16px;background:var(--surface)}
+  .verdict.ok{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+  .verdict.bad{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+  .verdict .vicon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff}
+  .verdict.ok .vicon{background:var(--ok)} .verdict.bad .vicon{background:var(--bad)}
+  .verdict .vbody{flex:1 1 300px;min-width:0}
+  .verdict .big{font-size:23px;font-weight:720;letter-spacing:-.2px;line-height:1.2}
+  .verdict.ok .big{color:var(--ok)} .verdict.bad .big{color:var(--bad)}
+  .verdict .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);vertical-align:1px}
+  .chip.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+  .chip.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 40%,transparent);color:var(--warn)}
+
+  .stage{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px;align-items:start}
+  .player{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:464/848;max-height:72vh;width:100%}
+  .player video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
+  .novideo{border:1px dashed var(--line-2);border-radius:12px;padding:16px;font-size:13px;color:var(--muted);background:var(--surface-2)}
+  .now{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
+  .now .st{font-size:12.5px;padding:4px 9px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);max-width:100%;overflow-wrap:anywhere}
+  .now .st b{color:var(--text);font-weight:600}
+  .now .st.on{border-color:var(--line-2)} .now .st.alert{border-color:var(--bad);color:var(--bad)} .now .st.alert b{color:var(--bad)}
+  .clock{font-family:var(--mono);font-size:13px;color:var(--text);font-weight:600}
+
+  /* шкала времени */
+  .tl{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;user-select:none}
+  .tl-labels>div,.tl-tracks>.tl-row{height:26px;margin-bottom:5px}
+  .tl-labels>div{font-size:12.5px;color:var(--muted);display:flex;align-items:center;white-space:nowrap;max-width:150px}
+  .tl-labels>div.ax,.tl-tracks>.tl-axis{height:18px;margin-bottom:4px}
+  .tl-labels>div.ev,.tl-tracks>.tl-row.ev{height:30px}
+  .tl-tracks{position:relative;cursor:pointer;min-width:0}
+  .tl-row{position:relative;background:var(--track);border-radius:6px;overflow:hidden}
+  .tl-row.ev{overflow:visible;background:transparent;border-bottom:1px solid var(--line);border-radius:0}
+  .tl-row .note{position:absolute;inset:0;display:flex;align-items:center;padding-left:8px;font-size:11.5px;color:var(--muted)}
+  .seg{position:absolute;top:3px;bottom:3px;border-radius:4px;min-width:2px}
+  .seg.full{top:0;bottom:0;border-radius:0}
+  .seg.unk{background:repeating-linear-gradient(135deg,var(--hatch) 0 3px,transparent 3px 7px)}
+  .seg .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;overflow:hidden}
+  .s-cashier{background:var(--l-cashier-soft)} .s-desk{background:var(--l-cashier)}
+  .s-vis{background:var(--l-visitor)} .s-vis.n1{opacity:.7}
+  .s-safe{background:var(--l-safe)} .s-items{background:var(--l-desk)} .s-bag{background:var(--l-bag);top:8px;bottom:8px}
+  .s-active{background:var(--l-screen)} .s-locked{background:var(--l-locked)} .s-dark{background:var(--l-dark)}
+  .s-ctx{background:color-mix(in srgb,var(--warn) 30%,transparent);border:1px solid var(--warn);top:2px;bottom:2px}
+  .s-evband{background:color-mix(in srgb,var(--bad) 18%,transparent);top:2px;bottom:2px}
+  .mk{position:absolute;top:2px;bottom:2px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;border:0;padding:0 5px;border-radius:5px;background:var(--bad);color:#fff;font:600 11px/1 var(--mono);cursor:pointer;z-index:2;white-space:nowrap}
+  .mk.cur{outline:2px solid var(--text);outline-offset:1px}
+  .tl-axis{position:relative}
+  .tick{position:absolute;top:0;font-size:10.5px;color:var(--muted);transform:translateX(-50%);font-family:var(--mono)}
+  .tick::after{content:"";position:absolute;left:50%;top:13px;height:5px;border-left:1px solid var(--line-2)}
+  .vline{position:absolute;top:22px;bottom:0;border-left:2px dashed var(--bad);opacity:.55;pointer-events:none;z-index:1}
+  .unrel{position:absolute;top:22px;bottom:0;background:repeating-linear-gradient(45deg,transparent 0 6px,var(--hatch) 6px 8px);pointer-events:none;opacity:.55}
+  .playhead{position:absolute;top:16px;bottom:0;width:0;border-left:2px solid var(--text);pointer-events:none;z-index:3}
+  .playhead::before{content:"";position:absolute;top:-2px;left:-6px;border:5px solid transparent;border-top:7px solid var(--text)}
+  .hover{position:absolute;top:0;bottom:0;border-left:1px solid var(--line-2);pointer-events:none;z-index:2}
+  .hover span{position:absolute;top:0;left:4px;font:11px var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--text);white-space:nowrap}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:18px;height:10px;border-radius:3px;display:inline-block;flex:none}
+
+  /* события */
+  .evhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0 2px}
+  .evhead h2{margin:0}
+  .event{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:12px;padding:16px;margin-top:12px;background:var(--surface);transition:box-shadow .2s,border-color .2s;min-width:0}
+  .event.cur{box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 30%,transparent)}
+  .event .eh{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .event .num{width:26px;height:26px;border-radius:50%;background:var(--bad);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+  .event h3{margin:0;font-size:16px;line-height:1.35;flex:1 1 260px;min-width:0}
+  .event .tc{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 4px;font-size:13.5px;color:var(--muted)}
+  .event .tc b{color:var(--text);font-family:var(--mono);font-size:14px}
+  .conf{display:inline-flex;align-items:center;gap:6px}
+  .conf .m{width:60px;height:6px;border-radius:4px;background:var(--track);overflow:hidden;display:inline-block}
+  .conf .m i{display:block;height:100%;background:var(--muted)}
+  .desc{margin:10px 0 0;font-size:14.5px}
+  .frames{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,190px));gap:10px;margin:12px 0}
+  .frames figure{margin:0;min-width:0}
+  .frames button{display:block;padding:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;cursor:zoom-in;background:#000;width:100%}
+  .frames img{width:100%;display:block;aspect-ratio:464/848;object-fit:cover}
+  .frames figcaption{font-size:12px;color:var(--muted);margin-top:4px;text-align:center;font-family:var(--mono)}
+  .rule{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.5px;margin-top:12px}
+  .rule .rt{font-weight:650;margin-bottom:4px}
+  .rule .doc{color:var(--muted);font-size:12.5px;margin-top:4px}
+  .rule ul{margin:8px 0 0;padding-left:18px}
+  .rule li{margin:3px 0}
+  .rule .lbl{font-size:12px;color:var(--muted);margin-top:8px}
+  .rule .caveat{margin-top:8px;font-size:12.5px;color:var(--warn);display:flex;gap:6px}
+  .ctx{border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:12px;padding:14px 16px;margin-top:14px;background:var(--surface)}
   .ctx h3{margin:0 0 8px;font-size:15px}
-  .ctx li{margin:4px 0;font-size:14px}
-  .err{color:var(--bad);font-size:14px;margin-top:10px;white-space:pre-wrap}
-  .hidden{display:none}
-  dialog{border:0;border-radius:12px;padding:0;max-width:92vw;max-height:92vh;background:transparent}
-  dialog img{max-width:92vw;max-height:92vh;border-radius:10px}
-  dialog::backdrop{background:rgba(0,0,0,.7)}
-  footer{color:var(--muted);font-size:12px;text-align:center;margin-top:30px}
-  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  .ctx ul{margin:0;padding-left:0;list-style:none}
+  .ctx li{margin:6px 0;font-size:14px}
+  .empty{padding:18px;border:1px dashed var(--line-2);border-radius:12px;color:var(--muted);font-size:14px;margin-top:12px;background:var(--surface-2)}
+  details.tech{margin-top:14px;font-size:13px;color:var(--muted)}
+  details.tech summary{cursor:pointer;color:var(--text);font-weight:600}
+  details.tech dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 14px;margin:10px 0 0}
+  details.tech dt{color:var(--muted)} details.tech dd{margin:0;color:var(--text);word-break:break-word}
+
+  dialog#zoom{border:0;border-radius:14px;padding:0;max-width:96vw;max-height:96vh;background:var(--surface);color:var(--text)}
+  dialog#zoom::backdrop{background:rgba(0,0,0,.75)}
+  .zwrap{display:flex;flex-direction:column;max-height:96vh}
+  .zwrap img{max-width:94vw;max-height:calc(96vh - 64px);display:block;margin:0 auto;background:#000;object-fit:contain}
+  .zbar{display:flex;gap:8px;align-items:center;padding:10px 12px;flex-wrap:wrap}
+  .zbar .grow{flex:1 1 220px;min-width:0;font-size:13px;color:var(--muted)}
+
+  footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
+
+  @media (max-width: 860px){
+    .stage{grid-template-columns:minmax(0,1fr)}
+    .player{max-height:62vh;max-width:360px;margin:0 auto}
+  }
+  @media (max-width: 640px){
+    body{font-size:14.5px}
+    .card{padding:14px}
+    .verdict{padding:14px}
+    .verdict .big{font-size:19px}
+    .tl-labels>div{font-size:11.5px;max-width:96px;white-space:normal;line-height:1.1}
+    .frames{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .top h1{font-size:15.5px}
+    .zbar .grow{flex-basis:100%;order:-1}
+  }
+  @media print{
+    header.top .iconbtn,#uploadCard,.player,.novideo,.actions,.mk,.playhead,.hover,.btn{display:none!important}
+    body{background:#fff}
+    .card,.event,.verdict{break-inside:avoid;box-shadow:none}
+  }
 </style>
 </head>
 <body>
-<header>
-  <div><h1>Контроль кассовой дисциплины по видео</h1><div class="sub">Локальный анализ записи кассы · вердикт, таймкод, кадры-доказательства, нормативное обоснование</div></div>
-  <div class="sub" id="health">проверка сервиса…</div>
+<header class="top">
+  <div class="top-in">
+    <div class="logo" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4v6c0 4.5-3.8 7.7-9 8-5.2-.3-9-3.5-9-8z"/><path d="M8.5 12.5l2.4 2.4 4.6-5"/></svg></div>
+    <div class="grow"><h1>Контроль кассовой дисциплины по видео</h1><div class="sub">Локальный анализ записи камеры кассы: вердикт, таймкоды, кадры-иллюстрации, нормативное основание (акты НБРК)</div></div>
+    <span class="health" id="healthBox"><span class="dot" id="hdot"></span><span id="health">проверка сервиса…</span></span>
+    <button class="iconbtn" id="theme" type="button" aria-label="Тема оформления">тема: авто</button>
+  </div>
 </header>
 <main>
-  <section class="card">
+  <div class="disclaimer" role="note" id="disclaimer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>
+    <div><b>Результат — подсказка для проверки человеком, не юридическое заключение.</b> Система указывает на признаки возможных нарушений и момент, который стоит пересмотреть; окончательное решение принимает уполномоченный сотрудник. Анализ выполняется локально, без облачных сервисов и без распознавания лиц.</div>
+  </div>
+
+  <section class="card" id="uploadCard">
     <div class="row">
       <div class="field"><label for="apikey">Ключ API (заголовок <code>X-API-Key</code>)</label><input id="apikey" type="password" placeholder="введите ключ" autocomplete="off"></div>
-      <div><button class="secondary" id="toggleKey" type="button">показать</button></div>
+      <div><button class="btn ghost" id="toggleKey" type="button">показать</button></div>
     </div>
     <div style="height:14px"></div>
-    <div class="drop" id="drop">
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Выбрать видео для анализа">
       <input type="file" id="file" accept=".mov,.mp4,video/quicktime,video/mp4">
       <div><strong>Перетащите видео (.mov) сюда</strong> или нажмите, чтобы выбрать файл</div>
-      <div style="font-size:12px;margin-top:6px">до 300 МБ · обработка до 4 минут · видео не сохраняется после анализа</div>
-      <div id="fname" style="margin-top:8px;font-size:13px;color:var(--text)"></div>
+      <div class="hint">.mov / .mp4 · до 300 МБ · обработка до 4 минут · видео удаляется с сервера после анализа</div>
+      <div class="fname" id="fname"></div>
     </div>
     <div class="row" style="margin-top:14px;align-items:center">
-      <button id="send" type="button" disabled>Отправить на анализ</button>
+      <button class="btn" id="send" type="button" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        Отправить на анализ</button>
+      <button class="btn ghost small" id="openJson" type="button" title="Просмотр ранее скачанного результата (JSON) без повторной обработки">Открыть сохранённый JSON</button>
+      <input type="file" id="jsonFile" accept=".json,application/json" class="hidden">
       <span class="meta" id="jobinfo"></span>
     </div>
-    <div class="status hidden" id="status"><span class="pill proc" id="stpill">загрузка</span><div class="bar"><i id="barfill"></i></div><span id="stage" class="meta"></span></div>
-    <div class="err hidden" id="error"></div>
+    <div id="progress" class="hidden" aria-live="polite">
+      <ol class="steps" id="steps"></ol>
+      <div class="status"><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bar"><i id="barfill"></i></div><span id="stage" class="meta"></span><span id="elapsed" class="meta mono"></span></div>
+    </div>
+    <div class="err hidden" id="error" role="alert"></div>
   </section>
 
-  <section class="card hidden" id="result">
+  <section id="result" class="hidden" aria-live="polite">
     <div class="verdict" id="verdict">
-      <div class="big" id="vtext"></div>
-      <div class="meta" id="vmeta"></div>
-      <div style="margin-left:auto"><button class="secondary" id="dl" type="button">Скачать JSON</button></div>
+      <div class="vicon" id="vicon" aria-hidden="true"></div>
+      <div class="vbody">
+        <div class="big" id="vtext"></div>
+        <div class="meta" id="vmeta"></div>
+      </div>
+      <div class="actions">
+        <button class="btn secondary small" id="dl" type="button">Скачать JSON</button>
+        <button class="btn ghost small" id="dlLite" type="button" title="Тот же ответ API, но без base64-кадров (файл в сотни раз меньше)">JSON без кадров</button>
+        <button class="btn ghost small" id="print" type="button">Печать / PDF</button>
+      </div>
     </div>
-    <div id="events"></div>
+
+    <section class="card" id="stageCard">
+      <h2>Запись и шкала времени</h2>
+      <div class="stage">
+        <div>
+          <div class="player" id="playerBox"><video id="video" controls playsinline muted preload="metadata"></video></div>
+          <div class="novideo hidden" id="novideo"></div>
+        </div>
+        <div style="min-width:0">
+          <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div class="meta">Состояние сцены в момент <span class="clock" id="clock">00:00.0</span></div>
+          </div>
+          <div class="now" id="now"></div>
+          <div class="tl" id="timeline">
+            <div class="tl-labels" id="tlLabels"></div>
+            <div class="tl-tracks" id="tlTracks" aria-label="Шкала времени: щёлкните, чтобы перейти к моменту записи"></div>
+          </div>
+          <div class="legend" id="legend"></div>
+          <div class="meta" id="tlNote" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="evhead"><h2>События</h2><span class="meta" id="evcount"></span></div>
+      <div id="events"></div>
+      <div id="ctxBox"></div>
+      <details class="tech" id="tech"><summary>Технические сведения об обработке</summary><dl id="techList"></dl></details>
+    </section>
   </section>
-  <footer>Анализ выполняется локально, без облачных сервисов и без распознавания лиц. Нормативная база: акты Национального Банка РК (adilet.zan.kz).</footer>
+
+  <footer>Анализ выполняется локально, без облачных сервисов и без распознавания лиц. Нормативная база: акты Национального Банка РК, опубликованные на adilet.zan.kz. Кадры-иллюстрации показывают признаки и требуют проверки человеком.</footer>
 </main>
-<dialog id="zoom"><img id="zoomimg" alt=""></dialog>
+
+<dialog id="zoom" aria-label="Кадр крупно">
+  <div class="zwrap">
+    <img id="zoomimg" alt="">
+    <div class="zbar">
+      <button class="btn ghost small" id="zprev" type="button" aria-label="Предыдущий кадр">&larr;</button>
+      <button class="btn ghost small" id="znext" type="button" aria-label="Следующий кадр">&rarr;</button>
+      <div class="grow" id="zcap"></div>
+      <button class="btn secondary small" id="zseek" type="button">перейти к моменту</button>
+      <button class="btn small" id="zclose" type="button">Закрыть</button>
+    </div>
+  </div>
+</dialog>
 
 <script>
 (function(){
+  'use strict';
   const $ = id => document.getElementById(id);
   const apikey=$('apikey'), drop=$('drop'), fileInp=$('file'), send=$('send'), fname=$('fname');
-  const statusBox=$('status'), stpill=$('stpill'), barfill=$('barfill'), stage=$('stage'), errBox=$('error'), jobinfo=$('jobinfo');
-  const result=$('result'), verdict=$('verdict'), vtext=$('vtext'), vmeta=$('vmeta'), events=$('events'), dl=$('dl');
-  let file=null, lastJson=null, pollTimer=null;
+  const progressBox=$('progress'), stepsEl=$('steps'), barfill=$('barfill'), bar=$('bar'), stage=$('stage'), elapsedEl=$('elapsed');
+  const errBox=$('error'), jobinfo=$('jobinfo');
+  const result=$('result'), verdict=$('verdict'), vtext=$('vtext'), vmeta=$('vmeta'), vicon=$('vicon');
+  const events=$('events'), ctxBox=$('ctxBox'), video=$('video');
+  let file=null, videoUrl=null, lastJson=null, pollTimer=null, clockTimer=null, jobStarted=0, curStage=null, polling=false;
+  let tlDur=0, tlData=null, evList=[], zoomList=[], zoomIdx=0;
 
-  try{ apikey.value = localStorage.getItem('fb_api_key') || ''; }catch(e){}
-  apikey.addEventListener('input', ()=>{ try{ localStorage.setItem('fb_api_key', apikey.value); }catch(e){} });
+  /* ---------- настройки: ключ и тема (localStorage может быть недоступен) ---------- */
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  apikey.value = lsGet('fb_api_key') || '';
+  apikey.addEventListener('input', ()=> lsSet('fb_api_key', apikey.value));
   $('toggleKey').onclick = ()=>{ const p = apikey.type==='password'; apikey.type = p?'text':'password'; $('toggleKey').textContent = p?'скрыть':'показать'; };
 
-  fetch('/health').then(r=>r.json()).then(h=>{ $('health').textContent = 'сервис доступен · очередь: '+h.queue; }).catch(()=>{ $('health').textContent='сервис недоступен'; });
+  const THEMES=['auto','light','dark'], THEME_RU={auto:'авто',light:'светлая',dark:'тёмная'};
+  function applyTheme(t){
+    if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme',t); else document.documentElement.removeAttribute('data-theme');
+    $('theme').textContent='тема: '+THEME_RU[t];
+  }
+  let theme = lsGet('fb_theme'); if(THEMES.indexOf(theme)<0) theme='auto'; applyTheme(theme);
+  $('theme').onclick=()=>{ theme=THEMES[(THEMES.indexOf(theme)+1)%THEMES.length]; lsSet('fb_theme',theme); applyTheme(theme); };
 
+  function checkHealth(){
+    fetch('/health').then(r=>r.json()).then(h=>{
+      $('hdot').className='dot ok';
+      $('health').textContent='сервис доступен · очередь: '+(h.queue||0)+(h.worker_alive===false?' · модели загрузятся при первом анализе':'');
+    }).catch(()=>{ $('hdot').className='dot bad'; $('health').textContent='сервис недоступен'; });
+  }
+  checkHealth();
+
+  /* ---------- утилиты ---------- */
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function num(x){ const v=Number(x); return isFinite(v)?v:0; }
+  function fmt(t){ return (Math.round(num(t)*10)/10).toFixed(1)+' с'; }
+  function clock(t){ t=Math.max(0,num(t)); const m=Math.floor(t/60), s=t-m*60; return String(m).padStart(2,'0')+':'+(s<10?'0':'')+s.toFixed(1); }
+  function plural(n,a,b,c){ n=Math.abs(n)%100; const d=n%10; if(n>10&&n<20) return c; if(d>1&&d<5) return b; if(d===1) return a; return c; }
+  function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+  const ICON_OK='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const ICON_BAD='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.5v.3"/></svg>';
+  const ICON_ERR='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v6M12 16.5v.3"/></svg>';
+
+  function showError(msg){ errBox.innerHTML=ICON_ERR+'<div>'+esc(msg)+'</div>'; errBox.classList.remove('hidden'); }
+  function hideError(){ errBox.classList.add('hidden'); errBox.textContent=''; }
+
+  /* ---------- выбор файла ---------- */
   function setFile(f){
     if(!f) return;
-    if(!/\.(mov|mp4)$/i.test(f.name)){ showError('Поддерживаются файлы .mov (и .mp4).'); return; }
+    if(/\.json$/i.test(f.name)){ openJsonFile(f); return; }
+    if(!/\.(mov|mp4)$/i.test(f.name)){ showError('Поддерживаются видеофайлы .mov и .mp4 (или сохранённый результат .json для просмотра).'); return; }
     file=f; fname.textContent = f.name+' · '+(f.size/1048576).toFixed(1)+' МБ'; send.disabled=false; hideError();
+    // новый файл — новый анализ: прежний результат относится к другой записи
+    result.classList.add('hidden'); lastJson=null; video.removeAttribute('src'); video.load(); jobinfo.textContent='';
+    if(videoUrl){ URL.revokeObjectURL(videoUrl); videoUrl=null; }
+    videoUrl = URL.createObjectURL(f);   // локальный просмотр записи в браузере — файл никуда, кроме /analyze, не отправляется
   }
   drop.onclick = ()=> fileInp.click();
+  drop.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInp.click(); } });
   fileInp.onchange = ()=> setFile(fileInp.files[0]);
   ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
   ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
   drop.addEventListener('drop', e=>{ const f=e.dataTransfer.files && e.dataTransfer.files[0]; setFile(f); });
+  // бросок файла мимо зоны не должен открывать видео в браузере вместо страницы
+  ['dragover','drop'].forEach(ev=>window.addEventListener(ev,e=>{ if(!drop.contains(e.target)) e.preventDefault(); }));
 
-  function showError(msg){ errBox.textContent=msg; errBox.classList.remove('hidden'); }
-  function hideError(){ errBox.classList.add('hidden'); errBox.textContent=''; }
-  function setStatus(kind, text, pct){
-    statusBox.classList.remove('hidden');
-    stpill.className='pill '+kind; stpill.textContent=text;
-    if(pct!=null) barfill.style.width=Math.max(0,Math.min(100,pct))+'%';
+  $('openJson').onclick=()=>$('jsonFile').click();
+  $('jsonFile').onchange=()=>{ const f=$('jsonFile').files[0]; if(f) openJsonFile(f); $('jsonFile').value=''; };
+  function openJsonFile(f){
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const j=JSON.parse(rd.result);
+        if(!j || (j.verdict!=='violation' && j.verdict!=='no_violation') || !Array.isArray(j.violations)) throw new Error('нет полей verdict/violations');
+        hideError(); jobinfo.textContent='просмотр файла: '+f.name; render(j);
+      }catch(e){ showError('Не удалось открыть результат: '+e.message+'. Ожидается JSON, скачанный с этой страницы или из GET /api/v1/jobs/{job_id}.'); }
+    };
+    rd.onerror=()=>showError('Не удалось прочитать файл.');
+    rd.readAsText(f);
   }
-  const STAGES={queued:'в очереди',starting:'запуск',decoding:'декодирование видео',detection:'детекция объектов',rules:'проверка правил',evidence:'подготовка кадров',describing:'формирование описаний',done:'готово'};
 
+  /* ---------- этапы обработки ---------- */
+  const STAGES={upload:'загрузка файла',queued:'в очереди',starting:'запуск обработчика',decoding:'декодирование видео',detection:'детекция людей и предметов',
+    states:'анализ состояний сцены',rules:'проверка правил',evidence:'подготовка кадров',describing:'формирование описаний',done:'готово'};
+  const STEP_ORDER=['upload','queued','decoding','detection','states','rules','evidence','describing','done'];
+  function stepIndex(s){ if(s==='starting') return 1; const i=STEP_ORDER.indexOf(s); return i; }
+  function renderSteps(cur, failed){
+    const ci=stepIndex(cur);
+    stepsEl.innerHTML=STEP_ORDER.map((s,i)=>{
+      let c=''; if(ci>=0 && i<ci) c='done'; if(i===ci) c=failed?'fail':(s==='done'?'done':'cur');
+      return '<li class="'+c+'"'+(i===ci?' aria-current="step"':'')+'>'+esc(STAGES[s])+'</li>';
+    }).join('');
+  }
+  function setProgress(stageKey, pct, text){
+    progressBox.classList.remove('hidden');
+    if(stageKey!==curStage){ curStage=stageKey; renderSteps(stageKey,false); }
+    if(pct!=null){ const p=Math.max(0,Math.min(100,pct)); barfill.style.width=p+'%'; bar.setAttribute('aria-valuenow',Math.round(p)); }
+    stage.textContent = text!=null ? text : (STAGES[stageKey]||stageKey||'');
+  }
+  function startClock(){ jobStarted=Date.now(); clearInterval(clockTimer); clockTimer=setInterval(()=>{ const s=Math.round((Date.now()-jobStarted)/1000); elapsedEl.textContent='прошло '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); },500); }
+  function stopClock(){ clearInterval(clockTimer); }
+
+  /* ---------- отправка и опрос ---------- */
   send.onclick = ()=>{
     if(!file) return;
-    if(!apikey.value.trim()){ showError('Укажите ключ API.'); return; }
-    hideError(); result.classList.add('hidden'); events.innerHTML=''; lastJson=null; send.disabled=true;
+    if(!apikey.value.trim()){ showError('Укажите ключ API (выдаётся администратором сервиса, переменная API_KEY в service/.env).'); apikey.focus(); return; }
+    hideError(); result.classList.add('hidden'); lastJson=null; send.disabled=true; curStage=null; elapsedEl.textContent='';
     const fd=new FormData(); fd.append('file', file, file.name);
     const xhr=new XMLHttpRequest();
     xhr.open('POST','/api/v1/analyze');
     xhr.setRequestHeader('X-API-Key', apikey.value.trim());
-    xhr.upload.onprogress = e=>{ if(e.lengthComputable){ setStatus('proc','загрузка', e.loaded/e.total*100); stage.textContent='отправка файла '+Math.round(e.loaded/e.total*100)+'%'; } };
+    xhr.upload.onprogress = e=>{ if(e.lengthComputable){ const p=e.loaded/e.total*100; setProgress('upload', p*0.1, 'отправка файла '+Math.round(p)+'%'); } };
     xhr.onload = ()=>{
       if(xhr.status===202 || xhr.status===200){
-        const j=JSON.parse(xhr.responseText); jobinfo.textContent='job_id: '+j.job_id; poll(j.job_id);
-      } else { send.disabled=false; statusBox.classList.add('hidden'); showError(httpMessage(xhr)); }
+        let j=null; try{ j=JSON.parse(xhr.responseText); }catch(e){}
+        if(!j || !j.job_id){ failUpload('Сервер вернул неожиданный ответ.'); return; }
+        jobinfo.textContent='job_id: '+j.job_id; setProgress('queued', 10); startClock(); poll(j.job_id);
+      } else failUpload(httpMessage(xhr.status, xhr.responseText));
     };
-    xhr.onerror = ()=>{ send.disabled=false; statusBox.classList.add('hidden'); showError('Сеть недоступна или сервер не отвечает.'); };
-    setStatus('proc','загрузка',0); stage.textContent='отправка файла';
+    xhr.onerror = ()=> failUpload('Сеть недоступна или сервер не отвечает. Проверьте, что сервис запущен (docker compose up).');
+    xhr.ontimeout = ()=> failUpload('Сервер не ответил вовремя при загрузке файла.');
+    setProgress('upload',0,'отправка файла');
     xhr.send(fd);
   };
+  function failUpload(msg){ send.disabled=false; renderSteps(curStage||'upload',true); showError(msg); }
 
-  function httpMessage(xhr){
-    let detail=''; try{ detail=JSON.parse(xhr.responseText).detail||''; }catch(e){}
-    if(xhr.status===401) return 'Ошибка 401: неверный или отсутствующий ключ API.';
-    if(xhr.status===413) return 'Ошибка 413: файл слишком большой (лимит 300 МБ).';
-    if(xhr.status===415) return 'Ошибка 415: неподдерживаемый формат файла.';
-    return 'Ошибка '+xhr.status+(detail?': '+detail:'');
+  function httpMessage(status, body){
+    let detail=''; try{ detail=JSON.parse(body).detail||''; }catch(e){}
+    if(typeof detail!=='string') detail=JSON.stringify(detail);
+    if(status===401) return 'Ошибка 401: неверный или отсутствующий ключ API (заголовок X-API-Key).';
+    if(status===413) return 'Ошибка 413: файл слишком большой (лимит 300 МБ).';
+    if(status===415) return 'Ошибка 415: неподдерживаемый формат файла — нужен .mov или .mp4.';
+    if(status===400) return 'Ошибка 400: '+(detail==='empty file'?'файл пустой.':(detail||'некорректный запрос.'));
+    if(status===429) return 'Ошибка 429: сервис перегружен, повторите попытку через минуту.';
+    if(status>=500) return 'Ошибка '+status+': внутренняя ошибка сервиса'+(detail?' ('+detail+')':'')+'. Повторите попытку; если ошибка повторяется — проверьте журнал сервиса.';
+    return 'Ошибка '+status+(detail?': '+detail:'');
+  }
+  function jobErrorMessage(err){
+    const e=String(err||'неизвестная ошибка');
+    if(/timeout/i.test(e)) return 'Превышен лимит времени обработки ('+e.replace(/\D+/g,' ').trim()+' с). Видео не обработано: проверьте длительность и формат записи.';
+    if(/crash/i.test(e)) return 'Обработчик видео аварийно завершился (возможно, повреждённый файл или нехватка памяти). Повторите попытку.';
+    return 'Обработка не удалась: '+e;
   }
 
   function poll(jobId){
     clearInterval(pollTimer);
+    const stop=()=>{ clearInterval(pollTimer); stopClock(); send.disabled=false; };
     const tick = async ()=>{
+      if(polling) return; polling=true;
       try{
-        const r=await fetch('/api/v1/jobs/'+jobId,{headers:{'X-API-Key':apikey.value.trim()}});
-        if(r.status===401){ clearInterval(pollTimer); setStatus('fail','ошибка'); showError('Ошибка 401: ключ API отклонён.'); send.disabled=false; return; }
+        const r=await fetch('/api/v1/jobs/'+encodeURIComponent(jobId),{headers:{'X-API-Key':apikey.value.trim()}});
+        if(r.status===401){ stop(); renderSteps(curStage,true); showError('Ошибка 401: ключ API отклонён.'); return; }
+        if(r.status===404){ stop(); renderSteps(curStage,true); showError('Задание не найдено — возможно, сервис был перезапущен. Отправьте видео ещё раз.'); return; }
+        if(!r.ok){ if(r.status>=500) stage.textContent='сервер временно недоступен, повторяю…'; return; }
         const j=await r.json();
         if(j.status==='processing'){
-          const p=j.progress||{}; setStatus('proc','обработка', p.percent==null?15:p.percent); stage.textContent=STAGES[p.stage]||p.stage||'';
+          const p=j.progress||{}; const st=p.stage||'queued';
+          setProgress(st, p.percent==null?null:10+0.9*p.percent);
         } else if(j.status==='done'){
-          clearInterval(pollTimer); setStatus('ok','готово',100); stage.textContent='обработка завершена'; send.disabled=false; render(j);
+          stop(); setProgress('done',100,'обработка завершена'); render(j);
         } else {
-          clearInterval(pollTimer); setStatus('fail','ошибка',100); stage.textContent=''; send.disabled=false; showError('Обработка не удалась: '+(j.error||'неизвестная ошибка'));
+          stop(); renderSteps(curStage,true); stage.textContent=''; showError(jobErrorMessage(j.error));
         }
-      }catch(e){ /* временная сетевая ошибка — продолжаем опрос */ }
+      }catch(e){ stage.textContent='нет связи с сервисом, повторяю…'; }
+      finally{ polling=false; }
     };
-    tick(); pollTimer=setInterval(tick,2000);
+    tick(); pollTimer=setInterval(tick,1000);
   }
 
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function fmt(t){ return (Math.round(t*10)/10).toFixed(1)+' с'; }
-
+  /* ---------- результат ---------- */
   function render(j){
     lastJson=j; result.classList.remove('hidden');
+    const m=j.meta||{}, viol=Array.isArray(j.violations)?j.violations:[], ctx=Array.isArray(m.context_events)?m.context_events:[];
     const bad = j.verdict==='violation';
     verdict.className='verdict '+(bad?'bad':'ok');
-    vtext.textContent = bad ? 'Нарушение выявлено' : 'Нарушений не выявлено';
-    const m=j.meta||{};
-    vmeta.innerHTML = '<span class="pill '+(bad?'bad':'ok')+'">'+esc(j.verdict)+'</span> · событий: '+(j.violations||[]).length
-      + (m.duration_sec!=null?' · длительность '+fmt(m.duration_sec):'') + (m.processing_time_sec!=null?' · обработка '+m.processing_time_sec+' с':'');
-    events.innerHTML='';
-    (j.violations||[]).forEach((v,i)=>{
-      const el=document.createElement('div'); el.className='event';
-      let frames='';
-      (v.evidence_frames||[]).forEach(f=>{ frames+='<figure><img src="data:image/jpeg;base64,'+f.image_base64+'" alt="кадр '+fmt(f.timestamp_sec)+'"><figcaption>'+fmt(f.timestamp_sec)+'</figcaption></figure>'; });
-      const r=v.rule||{};
-      el.innerHTML =
-        '<h3>'+(v.type_code?'<span class="code">'+esc(v.type_code)+'</span>':'')+esc(v.type)+'</h3>'
-        +'<div class="tc">таймкод: <b>'+fmt(v.timecode_sec)+'</b>'+(v.end_sec!=null?' – '+fmt(v.end_sec):'')+(v.confidence!=null?' · уверенность '+Math.round(v.confidence*100)+'%':'')+'</div>'
-        +'<div class="frames">'+frames+'</div>'
-        +'<div>'+esc(v.description)+'</div>'
-        +(r.document?'<div class="rule"><b>Нормативное основание:</b> '+esc(r.clause)+' — '+esc(r.document)+(r.url?' · <a href="'+esc(r.url)+'" target="_blank" rel="noopener">открыть на adilet.zan.kz</a>':'')+(r.quote?'<div class="meta" style="margin-top:4px"><i>«'+esc(r.quote)+'»</i></div>':'')+(r.note?'<div class="meta" style="margin-top:4px">'+esc(r.note)+'</div>':'')+'</div>':'');
-      events.appendChild(el);
-    });
-    const ctxEv = (m.context_events||[]);
-    if(ctxEv.length){
-      const c=document.createElement('div'); c.className='ctx';
-      c.innerHTML='<h3>Контекст сцены (не нарушения)</h3><ul>'+ctxEv.map(e=>'<li><span class="code">'+esc(e.type_code)+'</span><b>'+esc(e.name)+'</b> · '+fmt(e.timecode_sec)+(e.end_sec!=null?' – '+fmt(e.end_sec):'')+'<div class="meta">'+esc(e.description)+'</div></li>').join('')+'</ul>';
-      events.appendChild(c);
-    }
-    events.querySelectorAll('img').forEach(img=>img.onclick=()=>{ $('zoomimg').src=img.src; $('zoom').showModal(); });
-  }
-  $('zoom').onclick=()=>$('zoom').close();
+    vicon.innerHTML = bad?ICON_BAD:ICON_OK;
+    vtext.textContent = bad ? 'Обнаружены признаки возможных нарушений' : 'Нарушение не обнаружено';
+    const codes=[...new Set(viol.map(v=>v.type_code).filter(Boolean))];
+    const parts=[];
+    parts.push(bad ? (viol.length+' '+plural(viol.length,'событие','события','событий')+(codes.length?' ('+codes.map(esc).join(', ')+')':'')) : 'признаки нарушений по проверяемым правилам не найдены');
+    if(m.duration_sec!=null) parts.push('запись '+clock(m.duration_sec));
+    if(m.processing_time_sec!=null) parts.push('обработка '+num(m.processing_time_sec).toFixed(1)+' с');
+    else if(m.pipeline_time_sec!=null) parts.push('обработка '+num(m.pipeline_time_sec).toFixed(1)+' с');
+    parts.push('verdict: <code>'+esc(j.verdict)+'</code>');
+    vmeta.innerHTML = parts.join(' · ') + '<div style="margin-top:3px">'+(bad?'Требуется проверка сотрудником: просмотрите отмеченные моменты записи.':'Автоматическая проверка по правилам T1–T13; при сомнениях просмотрите запись.')+'</div>';
 
-  dl.onclick=()=>{
+    // события
+    evList = viol.map((v,i)=>({i, t:num(v.timecode_sec), end:v.end_sec!=null?num(v.end_sec):null, code:v.type_code||'', name:v.type||''}));
+    events.innerHTML='';
+    $('evcount').textContent = viol.length ? viol.length+' '+plural(viol.length,'событие','события','событий')+' · по времени' : '';
+    if(!viol.length){
+      events.appendChild(el('div','empty','Нарушение не обнаружено: ни одно правило не дало событие с достаточной уверенностью. '
+        +'Это не гарантирует отсутствие нарушений — при сомнениях просмотрите запись.'));
+    }
+    viol.forEach((v,i)=>events.appendChild(eventCard(v,i)));
+
+    // контекст сцены (не нарушения)
+    ctxBox.innerHTML='';
+    if(ctx.length){
+      const c=el('div','ctx');
+      c.innerHTML='<h3>Контекст сцены (не нарушения)</h3><ul>'+ctx.map(e=>'<li><span class="chip warn">'+esc(e.type_code)+'</span> <b>'+esc(e.name)+'</b> · '
+        +'<a href="#" data-seek="'+num(e.timecode_sec)+'">'+clock(e.timecode_sec)+'</a>'+(e.end_sec!=null?' – '+clock(e.end_sec):'')
+        +'<div class="meta">'+esc(e.description)+'</div></li>').join('')+'</ul>';
+      ctxBox.appendChild(c);
+    }
+    renderTech(j);
+    setupPlayer();
+    renderTimeline(m, viol, ctx);
+    bindSeekLinks(result);
+    updateNow(0);
+    result.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function eventCard(v,i){
+    const card=el('article','event'); card.id='ev'+i; card.dataset.idx=i;
+    const r=v.rule||{}, frames=Array.isArray(v.evidence_frames)?v.evidence_frames:[];
+    const conf = v.confidence!=null ? Math.round(num(v.confidence)*100) : null;
+    let fr='';
+    frames.forEach((f,k)=>{
+      if(!f || !f.image_base64){ return; }
+      fr+='<figure><button type="button" data-zoom="'+i+':'+k+'" aria-label="Увеличить кадр '+esc(fmt(f.timestamp_sec))+'">'
+        +'<img loading="lazy" decoding="async" src="data:image/jpeg;base64,'+esc(f.image_base64)+'" alt="кадр-иллюстрация, '+esc(fmt(f.timestamp_sec))+'"></button>'
+        +'<figcaption>'+clock(f.timestamp_sec)+'</figcaption></figure>';
+    });
+    let legal='';
+    if(r.document || r.clause){
+      const sums=Array.isArray(r.clause_summaries)?r.clause_summaries:[];
+      legal='<div class="rule"><div class="rt">Нормативное основание: '+esc(r.clause)+(r.document_short?' · '+esc(r.document_short):'')+'</div>'
+        +'<div class="doc">'+esc(r.document)+'</div>'
+        +(sums.length?'<div class="lbl">Содержание пункта (кратко, не дословная цитата):</div><ul>'+sums.map(s=>'<li><b>'+esc(s.clause)+'</b> — '+esc(s.summary)+'</li>').join('')+'</ul>':'')
+        +(r.quote?'<div class="lbl">Текст пункта:</div><blockquote style="margin:4px 0 0;padding-left:10px;border-left:3px solid var(--line-2)">'+esc(r.quote)+'</blockquote>':'')
+        +(r.note?'<div class="caveat"><span aria-hidden="true">!</span><span>'+esc(r.note)+'</span></div>':'')
+        +(r.url?'<div style="margin-top:8px"><a href="'+esc(/^https:\/\//.test(r.url)?r.url:'#')+'" target="_blank" rel="noopener noreferrer">Открыть акт на adilet.zan.kz</a> <span class="meta">(сверьте пункт по первоисточнику)</span></div>':'')
+        +'</div>';
+    }
+    card.innerHTML =
+      '<div class="eh"><span class="num">'+(i+1)+'</span><h3>'+(v.type_code?'<span class="chip bad">'+esc(v.type_code)+'</span> ':'')+esc(v.type)+'</h3>'
+      +'<button class="btn secondary small" type="button" data-seek="'+num(v.timecode_sec)+'">перейти к моменту</button></div>'
+      +'<div class="tc">начало: <b>'+num(v.timecode_sec).toFixed(2)+' с</b> <span class="mono">('+clock(v.timecode_sec)+')</span>'
+      +(v.end_sec!=null?' · до <span class="mono">'+clock(v.end_sec)+'</span>':'')
+      +(conf!=null?' · <span class="conf" title="оценка уверенности правила для этого события, не вероятность нарушения">уверенность правила <span class="m"><i style="width:'+conf+'%"></i></span> '+conf+'%</span>':'')+'</div>'
+      +'<p class="desc">'+esc(v.description)+'</p>'
+      +(fr?'<div class="frames">'+fr+'</div>':'<div class="meta" style="margin-top:8px">кадры не приложены</div>')
+      +legal;
+    return card;
+  }
+
+  function renderTech(j){
+    const m=j.meta||{}, sc=m.scene||{};
+    const rows=[];
+    const add=(k,v)=>{ if(v!=null && v!=='') rows.push('<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>'); };
+    add('job_id', j.job_id);
+    add('Версия пайплайна', m.pipeline_version);
+    add('Разрешение · fps · кадров', [m.resolution, m.fps, m.frames].filter(x=>x!=null).join(' · '));
+    add('Время пайплайна, с', m.pipeline_time_sec);
+    add('Слой восприятия', m.perception===false?'недоступен — работали только правила по яркости':(m.perception?'работает':null));
+    add('Ошибка восприятия', m.perception_error);
+    if(sc.notes && sc.notes.length) add('Заметки по сцене', sc.notes.join('; '));
+    if(m.rules_checked) add('Проверено правил', m.rules_checked.length+' ('+m.rules_checked.map(x=>(String(x).match(/_t(\d+)_/)||[,'?'])[1]).map(x=>'T'+x).join(', ')+')');
+    $('techList').innerHTML=rows.join('');
+    $('tech').classList.toggle('hidden', !rows.length);
+  }
+
+  /* ---------- плеер ---------- */
+  function setupPlayer(){
+    const nv=$('novideo');
+    if(videoUrl){
+      $('playerBox').classList.remove('hidden'); nv.classList.add('hidden');
+      if(video.getAttribute('src')!==videoUrl){ video.src=videoUrl; }
+    } else {
+      $('playerBox').classList.add('hidden'); nv.classList.remove('hidden');
+      nv.textContent='Запись не выбрана в этом окне — шкала времени и кадры-иллюстрации доступны, а для просмотра записи выберите тот же видеофайл в форме выше.';
+      video.removeAttribute('src'); video.load();
+    }
+  }
+  video.addEventListener('error', ()=>{
+    if(!video.getAttribute('src')) return;
+    $('playerBox').classList.add('hidden'); const nv=$('novideo'); nv.classList.remove('hidden');
+    nv.textContent='Браузер не может воспроизвести этот файл (кодек записи). Анализ выполнен на сервере — ориентируйтесь на кадры-иллюстрации и шкалу времени.';
+  });
+  function seek(t){
+    t=Math.max(0,num(t));
+    if(videoUrl && !$('playerBox').classList.contains('hidden')){
+      try{ video.currentTime=t; }catch(e){}
+      video.pause();
+      const box=$('stageCard').getBoundingClientRect();
+      if(box.top<0 || box.top>window.innerHeight*0.6) $('stageCard').scrollIntoView({behavior:'smooth',block:'start'});
+    } else {
+      const ev=nearestEvent(t); if(ev) $('ev'+ev.i).scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    updateNow(t);
+  }
+  function nearestEvent(t){ let best=null; evList.forEach(e=>{ if(!best || Math.abs(e.t-t)<Math.abs(best.t-t)) best=e; }); return best; }
+  function bindSeekLinks(root){
+    root.querySelectorAll('[data-seek]').forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); seek(b.dataset.seek); });
+    root.querySelectorAll('[data-zoom]').forEach(b=>b.onclick=()=>{ const p=b.dataset.zoom.split(':'); openZoom(+p[0],+p[1]); });
+  }
+  let raf=0;
+  function onTime(){ updateNow(video.currentTime); }
+  video.addEventListener('timeupdate', onTime);
+  video.addEventListener('seeked', onTime);
+  video.addEventListener('play', ()=>{ const loop=()=>{ onTime(); if(!video.paused && !video.ended) raf=requestAnimationFrame(loop); }; cancelAnimationFrame(raf); raf=requestAnimationFrame(loop); });
+
+  /* ---------- шкала времени и дорожки состояний ---------- */
+  function inAny(list,t){ if(!list) return null; for(const s of list){ if(t>=s[0]-0.05 && t<s[1]) return s; } return null; }
+  const LANES=[
+    {key:'cashier', label:'Кассир', anchor:null, segs(L){ return [].concat((L.cashier||[]).map(s=>[s,'s-cashier','кассир в кассе']), (L.at_desk||[]).map(s=>[s,'s-desk','кассир у стола'])); }},
+    {key:'visitors', label:'Посетители', anchor:null, segs(L){ return (L.visitors||[]).map(s=>[s,'s-vis n'+Math.min(2,s[2]||1),'посетителей: '+(s[2]||1), (s[2]>=2?'2+':'1')]); }},
+    {key:'safe', label:'Сейф открыт', anchor:'safe', missing:'сейф не обнаружен в кадре', segs(L){ return [].concat((L.safe_unknown||[]).map(s=>[s,'unk full','сейф: нет данных (перекрыт/не виден/темно)']), (L.safe_open||[]).map(s=>[s,'s-safe','сейф открыт'])); }},
+    {key:'desk', label:'Предметы на столе', anchor:'desk', missing:'стол не обнаружен в кадре', segs(L){ return [].concat((L.desk_unknown||[]).map(s=>[s,'unk full','стол: нет данных (темно)']), (L.desk_items||[]).map(s=>[s,'s-items','на столе есть предметы / ценности']), (L.bag||[]).map(s=>[s,'s-bag','инкассаторская сумка'])); }},
+    {key:'screen', label:'Экран АРМ', anchor:'laptop', missing:'ноутбук не обнаружен в кадре', segs(L){ return [].concat((L.screen_unknown||[]).map(s=>[s,'unk full','экран: нет данных (не виден/темно)']), (L.screen_locked||[]).map(s=>[s,'s-locked','экран заблокирован (заставка)']), (L.screen_active||[]).map(s=>[s,'s-active','экран активен'])); }},
+    {key:'lights', label:'Свет выключен', anchor:null, segs(L){ return (L.lights_off||[]).map(s=>[s,'s-dark','освещение выключено']); }},
+  ];
+  function niceStep(d){ const target=d/7; const steps=[1,2,5,10,15,20,30,60,120,300]; for(const s of steps) if(s>=target) return s; return 600; }
+  function pct(t){ return (tlDur>0? Math.max(0,Math.min(100,t/tlDur*100)) : 0).toFixed(3)+'%'; }
+  function renderTimeline(m, viol, ctx){
+    const tl=m.timeline||null; tlData=tl;
+    const maxEv=Math.max(0,...viol.map(v=>num(v.end_sec!=null?v.end_sec:v.timecode_sec)), ...ctx.map(e=>num(e.end_sec!=null?e.end_sec:e.timecode_sec)));
+    tlDur = num((tl&&tl.duration) || m.duration_sec) || (maxEv+5);
+    const labels=$('tlLabels'), tracks=$('tlTracks');
+    let lh='<div class="ax"></div><div class="ev">События</div>';
+    let th='<div class="tl-axis">';
+    const st=niceStep(tlDur);
+    for(let t=0; t<=tlDur+1e-6; t+=st) th+='<span class="tick" style="left:'+pct(t)+'">'+(tlDur>=120?clock(t).replace(/\.\d$/,''):Math.round(t)+'с')+'</span>';
+    th+='</div><div class="tl-row ev">';
+    ctx.forEach(e=>{ const a=num(e.timecode_sec), b=e.end_sec!=null?num(e.end_sec):a+0.5;
+      th+='<div class="seg s-ctx" style="left:'+pct(a)+';width:calc('+pct(b)+' - '+pct(a)+')" title="'+esc(e.type_code+' · '+e.name+' · '+clock(a)+'–'+clock(b))+'"></div>'; });
+    viol.forEach((v,i)=>{ if(v.end_sec!=null){ const a=num(v.timecode_sec), b=num(v.end_sec);
+      th+='<div class="seg s-evband" style="left:'+pct(a)+';width:calc('+pct(b)+' - '+pct(a)+')"></div>'; } });
+    // близкие по времени события (≤ 2 % шкалы) — один маркер с перечнем кодов, чтобы метки не перекрывались
+    const groups=[];
+    viol.forEach((v,i)=>{ const t=num(v.timecode_sec), g=groups[groups.length-1];
+      if(g && Math.abs(t-g.t)<=Math.max(0.5,0.02*tlDur)) g.items.push(i); else groups.push({t:t, items:[i]}); });
+    groups.forEach(g=>{ const i0=g.items[0];
+      const title=g.items.map(i=>(viol[i].type_code||'')+' · '+(viol[i].type||'')+' · '+clock(viol[i].timecode_sec)).join('\n');
+      const label=g.items.map(i=>viol[i].type_code||String(i+1)).join('·');
+      th+='<button type="button" class="mk" data-ev="'+i0+'" data-evs="'+g.items.join(',')+'" style="left:'+pct(g.t)+'" title="'+esc(title)+'">'+esc(label)+'</button>'; });
+    th+='</div>';
+    if(tl && tl.lanes){
+      const L=tl.lanes, A=tl.anchors||{};
+      LANES.forEach(ln=>{
+        lh+='<div>'+esc(ln.label)+'</div>';
+        th+='<div class="tl-row" data-lane="'+ln.key+'">';
+        if(ln.anchor && A[ln.anchor]===false){ th+='<div class="seg unk full" style="left:0;width:100%"></div><span class="note">'+esc(ln.missing)+'</span>'; }
+        else ln.segs(L).forEach(x=>{ const s=x[0], a=num(s[0]), b=num(s[1]);
+          th+='<div class="seg '+x[1]+'" style="left:'+pct(a)+';width:calc('+pct(b)+' - '+pct(a)+')" title="'+esc(x[2]+': '+clock(a)+' – '+clock(b))+'">'+(x[3]?'<span class="n">'+esc(x[3])+'</span>':'')+'</div>'; });
+        th+='</div>';
+      });
+      (tl.unreliable||[]).forEach(s=>{ th+='<div class="unrel" style="left:'+pct(s[0])+';width:calc('+pct(s[1])+' - '+pct(s[0])+')" title="темно: состояния сцены по изображению не определяются"></div>'; });
+      $('legend').innerHTML=[
+        ['var(--l-cashier)','кассир у стола'],['var(--l-cashier-soft)','кассир в кассе'],['var(--l-visitor)','посетители (число)'],['var(--l-safe)','сейф открыт'],
+        ['var(--l-desk)','предметы на столе'],['var(--l-bag)','сумка'],['var(--l-screen)','экран активен'],['var(--l-locked)','экран заблокирован'],['var(--l-dark)','свет выключен'],
+        ['repeating-linear-gradient(135deg,var(--hatch) 0 3px,transparent 3px 7px)','нет данных'],['var(--bad)','событие-нарушение'],['color-mix(in srgb,var(--warn) 30%,transparent)','контекст']
+      ].map(x=>'<span><i style="background:'+x[0]+'"></i>'+esc(x[1])+'</span>').join('');
+      $('tlNote').textContent='Дорожки — состояния, которые распознал слой восприятия (детектор людей и предметов, анализ зон стола, сейфа и экрана), с теми же порогами, что используют правила. Пустая дорожка означает «признак не обнаружен», штриховка — «нет данных».';
+    } else {
+      $('legend').innerHTML='';
+      $('tlNote').textContent='Дорожки состояний сцены недоступны для этого результата — показаны только события.';
+    }
+    viol.forEach(v=>{ th+='<div class="vline" style="left:'+pct(v.timecode_sec)+'"></div>'; });
+    th+='<div class="hover hidden" id="tlHover"><span></span></div><div class="playhead" id="playhead" style="left:0%"></div>';
+    labels.innerHTML=lh; tracks.innerHTML=th;
+    tracks.querySelectorAll('.mk').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const v=viol[+b.dataset.ev]; seek(v.timecode_sec); const c=$('ev'+b.dataset.ev); if(c && !videoUrl) c.scrollIntoView({behavior:'smooth',block:'center'}); });
+  }
+  const tracksEl=$('tlTracks');
+  function tAt(e){ const r=tracksEl.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left; return Math.max(0,Math.min(tlDur, x/Math.max(1,r.width)*tlDur)); }
+  tracksEl.addEventListener('click', e=>{ if(tlDur>0) seek(tAt(e)); });
+  tracksEl.addEventListener('mousemove', e=>{ const h=$('tlHover'); if(!h||!tlDur) return; const t=tAt(e); h.classList.remove('hidden'); h.style.left=pct(t); h.firstChild.textContent=clock(t); });
+  tracksEl.addEventListener('mouseleave', ()=>{ const h=$('tlHover'); if(h) h.classList.add('hidden'); });
+
+  function updateNow(t){
+    t=num(t); $('clock').textContent=clock(t);
+    const ph=$('playhead'); if(ph) ph.style.left=pct(t);
+    // активное событие: от начала до конца (или 3 с после начала)
+    const curEvs=evList.filter(e=>{ const end=e.end!=null?Math.max(e.end,e.t+1):e.t+3; return t>=e.t-0.25 && t<=end; });
+    document.querySelectorAll('.event.cur,.mk.cur').forEach(x=>x.classList.remove('cur'));
+    curEvs.forEach(ce=>{ const c=$('ev'+ce.i); if(c) c.classList.add('cur');
+      document.querySelectorAll('.mk').forEach(mk=>{ if((mk.dataset.evs||'').split(',').indexOf(String(ce.i))>=0) mk.classList.add('cur'); }); });
+    const evChips=curEvs.map(ce=>'<span class="st alert">событие: <b>'+esc(ce.code+' '+ce.name)+'</b></span>').join('');
+    const now=$('now'), tl=tlData;
+    if(!tl || !tl.lanes){ now.innerHTML = evChips; return; }
+    const L=tl.lanes, A=tl.anchors||{}, dark=!!inAny(L.lights_off,t);
+    const items=[];
+    const cash = inAny(L.at_desk,t)?'у стола':(inAny(L.cashier,t)?'в кассе, не у стола':(dark?'нет данных':'не виден'));
+    items.push(['Кассир',cash, cash!=='у стола' && cash!=='нет данных']);
+    const vis=inAny(L.visitors,t); items.push(['Посетители', vis?String(vis[2]):(dark?'нет данных':'0'), vis && vis[2]>=2]);
+    items.push(['Сейф', A.safe===false?'не обнаружен':(inAny(L.safe_open,t)?'открыт':(inAny(L.safe_unknown,t)?'нет данных':'признак открытия не обнаружен')), !!inAny(L.safe_open,t)]);
+    items.push(['Стол', A.desk===false?'не обнаружен':(inAny(L.desk_unknown,t)?'нет данных':(inAny(L.bag,t)?'сумка':(inAny(L.desk_items,t)?'есть предметы':'пусто'))), !!inAny(L.desk_items,t)]);
+    items.push(['Экран', A.laptop===false?'не обнаружен':(inAny(L.screen_active,t)?'активен':(inAny(L.screen_locked,t)?'заблокирован':(inAny(L.screen_unknown,t)?'нет данных':'не активен'))), !!inAny(L.screen_active,t)]);
+    items.push(['Свет', dark?'выключен':'включён', dark]);
+    now.innerHTML = items.map(x=>'<span class="st'+(x[2]?' on':'')+'">'+esc(x[0])+': <b>'+esc(x[1])+'</b></span>').join('')
+      + evChips;
+  }
+
+  /* ---------- увеличение кадров ---------- */
+  const zoom=$('zoom');
+  function openZoom(evIdx, k){
+    const v=(lastJson.violations||[])[evIdx]; if(!v) return;
+    zoomList=(v.evidence_frames||[]).filter(f=>f && f.image_base64).map(f=>({src:'data:image/jpeg;base64,'+f.image_base64, t:num(f.timestamp_sec), ev:v}));
+    zoomIdx=Math.max(0,Math.min(k,zoomList.length-1)); showZoom();
+    if(!zoom.open) zoom.showModal();
+  }
+  function showZoom(){
+    const z=zoomList[zoomIdx]; if(!z) return;
+    $('zoomimg').src=z.src; $('zoomimg').alt='кадр-иллюстрация '+clock(z.t);
+    $('zcap').textContent=(z.ev.type_code?z.ev.type_code+' · ':'')+(z.ev.type||'')+' · кадр '+(zoomIdx+1)+' из '+zoomList.length+' · '+clock(z.t);
+    $('zprev').disabled=zoomIdx<=0; $('znext').disabled=zoomIdx>=zoomList.length-1;
+  }
+  $('zprev').onclick=()=>{ if(zoomIdx>0){ zoomIdx--; showZoom(); } };
+  $('znext').onclick=()=>{ if(zoomIdx<zoomList.length-1){ zoomIdx++; showZoom(); } };
+  $('zclose').onclick=()=>zoom.close();
+  $('zseek').onclick=()=>{ const z=zoomList[zoomIdx]; zoom.close(); if(z) seek(z.t); };
+  zoom.addEventListener('click', e=>{ if(e.target===zoom) zoom.close(); });
+  zoom.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft') $('zprev').click(); if(e.key==='ArrowRight') $('znext').click(); });
+
+  /* ---------- выгрузка ---------- */
+  function download(obj, name){
+    const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  }
+  $('dl').onclick=()=>{ if(lastJson) download(lastJson, 'result_'+(lastJson.job_id||'local')+'.json'); };
+  $('dlLite').onclick=()=>{
     if(!lastJson) return;
-    const blob=new Blob([JSON.stringify(lastJson,null,2)],{type:'application/json'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='result_'+lastJson.job_id+'.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    const lite=JSON.parse(JSON.stringify(lastJson));
+    (lite.violations||[]).forEach(v=>(v.evidence_frames||[]).forEach(f=>{ f.image_base64=''; }));
+    download(lite, 'result_'+(lite.job_id||'local')+'_no_frames.json');
   };
+  $('print').onclick=()=>window.print();
+
+  // для автоматических проверок интерфейса и демонстрации: отрисовать готовый ответ API
+  window.cashDeskUI={render:render, seek:seek};
 })();
 </script>
 </body>
