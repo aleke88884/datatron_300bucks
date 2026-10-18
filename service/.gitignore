@@ -9,3 +9,5 @@ models/vlm/
 models/vlm_gguf/
 # кеш признаков, записанный для загрузок по job_id (e2e/живой сервис) — мусор, не коммитим
 results/*/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
+# cloudflared, скачанный deploy/start_public.sh
+.bin/

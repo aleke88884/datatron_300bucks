@@ -1,0 +1,113 @@
+{
+  "base": "http://127.0.0.1:8034",
+  "started": "2026-10-18 02:42:52",
+  "health": {
+    "status": "ok",
+    "time": 1792291372.6000862,
+    "worker_alive": true,
+    "workers": {
+      "configured": 1,
+      "alive": 1
+    },
+    "queue": 0,
+    "jobs": {
+      "processing": 0,
+      "done": 0,
+      "failed": 0
+    },
+    "ui_open": true,
+    "job_timeout_sec": 270
+  },
+  "jobs": [
+    {
+      "video": "Х-13.mov",
+      "post_status": 200,
+      "post_sec": 0.08,
+      "job_id": "ee8dee0d",
+      "status": "done",
+      "total_sec": 157.9,
+      "verdict": "violation",
+      "types": [
+        "T1"
+      ],
+      "timecodes": [
+        57.76
+      ],
+      "degraded": false,
+      "degraded_reason": null,
+      "analysis_complete": true,
+      "queue_wait_sec": 51.01,
+      "pipeline_time_sec": 106.56,
+      "stages": [
+        "queued",
+        "decoding",
+        "detection",
+        "states",
+        "cash",
+        "door",
+        "evidence"
+      ],
+      "error": null,
+      "expected": "violation",
+      "problems": []
+    },
+    {
+      "video": "Х-11.mov",
+      "post_status": 200,
+      "post_sec": 0.06,
+      "job_id": "6139b351",
+      "status": "done",
+      "total_sec": 51.5,
+      "verdict": "violation",
+      "types": [
+        "T3"
+      ],
+      "timecodes": [
+        16.06
+      ],
+      "degraded": false,
+      "degraded_reason": null,
+      "analysis_complete": true,
+      "queue_wait_sec": 21.65,
+      "pipeline_time_sec": 29.39,
+      "stages": [
+        "queued",
+        "decoding",
+        "detection",
+        "states",
+        "cash",
+        "door",
+        "rules",
+        "evidence"
+      ],
+      "error": null,
+      "expected": "violation",
+      "problems": []
+    },
+    {
+      "video": "Х-3.mov",
+      "post_status": 200,
+      "post_sec": 0.06,
+      "job_id": "b78aefd7",
+      "status": "done",
+      "total_sec": 21.8,
+      "verdict": "no_violation",
+      "types": [],
+      "timecodes": [],
+      "degraded": false,
+      "degraded_reason": null,
+      "analysis_complete": true,
+      "queue_wait_sec": 0.01,
+      "pipeline_time_sec": 21.64,
+      "stages": [
+        "detection",
+        "states",
+        "cash",
+        "door"
+      ],
+      "error": null,
+      "expected": "no_violation",
+      "problems": []
+    }
+  ]
+}

@@ -12,7 +12,7 @@ MODE="${2:-cloudflare}"
 SERVICE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KEY="$(grep -E '^API_KEY=' "$SERVICE_DIR/.env" 2>/dev/null | head -1 | cut -d= -f2- | tr -d '[:space:]' || true)"
 
-if ! curl -fsS --max-time 5 "http://localhost:$PORT/health" >/dev/null 2>&1; then
+if ! curl -fsS --max-time 5 "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
   echo "сервис не отвечает на http://localhost:$PORT/health — сначала запустите его (uvicorn / docker compose up -d)" >&2
   exit 1
 fi
@@ -35,12 +35,13 @@ case "$MODE" in
   cloudflare)
     command -v cloudflared >/dev/null || { echo "cloudflared не установлен: brew install cloudflared (см. deploy/cloudflared.md)" >&2; exit 1; }
     LOG="$(mktemp -t cloudflared.XXXXXX.log)"
-    cloudflared tunnel --url "http://localhost:$PORT" --no-autoupdate >"$LOG" 2>&1 &
+    cloudflared tunnel --url "http://127.0.0.1:$PORT" --no-autoupdate >"$LOG" 2>&1 &
     CF_PID=$!
     trap 'kill $CF_PID 2>/dev/null || true' EXIT INT TERM
     URL=""
     for i in $(seq 1 60); do
-      URL="$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$LOG" | head -1 || true)"
+      # адрес туннеля — вида https://слово-слово-слово.trycloudflare.com; служебный https://api.trycloudflare.com (в тексте ошибок) не подходит
+      URL="$(grep -oE 'https://[a-z0-9]+(-[a-z0-9]+)+\.trycloudflare\.com' "$LOG" | head -1 || true)"
       [ -n "$URL" ] && break
       kill -0 $CF_PID 2>/dev/null || { echo "cloudflared завершился:"; cat "$LOG"; exit 1; }
       sleep 1

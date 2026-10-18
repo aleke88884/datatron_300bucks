@@ -9,3 +9,4 @@ models/*.part
 models/vlm
 models/vlm_gguf
 models/*.gguf
+.bin

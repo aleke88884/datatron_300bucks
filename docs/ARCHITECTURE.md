@@ -159,7 +159,7 @@ door 15/0 (Х-32) → items 16/0 (Х-40) → hands 17/0 (Х-34).
 | Поза рук (обязательно для T6) | RTMPose-m body7, ONNX (OpenMMLab MMPose, 256×192, 17 точек) | код и веса Apache-2.0; **веса обучены на открытых датасетах поз (COCO, AIC, CrowdPose, MPII, Halpe и др.) со своими условиями — требуют отдельной юридической проверки** | `pipeline/pose.py`; `models/rtmpose_m_body7.onnx`, `scripts/get_models.py` (sha256); `POSE=0` выключает слой |
 | Инференс | ONNX Runtime; провайдер из `ORT_PROVIDERS` | MIT | `onnxruntime` в `requirements.txt`; `onnxruntime-gpu` в GPU-образе |
 | Декодирование видео | OpenCV (`opencv-python-headless`, внутри свой FFmpeg) | Apache-2.0 (OpenCV), LGPL (FFmpeg в колесе) | `pipeline/video.py` |
-| Резервный FFmpeg | `imageio-ffmpeg` | обёртка BSD-2; **вшитый бинарник FFmpeg собран с `--enable-gpl` (x264/x265) — GPL** | `requirements.txt`; код его не вызывает (подстраховка, см. `LIMITATIONS.md` §8) |
+| Декодер видео | FFmpeg, вшитый в `opencv-python-headless` | LGPL-2.1 (FFmpeg), Apache-2.0 (OpenCV) | `imageio-ffmpeg` (GPL-бинарник) убран 18.10: все 42 ролика декодируются без него |
 | Сервис | FastAPI, Uvicorn, Pydantic, Pillow, NumPy | MIT / BSD / HPND | `requirements.txt` |
 | Треки, роли, зоны, камера, состояния, купюры «под цвет стола», дверь | собственные алгоритмы без обучения и без весов | — | `perception.py`, `scene.py`, `camera.py`, `states.py`, `cashdetect.py`, `door.py`, `timing.py` |
 | VLM: описания событий (опционально, `VLM_ENABLED=1`) | Qwen2.5-VL-7B-Instruct | Apache-2.0 | `pipeline/vlm.py` (transformers, bf16 / 4-bit); `scripts/get_vlm.py` → `models/vlm/` (~16 ГБ); GPU-образ `--build-arg WITH_VLM=1` |

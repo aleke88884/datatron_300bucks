@@ -71,6 +71,8 @@ def warmup() -> None:
 
 
 def _noop(stage: str, percent: Optional[int] = None) -> None:
+    """progress(stage, percent): percent — доля ВНУТРИ этапа (0 — этап начался, 100 — закончен); общий процент
+    полосы UI считает сам по отрезкам этапов (static/index.html, STAGE_RANGE)."""
     return None
 
 
@@ -100,10 +102,10 @@ def _perceive(path: str, info, progress):
             if (states.get("scene") or {}).get("version") != 2:
                 states = None
     if perc is None:
-        progress("detection", 20)
+        progress("detection", 0)
         perc = cached_perception(path, info, progress=progress)
     if states is None:
-        progress("states", 45)
+        progress("states", 0)
         states = extract_states(path, info, perc, progress=progress)
         if cache is not None and not (states.get("scene") or {}).get("degrade"):
             (cache / "states").mkdir(parents=True, exist_ok=True)
@@ -116,7 +118,7 @@ def _cash_features(path: str, info, perc, progress) -> Optional[dict]:
     try:
         from .cashdetect import load_or_compute
 
-        progress("cash", 55)
+        progress("cash", 0)
         return load_or_compute(path, info, perc)
     except Exception as exc:  # noqa: BLE001
         log.warning("cash features failed: %s", exc)
@@ -137,7 +139,7 @@ def _attach_pose(ctx: VideoContext, path: str, info, perc, progress) -> None:
     try:
         from .pose import load_or_compute
 
-        progress("pose", 55)
+        progress("pose", 0)
         ctx.cache["pose"] = load_or_compute(path, info, perc, _features_cache_dir(), progress=progress)
     except Exception as exc:  # noqa: BLE001 — поза необязательна: без неё работают остальные правила
         log.warning("pose layer skipped: %s", exc)
@@ -273,7 +275,7 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
     t0 = time.time()
     bud = _budget.current()
 
-    progress("decoding", 5)
+    progress("decoding", 0)
     bt, bv, info = brightness_series(path, target_fps=10.0)
     ctx = VideoContext(path=path, info=info, bright_t=bt, bright_v=bv, progress=progress)
     log.info("decoded %s: %.1fs, %.2f fps, %dx%d", path, info.duration_sec, info.fps, info.width, info.height)
@@ -306,7 +308,7 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
         try:
             from .door import door_features, door_summary
 
-            progress("door", 55)
+            progress("door", 0)
             ctx.cache["door"] = door_features(path, info, perc, progress=progress)
             ctx.cache["scene_summary"]["door"] = door_summary(ctx.cache["door"])
         except Exception as exc:  # noqa: BLE001 — без признаков двери молчит только T13
@@ -325,7 +327,7 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
             log.exception("perception layer failed, falling back to brightness-only rules: %s", exc)
         ctx.cache["perception_error"] = f"{type(exc).__name__}: {exc}"
 
-    progress("rules", 60)
+    progress("rules", 0)
     # Фаза 1 — контекстные правила (T9): результат кладём в ctx.context_events ДО запуска остальных правил,
     # чтобы T1–T3 могли читать контекст (уход в темноте). Фаза 2 — правила-нарушения.
     context_dets = [d for d in DETECTORS if detector_code(d) in CONTEXT_ONLY_TYPES]
@@ -349,7 +351,7 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
     except Exception as exc:  # noqa: BLE001
         log.warning("safety net skipped: %s", exc)
 
-    progress("evidence", 80)
+    progress("evidence", 0)
     prefetch_evidence_frames(ctx, events)
     violations = [event_to_violation(ctx, ev) for ev in events]
     ctx.cache.pop("evidence_frames", None)
@@ -363,7 +365,7 @@ def _analyze_video(path: str, progress: Optional[ProgressFn], partial: Optional[
         except Exception as exc:  # noqa: BLE001
             log.warning("partial result callback failed: %s", exc)
 
-    progress("describing", 95)
+    progress("describing", 0)
     # VLM-слой: уточнение описаний по кадрам события (ПЛАН 5.1, п. 4); без модели остаются шаблоны из правил
     if violations and bud is not None and bud.left_hard() < _budget.MIN_VLM_LEFT_SEC:
         bud.note("VLM-описания пропущены (мало времени)")

@@ -25,7 +25,7 @@ RUN rm -f ./models/get_models.py && python scripts/get_models.py
 
 # Проверка на этапе сборки: веса загружаются, детектор отрабатывает на пустом кадре, декодер видео доступен.
 # Если что-то из этого сломано, образ не соберётся — а не упадёт у жюри на первом видео.
-RUN python -c "import numpy as np, cv2, imageio_ffmpeg; \
+RUN python -c "import numpy as np, cv2; \
 from pipeline.detect import get_detector; \
 d = get_detector(); d(np.zeros((848, 464, 3), np.uint8)); \
 print('build check ok: detector + opencv', cv2.__version__)"

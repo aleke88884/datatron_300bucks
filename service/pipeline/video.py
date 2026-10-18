@@ -1,4 +1,4 @@
-"""Декодирование видео через OpenCV (бэкенд FFMPEG из imageio-ffmpeg, системный ffmpeg не нужен)."""
+"""Декодирование видео через OpenCV (FFmpeg, вшитый в колесо opencv-python-headless; системный ffmpeg не нужен)."""
 from __future__ import annotations
 
 import base64
@@ -8,9 +8,9 @@ from typing import Iterator, Optional
 
 import numpy as np
 
-# Подкладываем ffmpeg из imageio-ffmpeg в PATH до импорта cv2 — на машинах со сломанным
-# системным ffmpeg это гарантирует рабочий бэкенд. opencv-python-headless содержит собственный
-# ffmpeg, так что это лишь страховка.
+# imageio-ffmpeg убран из зависимостей 18.10 (его бинарник собран с --enable-gpl, а cv2 декодирует своим вшитым FFmpeg:
+# все 42 ролика датасета открываются без него и без системного ffmpeg). Если пакет всё же установлен — кладём его ffmpeg
+# в PATH как раньше; на декодирование через cv2 это не влияет.
 try:  # pragma: no cover
     import imageio_ffmpeg
 

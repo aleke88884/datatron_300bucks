@@ -1,0 +1,119 @@
+{
+  "base": "http://127.0.0.1:8033",
+  "started": "2026-10-18 02:41:19",
+  "health": {
+    "status": "ok",
+    "time": 1792291279.3669164,
+    "worker_alive": true,
+    "workers": {
+      "configured": 1,
+      "alive": 1
+    },
+    "queue": 0,
+    "jobs": {
+      "processing": 0,
+      "done": 0,
+      "failed": 0
+    },
+    "ui_open": true,
+    "job_timeout_sec": 100
+  },
+  "jobs": [
+    {
+      "video": "Х-47.mov",
+      "post_status": 200,
+      "post_sec": 0.12,
+      "job_id": "76d232b5",
+      "status": "done",
+      "total_sec": 83.0,
+      "verdict": "violation",
+      "types": [
+        "T7"
+      ],
+      "timecodes": [
+        55.1
+      ],
+      "degraded": true,
+      "degraded_reason": "очередь из нескольких видео: анализ ускорен (≈54% полного времени), чтобы все задания уложились в 5 минут; восприятие: шаг выборки увеличен до ×2 (прогноз 65 с при остатке 20 с); восприятие: шаг выборки увеличен до ×3 (прогноз 33 с при остатке 19 с); поза рук (T6) пропущена (мало времени); кадры-доказательства: по одному на нарушение (мало времени); VLM-описания пропущены (мало времени)",
+      "analysis_complete": true,
+      "queue_wait_sec": 47.99,
+      "pipeline_time_sec": 34.93,
+      "stages": [
+        "queued",
+        "decoding",
+        "detection",
+        "states",
+        "cash",
+        "door",
+        "evidence"
+      ],
+      "error": null,
+      "expected": "violation",
+      "problems": []
+    },
+    {
+      "video": "Х-13.mov",
+      "post_status": 200,
+      "post_sec": 0.11,
+      "job_id": "815e37b0",
+      "status": "done",
+      "total_sec": 48.3,
+      "verdict": "violation",
+      "types": [
+        "T1"
+      ],
+      "timecodes": [
+        63.6
+      ],
+      "degraded": true,
+      "degraded_reason": "очередь из нескольких видео: анализ ускорен (≈47% полного времени), чтобы все задания уложились в 5 минут; восприятие: шаг выборки увеличен до ×2 (прогноз 52 с при остатке 30 с); восприятие: шаг выборки увеличен до ×3 (прогноз 20 с при остатке 18 с); поза рук (T6) пропущена (мало времени); VLM-описания пропущены (мало времени)",
+      "analysis_complete": true,
+      "queue_wait_sec": 13.59,
+      "pipeline_time_sec": 34.42,
+      "stages": [
+        "queued",
+        "decoding",
+        "detection",
+        "states",
+        "cash",
+        "door",
+        "evidence"
+      ],
+      "error": null,
+      "expected": "violation",
+      "problems": []
+    },
+    {
+      "video": "Х-11.mov",
+      "post_status": 200,
+      "post_sec": 0.06,
+      "job_id": "3acc0938",
+      "status": "done",
+      "total_sec": 14.1,
+      "verdict": "violation",
+      "types": [
+        "T3"
+      ],
+      "timecodes": [
+        16.06
+      ],
+      "degraded": true,
+      "degraded_reason": "очередь из нескольких видео: анализ ускорен (≈39% полного времени), чтобы все задания уложились в 5 минут; восприятие: шаг выборки увеличен до ×2 (прогноз 20 с при остатке 10 с); восприятие: шаг выборки увеличен до ×3 (прогноз 10 с при остатке 8 с); поза рук (T6) пропущена (мало времени)",
+      "analysis_complete": true,
+      "queue_wait_sec": 0.01,
+      "pipeline_time_sec": 13.61,
+      "stages": [
+        "decoding",
+        "detection",
+        "states",
+        "cash",
+        "door",
+        "rules",
+        "evidence"
+      ],
+      "error": null,
+      "expected": "violation",
+      "problems": []
+    }
+  ]
+}

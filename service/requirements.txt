@@ -5,6 +5,5 @@ python-dotenv==1.1.0
 pydantic==2.11.4
 numpy>=1.26,<3
 opencv-python-headless==4.11.0.86
-imageio-ffmpeg==0.6.0
 pillow==11.2.1
 onnxruntime>=1.19,<2

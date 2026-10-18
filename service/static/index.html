@@ -582,10 +582,10 @@
     let legal='';
     if(r.document || r.clause){
       const sums=Array.isArray(r.clause_summaries)?r.clause_summaries:[];
-      legal='<div class="rule"><div class="rt">Нормативное основание: '+esc(r.clause)+(r.document_short?' · '+esc(r.document_short):'')+'</div>'
+      legal='<div class="rule"><div class="rt">Пункт для сверки: '+esc(r.clause)+(r.document_short?' · '+esc(r.document_short):'')+'</div>'
         +'<div class="doc">'+esc(r.document)+'</div>'
         +(sums.length?'<div class="lbl">Содержание пункта (кратко, не дословная цитата):</div><ul>'+sums.map(s=>'<li><b>'+esc(s.clause)+'</b> — '+esc(s.summary)+'</li>').join('')+'</ul>':'')
-        +(r.quote?'<div class="lbl">Текст пункта:</div><blockquote style="margin:4px 0 0;padding-left:10px;border-left:3px solid var(--line-2)">'+esc(r.quote)+'</blockquote>':'')
+        +(r.quote?'<div class="lbl">Выдержка из текста пункта (дословно):</div><blockquote style="margin:4px 0 0;padding-left:10px;border-left:3px solid var(--line-2)">'+esc(r.quote)+'</blockquote>':'')
         +(r.note?'<div class="caveat"><span aria-hidden="true">!</span><span>'+esc(r.note)+'</span></div>':'')
         +(r.url?'<div style="margin-top:8px"><a href="'+esc(/^https:\/\//.test(r.url)?r.url:'#')+'" target="_blank" rel="noopener noreferrer">Открыть акт на adilet.zan.kz</a> <span class="meta">(сверьте пункт по первоисточнику)</span></div>':'')
         +'</div>';
@@ -709,7 +709,7 @@
       $('legend').innerHTML=[
         ['var(--l-cashier)','кассир у стола'],['var(--l-cashier-soft)','кассир в кассе'],['var(--l-visitor)','посетители (число)'],['var(--l-safe)','сейф открыт'],
         ['var(--l-desk)','предметы на столе'],['var(--l-bag)','сумка'],['var(--l-screen)','экран активен'],['var(--l-locked)','экран заблокирован'],['var(--l-dark)','свет выключен'],
-        ['repeating-linear-gradient(135deg,var(--hatch) 0 3px,transparent 3px 7px)','нет данных'],['var(--bad)','событие-нарушение'],['color-mix(in srgb,var(--warn) 30%,transparent)','контекст']
+        ['repeating-linear-gradient(135deg,var(--hatch) 0 3px,transparent 3px 7px)','нет данных'],['var(--bad)','признак нарушения'],['color-mix(in srgb,var(--warn) 30%,transparent)','контекст']
       ].map(x=>'<span><i style="background:'+x[0]+'"></i>'+esc(x[1])+'</span>').join('');
       $('tlNote').textContent='Дорожки — состояния, которые распознал слой восприятия (детектор людей и предметов, анализ зон стола, сейфа и экрана), с теми же порогами, что используют правила. Пустая дорожка означает «признак не обнаружен», штриховка — «нет данных».';
     } else {
