@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 SERVICE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +46,16 @@ ALSO = {("pipeline.scene", "DESK_OBJ_MIN"): ["pipeline.rules_scene", "pipeline.t
 
 _VIDEOS: list[Path] = []
 _LABELS: dict = {}
+
+
+# Время в отчётах — по Казахстану (UTC+05:00, единый пояс с 01.03.2024, без летнего времени), с явным поясом в строке:
+# если часы сервера идут в UTC, в JSON не будет времени на 5 часов раньше местного.
+REPORT_TZ = timezone(timedelta(hours=5))
+
+
+def report_time(ts: float | None = None) -> str:
+    """'2026-10-18 08:47:46+05:00' для момента ts (по умолчанию — сейчас)."""
+    return datetime.fromtimestamp(time.time() if ts is None else ts, REPORT_TZ).isoformat(sep=" ", timespec="seconds")
 
 
 def _init(videos: list[str], labels_path: str) -> None:
@@ -138,7 +149,7 @@ def main() -> int:
     print(f"видео: {len(videos)}; вариантов к расчёту: {len(jobs)}; процессов: {a.procs}", flush=True)
 
     def save() -> None:
-        Path(a.out).write_text(json.dumps({"updated": time.strftime("%Y-%m-%d %H:%M:%S"), "runs": done},
+        Path(a.out).write_text(json.dumps({"updated": report_time(), "runs": done},
                                           ensure_ascii=False, indent=1), encoding="utf-8")
 
     if jobs:

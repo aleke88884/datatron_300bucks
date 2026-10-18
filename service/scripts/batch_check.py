@@ -19,6 +19,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -28,6 +29,16 @@ ROOT_DIR = SERVICE_DIR.parent
 VIDEOS_DIR = ROOT_DIR / "open" / "videos"
 LABELS_XLSX = ROOT_DIR / "open" / "open_labels.xlsx"
 TZ_LIMIT_SEC = 300.0
+
+
+# Время в отчётах — по Казахстану (UTC+05:00, единый пояс с 01.03.2024, без летнего времени), с явным поясом в строке:
+# если часы сервера идут в UTC, в JSON не будет времени на 5 часов раньше местного.
+REPORT_TZ = timezone(timedelta(hours=5))
+
+
+def report_time(ts: float | None = None) -> str:
+    """'2026-10-18 08:47:46+05:00' для момента ts (по умолчанию — сейчас)."""
+    return datetime.fromtimestamp(time.time() if ts is None else ts, REPORT_TZ).isoformat(sep=" ", timespec="seconds")
 
 
 def read_key(cli_key: str | None) -> str:
@@ -179,7 +190,7 @@ def main() -> int:
     print(f"\nвсего {round(time.time() - t0, 1)} с; провалов: {fails}")
 
     if a.out:
-        out = {"base": base, "started": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t0)), "health": health, "jobs": recs}
+        out = {"base": base, "started": report_time(t0), "health": health, "jobs": recs}
         Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"записано: {a.out}")
     return 1 if fails else 0
