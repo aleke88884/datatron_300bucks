@@ -166,7 +166,7 @@ def fragile_server(tmp_path_factory) -> Server:
 
 @pytest.fixture(scope="module")
 def pool_server(tmp_path_factory) -> Server:
-    """Подменный пайплайн, 2 воркера, лимит 15 с (мягкий дедлайн 10.5 с): деградация, частичные результаты, параллелизм."""
+    """Подменный пайплайн, 2 воркера, лимит 15 с (мягкий дедлайн 12 с): деградация, частичные результаты, параллелизм."""
     s = start_server(tmp_path_factory.mktemp("pool"), env_overrides={"JOB_TIMEOUT_SEC": "15", "WORKERS": "2"}, fake_pipeline=True)
     yield s
     stop_server(s)

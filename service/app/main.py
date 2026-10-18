@@ -1,6 +1,8 @@
 """FastAPI-приложение: API по разделу 10 ТЗ + статический фронтенд."""
 from __future__ import annotations
 
+import hashlib
+import hmac
 import logging
 import os
 import secrets
@@ -8,7 +10,7 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi import Cookie, Depends, FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from fastapi.security import APIKeyHeader
@@ -22,8 +24,12 @@ from .worker import AnalysisWorker
 logging.basicConfig(level=settings.LOG_LEVEL, format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
 log = logging.getLogger("api")
 
-if not settings.API_KEY:
-    raise RuntimeError("API_KEY не задан. Создайте service/.env (см. .env.example) и укажите API_KEY.")
+_key_problem = settings.api_key_problem()
+if _key_problem:
+    log.critical(_key_problem)
+    raise SystemExit(f"[fortebank-cashdesk] сервис не запущен: {_key_problem}")
+if len(settings.API_KEY) < 16:
+    log.warning("API_KEY короче 16 символов — для доступа жюри через туннель лучше сгенерировать длинный ключ (deploy/gen_api_key.py)")
 
 STATIC_DIR = SERVICE_DIR / "static"
 UPLOAD_DIR = settings.DATA_DIR / "uploads"
@@ -33,10 +39,18 @@ worker = AnalysisWorker(store)
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
+UI_COOKIE = "fb_ui_session"
+# Токен веб-интерфейса выводится из ключа API (HMAC): не совпадает с ключом и меняется вместе с ним.
+_UI_TOKEN = hmac.new(settings.API_KEY.encode(), b"fortebank-cashdesk-ui-v1", hashlib.sha256).hexdigest()
 
-async def require_api_key(key: str | None = Depends(api_key_header)) -> None:
-    if not key or not secrets.compare_digest(key, settings.API_KEY):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid or missing X-API-Key")
+
+async def require_api_key(key: str | None = Depends(api_key_header), ui_session: str | None = Cookie(default=None, alias=UI_COOKIE)) -> None:
+    if key and secrets.compare_digest(key.encode(), settings.API_KEY.encode()):
+        return
+    # веб-интерфейс без ввода ключа (UI_OPEN): HttpOnly-cookie, выданная страницей /
+    if not key and settings.UI_OPEN and ui_session and secrets.compare_digest(ui_session.encode(), _UI_TOKEN.encode()):
+        return
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid or missing X-API-Key")
 
 
 def purge_stale_uploads() -> int:
@@ -60,8 +74,9 @@ async def lifespan(_: FastAPI):
     purged = purge_stale_uploads()
     worker.start()
     log.info(
-        "service started; uploads=%s (purged %d), workers=%d x %d threads, soft=%ss hard=%ss, max_upload=%sMB",
-        UPLOAD_DIR, purged, worker.n_workers, settings.threads_per_worker, settings.SOFT_DEADLINE_SEC, settings.JOB_TIMEOUT_SEC, settings.MAX_UPLOAD_MB,
+        "service started; uploads=%s (purged %d), workers=%d x %d threads, soft=%ss hard=%ss, max_upload=%sMB, ui_open=%s",
+        UPLOAD_DIR, purged, worker.n_workers, settings.threads_per_worker, settings.SOFT_DEADLINE_SEC, settings.JOB_TIMEOUT_SEC,
+        settings.MAX_UPLOAD_MB, settings.UI_OPEN,
     )
     yield
     worker.stop()
@@ -73,6 +88,20 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def track_uploads(request: Request, call_next):
+    """Загрузка видео учитывается планировщиком очереди с первого байта: FastAPI читает multipart-тело до вызова
+    обработчика, а при пачке видео от жюри первое задание должно знать, что за ним идут ещё."""
+    if request.method != "POST" or request.url.path != "/api/v1/analyze":
+        return await call_next(request)
+    declared = request.headers.get("content-length", "")
+    token = worker.upload_started(int(declared) if declared.isdigit() else 0)
+    try:
+        return await call_next(request)
+    finally:
+        worker.upload_finished(token)
 
 
 class _TooLarge(Exception):
@@ -102,6 +131,8 @@ async def health() -> dict:
         "workers": {"configured": worker.n_workers, "alive": worker.workers_alive},
         "queue": worker.queue_size,
         "jobs": store.stats(),
+        "ui_open": settings.UI_OPEN,          # веб-интерфейсу ключ не нужен
+        "job_timeout_sec": settings.JOB_TIMEOUT_SEC,
     }
 
 
@@ -140,7 +171,7 @@ async def analyze(request: Request, file: UploadFile = File(...)) -> JobCreated:
 
     job = Job(job_id=job_id, filename=filename, path=str(dest), created_at=created_at)
     store.add(job, ttl_sec=settings.JOB_TTL_SEC)
-    worker.submit(job_id, str(dest))
+    worker.submit(job_id, str(dest), created=created_at, size=size)
     log.info("job %s queued: %s (%.1f MB)", job_id, filename, size / 1e6)
     return JobCreated(job_id=job_id)
 
@@ -162,8 +193,11 @@ async def list_rules() -> dict:
 
 
 @app.get("/", include_in_schema=False)
-async def index() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+async def index(request: Request) -> FileResponse:
+    resp = FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-cache"})
+    if settings.UI_OPEN:
+        resp.set_cookie(UI_COOKIE, _UI_TOKEN, httponly=True, samesite="strict", secure=request.url.scheme == "https", path="/")
+    return resp
 
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

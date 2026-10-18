@@ -113,7 +113,7 @@ def test_light_mode_retry_after_crash(pool_server):
 def test_deadlines_are_passed_and_measured_from_post(pool_server):
     res = pool_server.wait_job(_submit(pool_server, b"DEAD"), timeout=30)
     assert res["status"] == "done"
-    assert 8.0 < res["meta"]["soft_in"] <= 10.5, res["meta"]      # SOFT = 0.7 * 15 с от POST
+    assert 9.5 < res["meta"]["soft_in"] <= 12.0, res["meta"]      # SOFT = 0.8 * 15 с от POST
     assert 12.0 < res["meta"]["hard_in"] <= 15.0, res["meta"]
 
 
@@ -122,7 +122,7 @@ def test_queue_wait_is_charged_to_the_job(pool_server):
     a, b = _submit(pool_server, b"SPIN"), _submit(pool_server, b"SPIN")
     c = _submit(pool_server, b"DEAD")
     ra, rb, rc = (pool_server.wait_job(j, timeout=30) for j in (a, b, c))
-    assert rc["meta"]["soft_in"] < 10.5 - 1.0, rc["meta"]
+    assert rc["meta"]["soft_in"] < 12.0 - 1.0, rc["meta"]
     assert ra["meta"]["pid"] != rb["meta"]["pid"], "два параллельных задания должны идти в разных процессах"
 
 
@@ -201,3 +201,118 @@ def test_dispatcher_survives_unexpected_exception():
     assert calls == ["bad", "good"]
     assert store.get("bad").status == "done" and store.get("bad").result["meta"]["degraded"] is True
     assert store.get("good").status == "done"
+
+
+# ---------------------------------------------------------------- прозрачность деградации, очередь, гигиена ответов
+
+def test_decode_error_does_not_leak_server_paths(pool_server):
+    res = pool_server.wait_job(_submit(pool_server, b"DECP"), timeout=30)
+    assert res["status"] == "failed" and "cannot open video" in res["error"]
+    assert "/" not in res["error"] and str(pool_server.data_dir) not in res["error"], res["error"]
+    assert str(pool_server.data_dir) in pool_server.log(), "полный текст ошибки остаётся в журнале сервиса"
+
+
+def test_full_result_is_marked_complete(pool_server):
+    res = pool_server.wait_job(_submit(pool_server, b"SPIN"), timeout=30)
+    m = res["meta"]
+    assert m["degraded"] is False and m["analysis_complete"] is True and "degraded_reason" not in m
+    assert m["queue_wait_sec"] >= 0
+
+
+def test_truncated_analysis_is_never_silent(pool_server):
+    """Восприятие обрезано по времени: вердикт может быть no_violation, но это явно помечено в meta."""
+    res = pool_server.wait_job(_submit(pool_server, b"TRNC"), timeout=30)
+    m = res["meta"]
+    assert m["degraded"] is True and m["analysis_complete"] is False
+    assert "обрезано" in m["degraded_reason"]
+
+
+def test_fallback_is_marked_incomplete(fragile_server):
+    res = fragile_server.wait_job(_submit(fragile_server, b"SLOW"), timeout=30)
+    m = res["meta"]
+    assert m["degraded"] is True and m["fallback"] is True and m["analysis_complete"] is False
+    assert "дедлайн" in m["degraded_reason"]
+
+
+def test_queue_takes_short_videos_first(pool_server):
+    """Оба воркера заняты; в очереди большой файл и два маленьких — маленькие берутся первыми (больше видео успевают)."""
+    busy = [_submit(pool_server, b"SPIN") for _ in range(2)]
+    time.sleep(0.3)
+    big = pool_server.submit(None, filename="big.mov", content=b"SPIN" + b"\0" * (3 * 1024 * 1024))
+    small = [pool_server.submit(None, filename="s.mov", content=b"SPIN" + b"\0" * 64) for _ in range(2)]
+    for j in busy:
+        pool_server.wait_job(j, timeout=30)
+    rb = pool_server.wait_job(big, timeout=30)
+    rs = [pool_server.wait_job(j, timeout=30) for j in small]
+    assert all(r["status"] == "done" for r in [rb, *rs])
+    assert rb["meta"]["queue_wait_sec"] > max(r["meta"]["queue_wait_sec"] for r in rs) + 0.8, (rb["meta"], [r["meta"] for r in rs])
+
+
+def test_pending_queue_aging_beats_size():
+    from app.worker import _PendingQueue
+
+    q = _PendingQueue(aging_sec=30)
+    now = time.time()
+    q.put("old_big", "/x", now - 40, 10_000_000)
+    q.put("new_small", "/y", now, 10)
+    q.put("new_mid", "/z", now, 1000)
+    assert [q.get(0.1)[0] for _ in range(3)] == ["old_big", "new_small", "new_mid"]
+    q.close()
+    assert q.get(0.1) is None
+
+
+def test_public_error_strips_paths():
+    from app.worker import public_error
+
+    assert public_error("VideoDecodeError: cannot open video: /private/tmp/x/data/uploads/781eb4ea.mov") == \
+        "VideoDecodeError: cannot open video: <file>"
+    assert public_error("восприятие: обрезано по времени на узле 90/217") == "восприятие: обрезано по времени на узле 90/217"
+    assert "\n" not in public_error("a\nTraceback ...")
+
+
+def test_placeholder_api_key_is_rejected_at_startup(tmp_path):
+    import pytest
+
+    from .conftest import start_server
+
+    with pytest.raises(RuntimeError) as ei:
+        start_server(tmp_path, env_overrides={"API_KEY": "change-me"}, fake_pipeline=True)
+    assert "заглушка" in str(ei.value) and "gen_api_key" in str(ei.value)
+
+
+def test_planner_gives_full_analysis_to_a_single_job_and_shares_time_in_a_burst():
+    """Одно видео — полный анализ; пачка из трёх длинных — каждое получает долю, чтобы все уложились в 5 минут
+    (пайплайн увеличит шаг выборки и покроет всё видео), вместо обрезки последних."""
+    from app.store import JobStore
+    from app.worker import MIN_SHARE, AnalysisWorker
+
+    w = AnalysisWorker(JobStore(), workers=1)
+    now = time.time()
+    w._sizes["a"] = 27_400_000
+    share, est = w.plan_share("a", now, now)
+    assert share == 1.0 and 100 < est < 250
+    for jid in ("b", "c"):
+        w.submit(jid, "/nonexistent", created=now, size=27_400_000)
+    share3, _ = w.plan_share("a", now, now)
+    assert MIN_SHARE <= share3 < 0.7, share3
+    # загрузка, которая ещё идёт, тоже учитывается
+    tok = w.upload_started(27_400_000)
+    share4, _ = w.plan_share("a", now, now)
+    w.upload_finished(tok)
+    assert share4 < share3
+    # короткие видео пачкой помещаются целиком
+    w2 = AnalysisWorker(JobStore(), workers=1)
+    w2._sizes["x"] = 4_000_000
+    for jid in ("y", "z"):
+        w2.submit(jid, "/nonexistent", created=now, size=4_000_000)
+    assert w2.plan_share("x", now, now)[0] == 1.0
+
+
+def test_cost_model_learns_from_full_runs():
+    from app.worker import CostModel
+
+    m = CostModel(sec_per_mb=6.0)
+    before = m.estimate(20_000_000)
+    for _ in range(5):
+        m.observe(20_000_000, 44.0)     # машина вдвое быстрее стартовой оценки
+    assert m.estimate(20_000_000) < 0.6 * before

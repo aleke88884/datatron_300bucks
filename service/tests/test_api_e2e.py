@@ -36,6 +36,21 @@ def test_openapi_lists_tz_endpoints(server):
 
 # ---------------------------------------------------------------- авторизация
 
+def test_web_ui_works_without_key_but_api_does_not(server):
+    """Веб-интерфейс без авторизации (ПЛАН/FAQ): страница выдаёт HttpOnly-cookie; голый вызов API без ключа — 401."""
+    import requests
+
+    sess = requests.Session()
+    page = sess.get(server.base_url + "/", timeout=30)
+    assert page.status_code == 200
+    assert "httponly" in page.headers.get("set-cookie", "").lower()
+    assert sess.get(server.base_url + "/api/v1/jobs/deadbeef", timeout=30).status_code == 404   # cookie принята
+    assert requests.get(server.base_url + "/api/v1/jobs/deadbeef", timeout=30).status_code == 401
+    # неверный ключ не «спасается» cookie
+    assert sess.get(server.base_url + "/api/v1/jobs/deadbeef", headers={"X-API-Key": "wrong"}, timeout=30).status_code == 401
+    assert server.get("/health", key=None).json()["ui_open"] is True
+
+
 @pytest.mark.parametrize("key", [None, "", "wrong-key", TEST_API_KEY + "x", TEST_API_KEY[:-1]])
 def test_analyze_rejects_bad_key(server, negative_video, key):
     r = server.post_video(negative_video, key=key)
@@ -94,6 +109,7 @@ def test_corrupted_video_results_in_failed(server):
     res = server.wait_job(job_id, timeout=60)
     assert res["status"] == "failed"
     assert "cannot open video" in res["error"]
+    assert str(server.data_dir) not in res["error"] and "/uploads/" not in res["error"], "путь сервера не должен уходить клиенту"
     assert "verdict" not in res and "violations" not in res
     # сервис жив и принимает следующие задания
     assert server.get("/health", key=None).json()["status"] == "ok"
@@ -191,6 +207,10 @@ def test_concurrent_uploads_all_complete(server):
     results = [server.wait_job(j) for j in job_ids]
     for r in results:
         assert_done_result(r)
+        # деградация под нагрузкой допустима, но никогда не молча
+        assert isinstance(r["meta"]["degraded"], bool) and isinstance(r["meta"]["analysis_complete"], bool)
+        if r["meta"]["degraded"]:
+            assert r["meta"]["degraded_reason"], r["meta"]
     assert [r["verdict"] for r in results] == ["violation", "no_violation", "no_violation", "violation", "no_violation"]
     has_t3 = [any(v["type_code"] == "T3" for v in r["violations"]) for r in results]
     has_t9 = [any(e["type_code"] == "T9" for e in r["meta"].get("context_events") or []) for r in results]

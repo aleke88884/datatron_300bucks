@@ -101,17 +101,65 @@ def test_t3_cites_exact_it_security_clause():
     assert any(x["url"].endswith("V1800016772") for x in RULES["T3"]["secondary"]), "историческая редакция (НБРК № 48)"
 
 
-def test_descriptions_are_observable_only():
-    """ТЗ п. 7: в описаниях нет выводов о нарушении/блокировке — только наблюдаемое и пометка для проверки человеком."""
-    import inspect
+# ТЗ п. 7: описание — только наблюдаемое + «может указывать на …» + ссылка на пункт; нормативный текст живёт в
+# rule.quote/rule.note. Эти обороты — вывод о нарушении, норма своими словами или догадка о невидимом.
+BANNED_DESCRIPTION_PHRASES = (
+    "не заблокировано", "не изолировано", "должен быть", "должна быть", "должны быть", "должен оставаться",
+    "должна оставаться", "не должна оставаться", "должны храниться", "должны выполняться", "должны находиться",
+    "не допускаются", "не допускается", "не вправе", "только в сопровождении", "вероятно", "без предъявления документов",
+    "посторонн", "хранилищ",
+)
+# Модули, которые строят description/evidence_captions событий. rules.py — справочник норм (цитаты законно содержат
+# «не допускается»), vlm.py — промпты модели; оба вне проверки.
+_DESCRIPTION_EXEMPT = {"rules.py", "vlm.py", "__init__.py"}
 
-    from pipeline import detectors, rules_scene
 
-    src = inspect.getsource(rules_scene) + inspect.getsource(detectors)
-    for bad in ("не заблокировано", "должен быть исключён", "должен оставаться", "не допускаются", "должна оставаться",
-                "должны храниться", "должны выполняться", "должны находиться", "не должна оставаться",
-                "без предъявления документов"):
-        assert bad not in src, f"вывод в описании: «{bad}»"
+def banned_in(text: str) -> list[str]:
+    low = text.lower()
+    return [b for b in BANNED_DESCRIPTION_PHRASES if b in low]
+
+
+def _user_facing_literals(path):
+    """Все строковые литералы модуля (f-строки — с «{}» вместо подстановок), кроме докстрингов и комментариев.
+    Соседние литералы Python склеивает в один узел, поэтому фраза, разбитая по строкам кода, проверяется целиком."""
+    import ast
+
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    docstrings = {id(n.value) for n in ast.walk(tree) if isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant)}
+    inner = {id(v) for n in ast.walk(tree) if isinstance(n, ast.JoinedStr) for v in n.values}
+    for n in ast.walk(tree):
+        if isinstance(n, ast.JoinedStr):
+            yield n.lineno, "".join(v.value if isinstance(v, ast.Constant) else "{}" for v in n.values)
+        elif isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) not in docstrings | inner:
+            yield n.lineno, n.value
+
+
+def test_description_literals_are_observable_only():
+    """ТЗ п. 7: ни один модуль, порождающий описания событий (правила, дверь, руки, личные вещи, страховочная сетка),
+    не содержит в текстах выводов о нарушении и нормативных утверждений — только наблюдаемое и пометку для проверки."""
+    files = sorted(p for p in (SERVICE_DIR / "pipeline").glob("*.py") if p.name not in _DESCRIPTION_EXEMPT)
+    names = {p.name for p in files}
+    assert {"rules_scene.py", "detectors.py", "rules_door.py", "rules_hands.py", "personal_items.py", "safety_net.py"} <= names
+    hits = [f"{p.name}:{ln}: «{b}»" for p in files for ln, s in _user_facing_literals(p) for b in banned_in(s)]
+    assert not hits, "вывод/норма в тексте описания: " + "; ".join(hits)
+
+
+def test_banned_phrase_check_catches_old_wording():
+    """Самопроверка: прежние формулировки, которые ревью нашло в описаниях, ловятся проверкой."""
+    for old in ("Кассовое помещение не изолировано: вход в кассу должен быть закрыт.",
+                "Личные вещи, еда и напитки на кассовом рабочем месте не допускаются.",
+                "Посторонние лица могут находиться в кассовом помещении только в сопровождении ответственного работника",
+                "рука вынесена к оборудованию (вероятно, пересчёт на счётной машинке)",
+                "Личные вещи работников должны храниться вне кассового узла."):
+        assert banned_in(old), old
+
+
+def test_rule_notes_explain_room_construction_clauses():
+    """Типы, опирающиеся только на пункты Правил № 14 об устройстве помещений, честно об этом говорят в rule.note."""
+    for code in ("T4", "T5", "T10", "T13"):
+        r = RULES[code]["rule"]
+        assert r["document_short"] == "Правила № 14", code
+        assert "устройств" in r.get("note", ""), f"{code}: нет пометки, что пункт — об устройстве помещения"
 
 
 @pytest.mark.parametrize("code", ALL_CODES)

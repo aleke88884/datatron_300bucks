@@ -95,6 +95,17 @@ def test_every_result_matches_schema(results):
             assert 0 <= e["timecode_sec"] <= res["meta"]["duration_sec"], name
 
 
+def test_generated_descriptions_are_observable_only(results):
+    """ТЗ п. 7 на реальных описаниях: ни одно сгенерированное description не содержит вывода о нарушении."""
+    from .test_rules import banned_in
+
+    hits = []
+    for name, res in results.items():
+        for v in [*res["violations"], *(res["meta"].get("context_events") or [])]:
+            hits += [f"{name} {v.get('type_code')}: «{b}»" for b in banned_in(v.get("description") or "")]
+    assert not hits, "; ".join(hits)
+
+
 def test_durations_match_dataset_description(results):
     for name, res in results.items():
         d = res["meta"]["duration_sec"]

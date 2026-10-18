@@ -3,6 +3,7 @@
 FAIL — бросает исключение; VIOL — возвращает нарушение с настоящим JPEG; иначе — короткая обработка с прогрессом.
 Для проверки деградации: PART — отдаёт partial() и зависает (жёсткий дедлайн → done с частичным результатом);
 LCRASH — падает, если не light-режим (повтор в лёгком режиме успешен); DECO — бросает VideoDecodeError;
+DECP — VideoDecodeError с абсолютным путём; TRNC — результат с обрезанным восприятием;
 DEAD — возвращает в meta, за сколько секунд до мягкого/жёсткого дедлайна пришло задание; SPIN — быстрый ответ без пауз."""
 import base64
 import os
@@ -71,6 +72,12 @@ def analyze_video(path, progress=None, deadline_ts=None, hard_deadline_ts=None, 
         return {"verdict": "no_violation", "violations": [], "meta": {"pipeline_version": PIPELINE_VERSION, "degraded": True, "light": True}}
     if head.startswith(b"DECO"):
         raise VideoDecodeError("cannot open video: fake")
+    if head.startswith(b"DECP"):
+        raise VideoDecodeError(f"cannot open video: {os.path.abspath(path)}")
+    if head.startswith(b"TRNC"):   # бюджет времени обрезал восприятие (как pipeline/budget.py)
+        return {"verdict": "no_violation", "violations": [], "meta": {
+            "pipeline_version": PIPELINE_VERSION, "degraded": True,
+            "degrade_reasons": ["восприятие: обрезано по времени на узле 15/195"]}}
     if head.startswith(b"DEAD"):
         now = time.time()
         return {"verdict": "no_violation", "violations": [], "meta": {

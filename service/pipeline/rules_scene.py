@@ -303,7 +303,7 @@ def rule_t4(ctx: VideoContext) -> list[Event]:
         events.append(Event(
             type_code="T4", timecode_sec=round(t0, 2), end_sec=round(float(sc.t[b]), 2), confidence=round(conf, 2),
             description=desc, evidence_times=_ev_times(sc, t0, (0.0, 1.0, 2.5)),
-            evidence_captions=["третье лицо входит в кассу", "посторонний внутри кассового помещения", "посторонний остаётся внутри"],
+            evidence_captions=["третье лицо входит в кассу", "третье лицо внутри кассового помещения", "третье лицо остаётся внутри"],
             extras={"n": int(sc.n_strong[a]), "evidence_boxes": nboxes},
         ))
         break
@@ -334,19 +334,20 @@ def rule_t5(ctx: VideoContext) -> list[Event]:
             ev_t = _ev_times(sc, t0, (0.0, 1.0, 2.5))
             vboxes = [_timing.track_box_at(tracks, at_desk[1], t) for t in ev_t]
             desc = (
-                f"В {t0:.1f} с в кассовое помещение входит посторонний и остаётся в нём не менее {dur:.1f} с: стоит "
+                f"В {t0:.1f} с в кассовое помещение входит человек, не являющийся кассиром или клиентом у стола, и "
+                f"остаётся в нём не менее {dur:.1f} с: стоит "
                 f"в стороне от стола обслуживания, за спиной кассира (на стороне рабочего места), к столу как клиент "
                 f"не подходит. Требует проверки человеком: допущен ли этот человек в кассовый узел."
             )
             events.append(Event(
                 type_code="T4", timecode_sec=round(t0, 2), end_sec=round(float(sc.t[b]), 2), confidence=round(conf, 2),
                 description=desc, evidence_times=ev_t,
-                evidence_captions=["посторонний входит в кассу", "посторонний за спиной кассира", "посторонний остаётся в помещении"],
+                evidence_captions=["третье лицо входит в кассу", "третье лицо за спиной кассира", "третье лицо остаётся в помещении"],
                 extras={"evidence_boxes": vboxes, "reclassified_from": "T5", "at_desk_frac": round(at_desk[0], 2)},
             ))
             break
         desc = (
-            f"В {t0:.1f} с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и хранилищем) и "
+            f"В {t0:.1f} с посетитель заходит в рабочую зону кассира (сторона стола с оборудованием и сейфом) и "
             f"находится там не менее {dur:.1f} с. Признак для проверки человеком."
         )
         events.append(Event(
