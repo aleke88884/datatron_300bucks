@@ -7,8 +7,8 @@
 
 | # | Что требует ТЗ | Статус | Где |
 |---|---|---|---|
-| 1 | Публичный URL веб-интерфейса | [ ] **заполнить**: `<https://...>` (туннель `cloudflared`, `service/deploy/cloudflared.md`) | §1 |
-| 2 | Публичный URL API | [ ] **заполнить**: `<https://.../api/v1>` | §1 |
+| 1 | Публичный URL веб-интерфейса | [x] **заполнить**: `<https://dig-preference-lobby-display.trycloudflare.com>` (туннель `cloudflared`, `service/deploy/cloudflared.md`) | §1 |
+| 2 | Публичный URL API | [x] **заполнить**: `<https://dig-preference-lobby-display.trycloudflare.com/api/v1>` | §1 |
 | 3 | Ключ доступа `X-API-Key` | [x] сгенерирован в `service/.env` (`python3 deploy/gen_api_key.py --show` — показать; на другой машине сгенерировать там же); в письмо жюри — да, в git и документы — нет | §2 |
 | 4 | Инструкция по запуску и проверке | [x] этот файл §3–4, [service/README.md](../service/README.md), `service/deploy/healthcheck.sh` | — |
 | 5 | Описание архитектуры и используемых моделей (с лицензиями) | [x] [ARCHITECTURE.md](ARCHITECTURE.md) (§2 — таблица моделей и лицензий) | — |
@@ -27,8 +27,8 @@
 
 | Элемент | Значение | Где взять |
 |---|---|---|
-| Публичный URL веб-интерфейса | `https://<host>/` | `service/deploy/cloudflared.md` (туннель) или адрес GPU-сервера |
-| Публичный URL API | `https://<host>/api/v1` | тот же хост; эндпоинты ниже |
+| Публичный URL веб-интерфейса | `https://dig-preference-lobby-display.trycloudflare.com` | `service/deploy/cloudflared.md` (туннель) или адрес GPU-сервера |
+| Публичный URL API | `https://dig-preference-lobby-display.trycloudflare.com/api/v1` | тот же хост; эндпоинты ниже |
 | Ключ доступа (заголовок `X-API-Key`) | `<ключ — вписать после gen_api_key.py>` | `python service/deploy/gen_api_key.py` → `service/.env` |
 | Инструкция по запуску и проверке | этот файл + `service/README.md` | — |
 | Описание архитектуры и моделей (с лицензиями) | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) | — |
@@ -39,8 +39,8 @@
 Текст для письма/формы жюри (заполнить):
 
 ```
-Веб-интерфейс: https://<host>/
-API:           https://<host>/api/v1  (POST /analyze, GET /jobs/{job_id}; заголовок X-API-Key)
+Веб-интерфейс: https://dig-preference-lobby-display.trycloudflare.com
+API:           https://dig-preference-lobby-display.trycloudflare.com/api/v1  (POST /analyze, GET /jobs/{job_id}; заголовок X-API-Key)
 Ключ:          <ключ>
 Проверка:      curl -X POST https://<host>/api/v1/analyze -H "X-API-Key: <ключ>" -F "file=@video_017.mov"
                curl -H "X-API-Key: <ключ>" https://<host>/api/v1/jobs/<job_id>
@@ -94,7 +94,7 @@ deploy/run_tunnel.sh 8000                           # печатает https://.
 ## 4. Проверка curl-ом по ТЗ
 
 ```bash
-BASE=https://<host>        # или http://localhost:8000
+BASE=https://dig-preference-lobby-display.trycloudflare.com        # или http://localhost:8000
 KEY=<ключ>
 
 # 1. здоровье (без ключа)
